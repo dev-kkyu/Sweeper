@@ -10,10 +10,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
 
-#include <iostream>
+#include <string>
 #include <array>
 #include <vector>
 #include <optional>
+
 
 static VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
@@ -23,7 +24,9 @@ struct QueueFamilyIndices {
 	std::optional<uint32_t> graphicsFamily;
 	std::optional<uint32_t> presentFamily;
 
-	bool isComplete();
+	bool isComplete() {
+		return graphicsFamily.has_value() && presentFamily.has_value();
+	}
 };
 
 struct SwapChainSupportDetails {
@@ -40,7 +43,9 @@ struct Vertex {
 	static VkVertexInputBindingDescription getBindingDescription();
 	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
 
-	bool operator==(const Vertex& other) const;
+	bool operator==(const Vertex& other) const {
+		return pos == other.pos && color == other.color && texCoord == other.texCoord;
+	}
 };
 
 namespace std {
@@ -61,15 +66,20 @@ struct UniformBufferObject {
 class GameFramework
 {
 public:
-	void run() {
-		initWindow();
-		initVulkan();
-		mainLoop();
-		cleanup();
-	}
+	GameFramework(int& width, int& height);
+
+	friend void framebufferResizeCallback(GLFWwindow*, int, int);
+
+	void initVulkan(GLFWwindow* window);
+
+	void drawFrame();
+
+	void cleanup();
 
 private:
-	GLFWwindow* window;
+	bool framebufferResized = false;
+	int& framebufferWidth;
+	int& framebufferHeight;
 
 	VkInstance instance;
 	VkDebugUtilsMessengerEXT debugMessenger;
@@ -131,26 +141,15 @@ private:
 	std::vector<VkFence> inFlightFences;
 	uint32_t currentFrame = 0;
 
-	bool framebufferResized = false;
-
 
 private:
-	void initWindow();
-	static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
-
-	void initVulkan();
-
-	void mainLoop();
-
-	void cleanup();
-
 	void cleanupSwapChain();
 	void recreateSwapChain();
 
 	void createInstance();
 	void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 	void setupDebugMessenger();
-	void createSurface();
+	void createSurface(GLFWwindow* window);
 	void pickPhysicalDevice();
 	void createLogicalDevice();
 	void createSwapChain();
@@ -199,7 +198,6 @@ private:
 
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 	void updateUniformBuffer(uint32_t currentImage);
-	void drawFrame();
 
 	VkShaderModule createShaderModule(const std::vector<char>& code);
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);

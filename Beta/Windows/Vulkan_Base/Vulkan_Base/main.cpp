@@ -1,8 +1,12 @@
+﻿#include <iostream>
+
 #include "GameFramework.h"
 
 // 전역 변수
 static int g_Width = 800;
 static int g_Height = 600;
+
+static GameFramework g_GameFramework{ g_Width, g_Height };
 
 // 이벤트 콜백함수
 static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
@@ -19,9 +23,10 @@ static void vulkanMain()
 
 	GLFWwindow* window = glfwCreateWindow(g_Width, g_Height, "Vulkan", nullptr, nullptr);
 
-	// Todo. vulkan 생성
+	// vulkan 생성
+	g_GameFramework.initVulkan(window);
 
-
+	// 콜백함수 설정
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 	glfwSetKeyCallback(window, keyCallback);
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -29,13 +34,16 @@ static void vulkanMain()
 	glfwSetCursorPosCallback(window, cursorPosCallback);
 
 
+	// 메인루프
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
-		// Todo. frame 그리기
+		// frame 그리기
+		g_GameFramework.drawFrame();
 	}
 
-	// Todo. vulkan 파괴
+	// vulkan 파괴
+	g_GameFramework.cleanup();
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
@@ -58,7 +66,9 @@ void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 {
 	g_Width = width;
 	g_Height = height;
-	// Todo. 스왑체인에 알려주기
+	
+	// 스왑체인에 알려주기
+	g_GameFramework.framebufferResized = true;
 }
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
