@@ -9,6 +9,7 @@ static int g_Height = 600;
 static GameFramework g_GameFramework{ g_Width, g_Height };
 
 // 이벤트 콜백함수
+static void fullScreenToggle(GLFWwindow* window);
 static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
@@ -62,11 +63,37 @@ int main() {
 	return EXIT_SUCCESS;
 }
 
+void fullScreenToggle(GLFWwindow* window)
+{
+	static int xpos, ypos, width, height;
+	GLFWmonitor* monitor = glfwGetWindowMonitor(window);
+
+	// 기존에 전체화면 이었다면
+	if (monitor) {
+		if (0 == width or 0 == height) {	// 프로그램 시작시 창모드로 실행을 전제한다.
+			throw std::runtime_error("failed to find saved monitor information!");
+		}
+		// 창모드로 변경
+		glfwSetWindowMonitor(window, nullptr, xpos, ypos, width, height, GLFW_DONT_CARE);	// 2번째 인자가 nulllptr이면 창모드로 변경되며, 마지막 인자 무시
+	}
+	// 기존에 창모드 였다면
+	else {
+		// 기존 창의 위치와 크기를 백업해두고
+		glfwGetWindowPos(window, &xpos, &ypos);
+		glfwGetWindowSize(window, &width, &height);
+
+		// 주 모니터에 전체화면으로 전환해준다.
+		GLFWmonitor* primary = glfwGetPrimaryMonitor();
+		const GLFWvidmode* mode = glfwGetVideoMode(primary);
+		glfwSetWindowMonitor(window, primary, 0, 0, mode->width, mode->height, mode->refreshRate);		// 2번째 인자가 지정되면 해당 모니터에 전체화면. 위치 무시
+	}
+}
+
 void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 {
 	g_Width = width;
 	g_Height = height;
-	
+
 	// 스왑체인에 알려주기
 	g_GameFramework.framebufferResized = true;
 }
@@ -77,8 +104,11 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	{
 	case GLFW_PRESS:
 		switch (key) {
+		case GLFW_KEY_F9:
+			fullScreenToggle(window);						// 전체 화면 전환
+			break;
 		case GLFW_KEY_ESCAPE:
-			glfwSetWindowShouldClose(window, GLFW_TRUE);
+			glfwSetWindowShouldClose(window, GLFW_TRUE);	// 창 닫기
 			break;
 		case GLFW_KEY_W:
 			break;
