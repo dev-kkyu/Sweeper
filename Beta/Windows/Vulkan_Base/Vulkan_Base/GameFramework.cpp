@@ -99,6 +99,11 @@ GameFramework::GameFramework(int& width, int& height)
 {
 }
 
+void GameFramework::setFramebufferResized()
+{
+	framebufferResized = true;
+}
+
 void GameFramework::initVulkan(GLFWwindow* window)
 {
 	createInstance();
@@ -1501,6 +1506,8 @@ VkPresentModeKHR GameFramework::chooseSwapPresentMode(const std::vector<VkPresen
 			return availablePresentMode;
 		}
 	}
+
+	std::cout << "vertical sync enabled" << std::endl;
 
 	return VK_PRESENT_MODE_FIFO_KHR;
 }

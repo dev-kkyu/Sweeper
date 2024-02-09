@@ -68,7 +68,7 @@ class GameFramework
 public:
 	GameFramework(int& width, int& height);
 
-	friend void framebufferResizeCallback(GLFWwindow*, int, int);
+	void setFramebufferResized();
 
 	void initVulkan(GLFWwindow* window);
 
