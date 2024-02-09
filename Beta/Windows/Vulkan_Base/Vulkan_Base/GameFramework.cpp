@@ -369,24 +369,36 @@ void GameFramework::pickPhysicalDevice()
 	std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
+	std::multimap<int, VkPhysicalDevice> candidates;
 	for (const auto& device : devices) {
 		if (isDeviceSuitable(device)) {
-			physicalDevice = device;
-			msaaSamples = getMaxUsableSampleCount();
-			break;
+			VkPhysicalDeviceProperties deviceProperties;
+			vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+			int score = 0;
+			if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {	// 외장그래픽이면 점수 추가부여
+				score += 1000;
+			}
+			score += deviceProperties.limits.maxImageDimension2D;						// 텍스처 크기가 크면 그래픽 품질 높아짐
+
+			candidates.insert(std::make_pair(score, device));
 		}
 	}
 
-	if (physicalDevice == VK_NULL_HANDLE) {
+	if (!candidates.empty() && candidates.rbegin()->first > 0) {
+		physicalDevice = candidates.rbegin()->second;
+		msaaSamples = getMaxUsableSampleCount();
+
+		VkPhysicalDeviceProperties properties;
+		vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+
+		std::cout << "Select device : " << properties.deviceName << std::endl;
+		std::cout << "Device type : " << (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ? "INTEGRATED" :
+			properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU ? "DISCRETE" : "Etc.") << std::endl;
+	}
+	else {
 		throw std::runtime_error("failed to find a suitable GPU!");
 	}
-
-	VkPhysicalDeviceProperties properties;
-	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
-
-	std::cout << "select device : " << properties.deviceName << std::endl;
-	std::cout << "device type : " << (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ? "INTEGRATED" :
-		properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU ? "DISCRETE" : "Etc..") << std::endl;
 }
 
 void GameFramework::createLogicalDevice()
@@ -1507,7 +1519,7 @@ VkPresentModeKHR GameFramework::chooseSwapPresentMode(const std::vector<VkPresen
 		}
 	}
 
-	std::cout << "vertical sync enabled" << std::endl;
+	std::cout << "Vertical Sync Enabled" << std::endl;
 
 	return VK_PRESENT_MODE_FIFO_KHR;
 }
