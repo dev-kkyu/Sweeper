@@ -375,6 +375,13 @@ void GameFramework::pickPhysicalDevice()
 	if (physicalDevice == VK_NULL_HANDLE) {
 		throw std::runtime_error("failed to find a suitable GPU!");
 	}
+
+	VkPhysicalDeviceProperties properties;
+	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+
+	std::cout << "select device : " << properties.deviceName << std::endl;
+	std::cout << "device type : " << (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ? "INTEGRATED" :
+		properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU ? "DISCRETE" : "Etc..") << std::endl;
 }
 
 void GameFramework::createLogicalDevice()

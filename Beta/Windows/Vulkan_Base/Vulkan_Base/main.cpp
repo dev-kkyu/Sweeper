@@ -1,12 +1,15 @@
 ﻿#include <iostream>
 
 #include "GameFramework.h"
+#include "Timer.h"
 
 // 전역 변수
 static int g_Width = 800;
 static int g_Height = 600;
 
+static std::string Title = "Vulkan";
 static GameFramework g_GameFramework{ g_Width, g_Height };
+static Timer g_GameTimer{ Title };
 
 // 이벤트 콜백함수
 static void fullScreenToggle(GLFWwindow* window);
@@ -22,7 +25,7 @@ static void vulkanMain()
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-	GLFWwindow* window = glfwCreateWindow(g_Width, g_Height, "Vulkan", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(g_Width, g_Height, Title.c_str(), nullptr, nullptr);
 
 	// vulkan 생성
 	g_GameFramework.initVulkan(window);
@@ -39,6 +42,7 @@ static void vulkanMain()
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
+		float elapsedTime = g_GameTimer.Tick(window, 0);
 		// frame 그리기
 		g_GameFramework.drawFrame();
 	}
