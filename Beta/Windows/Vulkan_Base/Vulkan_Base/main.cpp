@@ -4,8 +4,8 @@
 #include "Timer.h"
 
 // 전역 변수
-static int g_Width = 800;
-static int g_Height = 600;
+static int g_Width = 1600;
+static int g_Height = 900;
 
 static std::string Title = "Vulkan";
 static GameFramework g_GameFramework{ g_Width, g_Height };
@@ -26,6 +26,7 @@ static void vulkanMain()
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
 	GLFWwindow* window = glfwCreateWindow(g_Width, g_Height, Title.c_str(), nullptr, nullptr);
+	glfwSetWindowAspectRatio(window, 16, 9);
 
 	// vulkan 생성
 	g_GameFramework.initVulkan(window);

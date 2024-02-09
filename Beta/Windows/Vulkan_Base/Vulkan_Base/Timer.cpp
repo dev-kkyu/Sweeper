@@ -24,6 +24,7 @@ float Timer::Tick(GLFWwindow* window, int fps_value)		// 경과 시간 리턴, 1
 		frame -= fps;
 		accm_time -= std::chrono::seconds{ 1 };
 
+		// 창 이름에 FPS 표시
 		std::stringstream title;
 		title << Title << " - (" << fps << "FPS)";
 		glfwSetWindowTitle(window, title.str().c_str());
