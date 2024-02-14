@@ -57,7 +57,7 @@ Scene::~Scene()
 	vkFreeMemory(fwDevice.device, textureImageMemory, nullptr);
 }
 
-void Scene::updateUniformBuffer(uint32_t currentImage)
+void Scene::updateUniformBuffer(uint32_t currentFrame)
 {
 	static auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -70,7 +70,7 @@ void Scene::updateUniformBuffer(uint32_t currentImage)
 	ubo.proj = glm::perspective(glm::radians(45.0f), 16.f / 9.f, 0.1f, 10.0f);
 	ubo.proj[1][1] *= -1;
 
-	memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
+	memcpy(uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
 }
 
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)

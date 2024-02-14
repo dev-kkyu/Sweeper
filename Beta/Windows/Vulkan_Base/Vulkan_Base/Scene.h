@@ -51,7 +51,7 @@ public:
 	Scene(vkfw::Device& fwDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass);
 	~Scene();
 
-	void updateUniformBuffer(uint32_t currentImage);
+	void updateUniformBuffer(uint32_t currentFrame);
 	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
 private:
