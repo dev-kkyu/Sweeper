@@ -3,9 +3,6 @@
 #include <unordered_map>
 #include <chrono>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
@@ -18,10 +15,9 @@ extern const int MAX_FRAMES_IN_FLIGHT;
 Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }
 {
-	createTextureImage();
-	createTextureImageView();
-	createTextureSampler();
+	texture.loadFromFile(fDevice, TEXTURE_PATH);
 	loadModel();
+
 	createVertexBuffer();
 	createIndexBuffer();
 	createUniformBuffers();
@@ -50,11 +46,7 @@ Scene::~Scene()
 	vkDestroyBuffer(fDevice.device, vertexBuffer, nullptr);
 	vkFreeMemory(fDevice.device, vertexBufferMemory, nullptr);
 
-	vkDestroySampler(fDevice.device, textureSampler, nullptr);
-	vkDestroyImageView(fDevice.device, textureImageView, nullptr);
-
-	vkDestroyImage(fDevice.device, textureImage, nullptr);
-	vkFreeMemory(fDevice.device, textureImageMemory, nullptr);
+	texture.destroy();
 }
 
 void Scene::updateUniformBuffer(uint32_t currentFrame)
@@ -85,73 +77,6 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
 
 	vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
-}
-
-void Scene::createTextureImage()
-{
-	int texWidth, texHeight, texChannels;
-	stbi_uc* pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-	VkDeviceSize imageSize = texWidth * texHeight * 4;
-	mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
-
-	if (!pixels) {
-		throw std::runtime_error("failed to load texture image!");
-	}
-
-	VkBuffer stagingBuffer;
-	VkDeviceMemory stagingBufferMemory;
-	vkf::createBuffer(fDevice, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-	void* data;
-	vkMapMemory(fDevice.device, stagingBufferMemory, 0, imageSize, 0, &data);
-	memcpy(data, pixels, static_cast<size_t>(imageSize));
-	vkUnmapMemory(fDevice.device, stagingBufferMemory);
-
-	stbi_image_free(pixels);
-
-	createImage(fDevice, texWidth, texHeight, mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
-
-	transitionImageLayout(fDevice, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
-	copyBufferToImage(fDevice, stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-	//transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmaps
-
-	vkDestroyBuffer(fDevice.device, stagingBuffer, nullptr);
-	vkFreeMemory(fDevice.device, stagingBufferMemory, nullptr);
-
-	vkf::generateMipmaps(fDevice, textureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, mipLevels);
-}
-
-void Scene::createTextureImageView()
-{
-	textureImageView = createImageView(fDevice, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels);
-}
-
-void Scene::createTextureSampler()
-{
-	VkPhysicalDeviceProperties properties{};
-	vkGetPhysicalDeviceProperties(fDevice.physicalDevice, &properties);
-
-	VkSamplerCreateInfo samplerInfo{};
-	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	samplerInfo.magFilter = VK_FILTER_LINEAR;
-	samplerInfo.minFilter = VK_FILTER_LINEAR;
-	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	samplerInfo.anisotropyEnable = VK_TRUE;
-	samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-	samplerInfo.unnormalizedCoordinates = VK_FALSE;
-	samplerInfo.compareEnable = VK_FALSE;
-	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-	samplerInfo.minLod = 0.0f;
-	samplerInfo.maxLod = static_cast<float>(mipLevels);
-	samplerInfo.mipLodBias = 0.0f;
-
-	if (vkCreateSampler(fDevice.device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create texture sampler!");
-	}
 }
 
 void Scene::loadModel()
@@ -319,8 +244,8 @@ void Scene::createDescriptorSets()
 
 		VkDescriptorImageInfo imageInfo{};
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfo.imageView = textureImageView;
-		imageInfo.sampler = textureSampler;
+		imageInfo.imageView = texture.textureImageView;
+		imageInfo.sampler = texture.textureSampler;
 
 		std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 

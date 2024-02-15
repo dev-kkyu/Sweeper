@@ -24,12 +24,7 @@ private:
 	VkPipelineLayout pipelineLayout;
 	VkPipeline graphicsPipeline;
 
-	uint32_t mipLevels;
-	VkImage textureImage;
-	VkDeviceMemory textureImageMemory;
-	VkImageView textureImageView;
-	VkSampler textureSampler;
-
+	vkf::Texture texture;
 
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
@@ -55,10 +50,6 @@ public:
 	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
 private:
-	void createTextureImage();
-	void createTextureImageView();
-	void createTextureSampler();
-
 	void loadModel();
 
 	void createVertexBuffer();
