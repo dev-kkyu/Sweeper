@@ -9,12 +9,17 @@ class Timer {
 	int fps;
 	int frame;
 
-	std::string Title;
+	std::string window_title;
+	std::string gpu_name;
+	GLFWwindow* window;
 
 public:
-	Timer(std::string Title);
+	Timer(std::string title);
 
-	float Tick(GLFWwindow* window, int fps_value);		// 경과 시간 리턴, 1 Frame에 단 한번 호출되어야 함
+	void SetWindow(GLFWwindow* window);
+	void SetGpuName(std::string name);
+
+	float Tick(int fps_value);		// 경과 시간 리턴, 1 Frame에 단 한번 호출되어야 함
 };
 
 

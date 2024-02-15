@@ -4,11 +4,22 @@
 
 #include <GLFW/glfw3.h>
 
-Timer::Timer(std::string Title) : last_time{ std::chrono::steady_clock::now() }, accm_time{ std::chrono::seconds{ 0 } }, fps{ 0 }, frame{ 0 }, Title{ Title }
+Timer::Timer(std::string title)
+	: last_time{ std::chrono::steady_clock::now() }, accm_time{ std::chrono::seconds{ 0 } }, fps{ 0 }, frame{ 0 }, window_title{ title }, window{ nullptr }
 {
 }
 
-float Timer::Tick(GLFWwindow* window, int fps_value)		// 경과 시간 리턴, 1 Frame에 단 한번 호출되어야 함
+void Timer::SetWindow(GLFWwindow* window)
+{
+	this->window = window;
+}
+
+void Timer::SetGpuName(std::string name)
+{
+	gpu_name = name;
+}
+
+float Timer::Tick(int fps_value)		// 경과 시간 리턴, 1 Frame에 단 한번 호출되어야 함
 {
 	if (fps_value > 0 and accm_time.count() / 1'000'000'000. * fps_value < frame)		// 프레임 제한
 		std::this_thread::sleep_until(last_time + std::chrono::nanoseconds{ static_cast<int>(1. / fps_value * 1'000'000'000.) });
@@ -25,9 +36,11 @@ float Timer::Tick(GLFWwindow* window, int fps_value)		// 경과 시간 리턴, 1
 		accm_time -= std::chrono::seconds{ 1 };
 
 		// 창 이름에 FPS 표시
-		std::stringstream title;
-		title << Title << " - (" << fps << "FPS)";
-		glfwSetWindowTitle(window, title.str().c_str());
+		if (window) {
+			std::stringstream title;
+			title << window_title << " : " << gpu_name << " - (" << fps << "FPS)";
+			glfwSetWindowTitle(window, title.str().c_str());
+		}
 	}
 
 	return elapsed_time.count() / 1'000'000'000.f;		// 나노초를 초로 바꿔준다.

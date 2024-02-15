@@ -8,6 +8,7 @@
 
 #include "VulkanFramework.h"
 #include "Scene.h"
+#include "Timer.h"
 
 
 static VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
@@ -33,7 +34,7 @@ struct SwapChainSupportDetails {
 class GameFramework
 {
 public:
-	GameFramework(int& width, int& height);
+	GameFramework(std::string title, int& width, int& height);
 
 	void setFramebufferResized();
 
@@ -44,6 +45,8 @@ public:
 	void drawFrame();
 
 private:
+	Timer gameTimer;
+
 	bool framebufferResized = false;
 	int& framebufferWidth;
 	int& framebufferHeight;
@@ -51,6 +54,7 @@ private:
 	Scene* pScene;
 
 	vkf::Device fDevice;
+	VkPhysicalDeviceProperties physicalDeviceProperties;
 
 	VkInstance instance;
 	VkDebugUtilsMessengerEXT debugMessenger;

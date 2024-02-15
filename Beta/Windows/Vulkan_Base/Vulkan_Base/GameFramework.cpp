@@ -49,8 +49,8 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
 }
 
 
-GameFramework::GameFramework(int& width, int& height)
-	: framebufferWidth{ width }, framebufferHeight{ height }
+GameFramework::GameFramework(std::string title, int& width, int& height)
+	: gameTimer{ title }, framebufferWidth{ width }, framebufferHeight{ height }
 {
 }
 
@@ -77,6 +77,8 @@ void GameFramework::initVulkan(GLFWwindow* window)
 	createSyncObjects();
 
 	pScene = new Scene{ fDevice, msaaSamples, renderPass };
+	gameTimer.SetWindow(window);
+	gameTimer.SetGpuName(physicalDeviceProperties.deviceName);
 }
 
 void GameFramework::cleanup()
@@ -123,6 +125,7 @@ void GameFramework::drawFrame()
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
+	float elapsedTime = gameTimer.Tick(0);
 	pScene->updateUniformBuffer(currentFrame);
 
 	vkResetFences(fDevice.device, 1, &inFlightFences[currentFrame]);
@@ -313,14 +316,14 @@ void GameFramework::pickPhysicalDevice()
 
 	if (!candidates.empty() && candidates.rbegin()->first > 0) {
 		fDevice.physicalDevice = candidates.rbegin()->second;
+		// 물리 디바이스 선택 하자마자 바로 속성 조회하고, massSamples를 선택해 준다.
+		vkGetPhysicalDeviceProperties(fDevice.physicalDevice, &physicalDeviceProperties);
+
 		msaaSamples = getMaxUsableSampleCount();
 
-		VkPhysicalDeviceProperties properties;
-		vkGetPhysicalDeviceProperties(fDevice.physicalDevice, &properties);
-
-		std::cout << "Select device : " << properties.deviceName << std::endl;
-		std::cout << "Device type : " << (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ? "INTEGRATED" :
-			properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU ? "DISCRETE" : "Etc.") << std::endl;
+		std::cout << "Select device : " << physicalDeviceProperties.deviceName << std::endl;
+		std::cout << "Device type : " << (physicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ? "INTEGRATED" :
+			physicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU ? "DISCRETE" : "Etc.") << std::endl;
 	}
 	else {
 		throw std::runtime_error("failed to find a suitable GPU!");
@@ -599,9 +602,6 @@ bool GameFramework::hasStencilComponent(VkFormat format)
 
 VkSampleCountFlagBits GameFramework::getMaxUsableSampleCount()
 {
-	VkPhysicalDeviceProperties physicalDeviceProperties;
-	vkGetPhysicalDeviceProperties(fDevice.physicalDevice, &physicalDeviceProperties);
-
 	VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
 	if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
 	if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
