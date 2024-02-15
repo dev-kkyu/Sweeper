@@ -2,9 +2,9 @@
 #include <stdexcept>
 #include <fstream>
 
-namespace vkfw
+namespace vkf
 {
-	VkImageView createImageView(Device& fwDevice, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels)
+	VkImageView createImageView(Device& fDevice, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels)
 	{
 		VkImageViewCreateInfo viewInfo{};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -18,14 +18,14 @@ namespace vkfw
 		viewInfo.subresourceRange.layerCount = 1;
 
 		VkImageView imageView;
-		if (vkCreateImageView(fwDevice.device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
+		if (vkCreateImageView(fDevice.device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create texture image view!");
 		}
 
 		return imageView;
 	}
 
-	void createImage(Device& fwDevice, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+	void createImage(Device& fDevice, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
 	{
 		VkImageCreateInfo imageInfo{};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -42,28 +42,28 @@ namespace vkfw
 		imageInfo.samples = numSamples;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if (vkCreateImage(fwDevice.device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+		if (vkCreateImage(fDevice.device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create image!");
 		}
 
 		VkMemoryRequirements memRequirements;
-		vkGetImageMemoryRequirements(fwDevice.device, image, &memRequirements);
+		vkGetImageMemoryRequirements(fDevice.device, image, &memRequirements);
 
 		VkMemoryAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = findMemoryType(fwDevice, memRequirements.memoryTypeBits, properties);
+		allocInfo.memoryTypeIndex = findMemoryType(fDevice, memRequirements.memoryTypeBits, properties);
 
-		if (vkAllocateMemory(fwDevice.device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+		if (vkAllocateMemory(fDevice.device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
 			throw std::runtime_error("failed to allocate image memory!");
 		}
 
-		vkBindImageMemory(fwDevice.device, image, imageMemory, 0);
+		vkBindImageMemory(fDevice.device, image, imageMemory, 0);
 	}
 
-	void transitionImageLayout(Device& fwDevice, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
+	void transitionImageLayout(Device& fDevice, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
 	{
-		VkCommandBuffer commandBuffer = beginSingleTimeCommands(fwDevice);
+		VkCommandBuffer commandBuffer = beginSingleTimeCommands(fDevice);
 
 		VkImageMemoryBarrier barrier{};
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -108,12 +108,12 @@ namespace vkfw
 			1, &barrier
 		);
 
-		endSingleTimeCommands(fwDevice, commandBuffer);
+		endSingleTimeCommands(fDevice, commandBuffer);
 	}
 
-	void copyBufferToImage(Device& fwDevice, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
+	void copyBufferToImage(Device& fDevice, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
 	{
-		VkCommandBuffer commandBuffer = beginSingleTimeCommands(fwDevice);
+		VkCommandBuffer commandBuffer = beginSingleTimeCommands(fDevice);
 
 		VkBufferImageCopy region{};
 		region.bufferOffset = 0;
@@ -132,20 +132,20 @@ namespace vkfw
 
 		vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-		endSingleTimeCommands(fwDevice, commandBuffer);
+		endSingleTimeCommands(fDevice, commandBuffer);
 	}
 
-	void generateMipmaps(Device& fwDevice, VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels)
+	void generateMipmaps(Device& fDevice, VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels)
 	{
 		// Check if image format supports linear blitting
 		VkFormatProperties formatProperties;
-		vkGetPhysicalDeviceFormatProperties(fwDevice.physicalDevice, imageFormat, &formatProperties);
+		vkGetPhysicalDeviceFormatProperties(fDevice.physicalDevice, imageFormat, &formatProperties);
 
 		if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
 			throw std::runtime_error("texture image format does not support linear blitting!");
 		}
 
-		VkCommandBuffer commandBuffer = beginSingleTimeCommands(fwDevice);
+		VkCommandBuffer commandBuffer = beginSingleTimeCommands(fDevice);
 
 		VkImageMemoryBarrier barrier{};
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -220,10 +220,10 @@ namespace vkfw
 			0, nullptr,
 			1, &barrier);
 
-		endSingleTimeCommands(fwDevice, commandBuffer);
+		endSingleTimeCommands(fDevice, commandBuffer);
 	}
 
-	void createBuffer(Device& fwDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+	void createBuffer(Device& fDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
 	{
 		VkBufferCreateInfo bufferInfo{};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -231,35 +231,35 @@ namespace vkfw
 		bufferInfo.usage = usage;
 		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if (vkCreateBuffer(fwDevice.device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+		if (vkCreateBuffer(fDevice.device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create buffer!");
 		}
 
 		VkMemoryRequirements memRequirements;
-		vkGetBufferMemoryRequirements(fwDevice.device, buffer, &memRequirements);
+		vkGetBufferMemoryRequirements(fDevice.device, buffer, &memRequirements);
 
 		VkMemoryAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = findMemoryType(fwDevice, memRequirements.memoryTypeBits, properties);
+		allocInfo.memoryTypeIndex = findMemoryType(fDevice, memRequirements.memoryTypeBits, properties);
 
-		if (vkAllocateMemory(fwDevice.device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+		if (vkAllocateMemory(fDevice.device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
 			throw std::runtime_error("failed to allocate buffer memory!");
 		}
 
-		vkBindBufferMemory(fwDevice.device, buffer, bufferMemory, 0);
+		vkBindBufferMemory(fDevice.device, buffer, bufferMemory, 0);
 	}
 
-	VkCommandBuffer beginSingleTimeCommands(Device& fwDevice)
+	VkCommandBuffer beginSingleTimeCommands(Device& fDevice)
 	{
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = fwDevice.commandPool;
+		allocInfo.commandPool = fDevice.commandPool;
 		allocInfo.commandBufferCount = 1;
 
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(fwDevice.device, &allocInfo, &commandBuffer);
+		vkAllocateCommandBuffers(fDevice.device, &allocInfo, &commandBuffer);
 
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -270,7 +270,7 @@ namespace vkfw
 		return commandBuffer;
 	}
 
-	void endSingleTimeCommands(Device& fwDevice, VkCommandBuffer commandBuffer)
+	void endSingleTimeCommands(Device& fDevice, VkCommandBuffer commandBuffer)
 	{
 		vkEndCommandBuffer(commandBuffer);
 
@@ -279,27 +279,27 @@ namespace vkfw
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		vkQueueSubmit(fwDevice.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(fwDevice.graphicsQueue);
+		vkQueueSubmit(fDevice.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(fDevice.graphicsQueue);
 
-		vkFreeCommandBuffers(fwDevice.device, fwDevice.commandPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(fDevice.device, fDevice.commandPool, 1, &commandBuffer);
 	}
 
-	void copyBuffer(Device& fwDevice, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+	void copyBuffer(Device& fDevice, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 	{
-		VkCommandBuffer commandBuffer = beginSingleTimeCommands(fwDevice);
+		VkCommandBuffer commandBuffer = beginSingleTimeCommands(fDevice);
 
 		VkBufferCopy copyRegion{};
 		copyRegion.size = size;
 		vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-		endSingleTimeCommands(fwDevice, commandBuffer);
+		endSingleTimeCommands(fDevice, commandBuffer);
 	}
 
-	uint32_t findMemoryType(Device& fwDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
+	uint32_t findMemoryType(Device& fDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
 	{
 		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(fwDevice.physicalDevice, &memProperties);
+		vkGetPhysicalDeviceMemoryProperties(fDevice.physicalDevice, &memProperties);
 
 		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
 			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
@@ -329,7 +329,7 @@ namespace vkfw
 		return buffer;
 	}
 
-	VkShaderModule createShaderModule(Device& fwDevice, const std::vector<char>& code)
+	VkShaderModule createShaderModule(Device& fDevice, const std::vector<char>& code)
 	{
 		VkShaderModuleCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -337,7 +337,7 @@ namespace vkfw
 		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
 		VkShaderModule shaderModule;
-		if (vkCreateShaderModule(fwDevice.device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+		if (vkCreateShaderModule(fDevice.device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create shader module!");
 		}
 

@@ -15,8 +15,8 @@ const std::string TEXTURE_PATH = "textures/viking_room.png";
 // GameFramework 참조 전역변수
 extern const int MAX_FRAMES_IN_FLIGHT;
 
-Scene::Scene(vkfw::Device& fwDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass)
-	: fwDevice{ fwDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }
+Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass)
+	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }
 {
 	createTextureImage();
 	createTextureImageView();
@@ -33,28 +33,28 @@ Scene::Scene(vkfw::Device& fwDevice, VkSampleCountFlagBits& msaaSamples, VkRende
 
 Scene::~Scene()
 {
-	vkDestroyPipeline(fwDevice.device, graphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(fwDevice.device, pipelineLayout, nullptr);
+	vkDestroyPipeline(fDevice.device, graphicsPipeline, nullptr);
+	vkDestroyPipelineLayout(fDevice.device, pipelineLayout, nullptr);
 
-	vkDestroyDescriptorSetLayout(fwDevice.device, descriptorSetLayout, nullptr);
-	vkDestroyDescriptorPool(fwDevice.device, descriptorPool, nullptr);
+	vkDestroyDescriptorSetLayout(fDevice.device, descriptorSetLayout, nullptr);
+	vkDestroyDescriptorPool(fDevice.device, descriptorPool, nullptr);
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		vkDestroyBuffer(fwDevice.device, uniformBuffers[i], nullptr);
-		vkFreeMemory(fwDevice.device, uniformBuffersMemory[i], nullptr);
+		vkDestroyBuffer(fDevice.device, uniformBuffers[i], nullptr);
+		vkFreeMemory(fDevice.device, uniformBuffersMemory[i], nullptr);
 	}
 
-	vkDestroyBuffer(fwDevice.device, indexBuffer, nullptr);
-	vkFreeMemory(fwDevice.device, indexBufferMemory, nullptr);
+	vkDestroyBuffer(fDevice.device, indexBuffer, nullptr);
+	vkFreeMemory(fDevice.device, indexBufferMemory, nullptr);
 
-	vkDestroyBuffer(fwDevice.device, vertexBuffer, nullptr);
-	vkFreeMemory(fwDevice.device, vertexBufferMemory, nullptr);
+	vkDestroyBuffer(fDevice.device, vertexBuffer, nullptr);
+	vkFreeMemory(fDevice.device, vertexBufferMemory, nullptr);
 
-	vkDestroySampler(fwDevice.device, textureSampler, nullptr);
-	vkDestroyImageView(fwDevice.device, textureImageView, nullptr);
+	vkDestroySampler(fDevice.device, textureSampler, nullptr);
+	vkDestroyImageView(fDevice.device, textureImageView, nullptr);
 
-	vkDestroyImage(fwDevice.device, textureImage, nullptr);
-	vkFreeMemory(fwDevice.device, textureImageMemory, nullptr);
+	vkDestroyImage(fDevice.device, textureImage, nullptr);
+	vkFreeMemory(fDevice.device, textureImageMemory, nullptr);
 }
 
 void Scene::updateUniformBuffer(uint32_t currentFrame)
@@ -101,36 +101,36 @@ void Scene::createTextureImage()
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	vkfw::createBuffer(fwDevice, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+	vkf::createBuffer(fDevice, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 	void* data;
-	vkMapMemory(fwDevice.device, stagingBufferMemory, 0, imageSize, 0, &data);
+	vkMapMemory(fDevice.device, stagingBufferMemory, 0, imageSize, 0, &data);
 	memcpy(data, pixels, static_cast<size_t>(imageSize));
-	vkUnmapMemory(fwDevice.device, stagingBufferMemory);
+	vkUnmapMemory(fDevice.device, stagingBufferMemory);
 
 	stbi_image_free(pixels);
 
-	createImage(fwDevice, texWidth, texHeight, mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+	createImage(fDevice, texWidth, texHeight, mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 
-	transitionImageLayout(fwDevice, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
-	copyBufferToImage(fwDevice, stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+	transitionImageLayout(fDevice, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
+	copyBufferToImage(fDevice, stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
 	//transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmaps
 
-	vkDestroyBuffer(fwDevice.device, stagingBuffer, nullptr);
-	vkFreeMemory(fwDevice.device, stagingBufferMemory, nullptr);
+	vkDestroyBuffer(fDevice.device, stagingBuffer, nullptr);
+	vkFreeMemory(fDevice.device, stagingBufferMemory, nullptr);
 
-	vkfw::generateMipmaps(fwDevice, textureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, mipLevels);
+	vkf::generateMipmaps(fDevice, textureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, mipLevels);
 }
 
 void Scene::createTextureImageView()
 {
-	textureImageView = createImageView(fwDevice, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels);
+	textureImageView = createImageView(fDevice, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels);
 }
 
 void Scene::createTextureSampler()
 {
 	VkPhysicalDeviceProperties properties{};
-	vkGetPhysicalDeviceProperties(fwDevice.physicalDevice, &properties);
+	vkGetPhysicalDeviceProperties(fDevice.physicalDevice, &properties);
 
 	VkSamplerCreateInfo samplerInfo{};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -150,7 +150,7 @@ void Scene::createTextureSampler()
 	samplerInfo.maxLod = static_cast<float>(mipLevels);
 	samplerInfo.mipLodBias = 0.0f;
 
-	if (vkCreateSampler(fwDevice.device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+	if (vkCreateSampler(fDevice.device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler!");
 	}
 }
@@ -201,19 +201,19 @@ void Scene::createVertexBuffer()
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	vkfw::createBuffer(fwDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+	vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 	void* data;
-	vkMapMemory(fwDevice.device, stagingBufferMemory, 0, bufferSize, 0, &data);
+	vkMapMemory(fDevice.device, stagingBufferMemory, 0, bufferSize, 0, &data);
 	memcpy(data, vertices.data(), (size_t)bufferSize);
-	vkUnmapMemory(fwDevice.device, stagingBufferMemory);
+	vkUnmapMemory(fDevice.device, stagingBufferMemory);
 
-	vkfw::createBuffer(fwDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+	vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 
-	vkfw::copyBuffer(fwDevice, stagingBuffer, vertexBuffer, bufferSize);
+	vkf::copyBuffer(fDevice, stagingBuffer, vertexBuffer, bufferSize);
 
-	vkDestroyBuffer(fwDevice.device, stagingBuffer, nullptr);
-	vkFreeMemory(fwDevice.device, stagingBufferMemory, nullptr);
+	vkDestroyBuffer(fDevice.device, stagingBuffer, nullptr);
+	vkFreeMemory(fDevice.device, stagingBufferMemory, nullptr);
 }
 
 void Scene::createIndexBuffer()
@@ -222,19 +222,19 @@ void Scene::createIndexBuffer()
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	vkfw::createBuffer(fwDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+	vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 	void* data;
-	vkMapMemory(fwDevice.device, stagingBufferMemory, 0, bufferSize, 0, &data);
+	vkMapMemory(fDevice.device, stagingBufferMemory, 0, bufferSize, 0, &data);
 	memcpy(data, indices.data(), (size_t)bufferSize);
-	vkUnmapMemory(fwDevice.device, stagingBufferMemory);
+	vkUnmapMemory(fDevice.device, stagingBufferMemory);
 
-	vkfw::createBuffer(fwDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+	vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
 
-	vkfw::copyBuffer(fwDevice, stagingBuffer, indexBuffer, bufferSize);
+	vkf::copyBuffer(fDevice, stagingBuffer, indexBuffer, bufferSize);
 
-	vkDestroyBuffer(fwDevice.device, stagingBuffer, nullptr);
-	vkFreeMemory(fwDevice.device, stagingBufferMemory, nullptr);
+	vkDestroyBuffer(fDevice.device, stagingBuffer, nullptr);
+	vkFreeMemory(fDevice.device, stagingBufferMemory, nullptr);
 }
 
 void Scene::createUniformBuffers()
@@ -246,9 +246,9 @@ void Scene::createUniformBuffers()
 	uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		vkfw::createBuffer(fwDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
+		vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
 
-		vkMapMemory(fwDevice.device, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
+		vkMapMemory(fDevice.device, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
 	}
 }
 
@@ -266,7 +266,7 @@ void Scene::createDescriptorPool()
 	poolInfo.pPoolSizes = poolSizes.data();
 	poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
-	if (vkCreateDescriptorPool(fwDevice.device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+	if (vkCreateDescriptorPool(fDevice.device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }
@@ -293,7 +293,7 @@ void Scene::createDescriptorSetLayout()
 	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 	layoutInfo.pBindings = bindings.data();
 
-	if (vkCreateDescriptorSetLayout(fwDevice.device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+	if (vkCreateDescriptorSetLayout(fDevice.device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor set layout!");
 	}
 }
@@ -308,7 +308,7 @@ void Scene::createDescriptorSets()
 	allocInfo.pSetLayouts = layouts.data();
 
 	descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-	if (vkAllocateDescriptorSets(fwDevice.device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
+	if (vkAllocateDescriptorSets(fDevice.device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	}
 
@@ -341,17 +341,17 @@ void Scene::createDescriptorSets()
 		descriptorWrites[1].descriptorCount = 1;
 		descriptorWrites[1].pImageInfo = &imageInfo;
 
-		vkUpdateDescriptorSets(fwDevice.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+		vkUpdateDescriptorSets(fDevice.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 	}
 }
 
 void Scene::createGraphicsPipeline()
 {
-	auto vertShaderCode = vkfw::readFile("shaders/vert.spv");
-	auto fragShaderCode = vkfw::readFile("shaders/frag.spv");
+	auto vertShaderCode = vkf::readFile("shaders/vert.spv");
+	auto fragShaderCode = vkf::readFile("shaders/frag.spv");
 
-	VkShaderModule vertShaderModule = vkfw::createShaderModule(fwDevice, vertShaderCode);
-	VkShaderModule fragShaderModule = vkfw::createShaderModule(fwDevice, fragShaderCode);
+	VkShaderModule vertShaderModule = vkf::createShaderModule(fDevice, vertShaderCode);
+	VkShaderModule fragShaderModule = vkf::createShaderModule(fDevice, fragShaderCode);
 
 	VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
 	vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -440,7 +440,7 @@ void Scene::createGraphicsPipeline()
 	pipelineLayoutInfo.setLayoutCount = 1;
 	pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 
-	if (vkCreatePipelineLayout(fwDevice.device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+	if (vkCreatePipelineLayout(fDevice.device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
@@ -461,12 +461,12 @@ void Scene::createGraphicsPipeline()
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(fwDevice.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(fDevice.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkDestroyShaderModule(fwDevice.device, fragShaderModule, nullptr);
-	vkDestroyShaderModule(fwDevice.device, vertShaderModule, nullptr);
+	vkDestroyShaderModule(fDevice.device, fragShaderModule, nullptr);
+	vkDestroyShaderModule(fDevice.device, vertShaderModule, nullptr);
 }
 
 VkVertexInputBindingDescription Vertex::getBindingDescription()

@@ -50,7 +50,7 @@ private:
 
 	Scene* pScene;
 
-	vkfw::Device fwDevice;
+	vkf::Device fDevice;
 
 	VkInstance instance;
 	VkDebugUtilsMessengerEXT debugMessenger;

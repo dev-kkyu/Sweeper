@@ -16,7 +16,7 @@ struct Vertex;
 class Scene
 {
 private:
-	vkfw::Device& fwDevice;
+	vkf::Device& fDevice;
 	VkSampleCountFlagBits& msaaSamples;
 	VkRenderPass& renderPass;
 
@@ -48,7 +48,7 @@ private:
 
 
 public:
-	Scene(vkfw::Device& fwDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass);
+	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass);
 	~Scene();
 
 	void updateUniformBuffer(uint32_t currentFrame);
