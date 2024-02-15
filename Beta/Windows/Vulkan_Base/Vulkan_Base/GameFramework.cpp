@@ -675,11 +675,12 @@ void GameFramework::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
+	// 뷰포트 뒤집음으로써, NDC 좌표계를 바꿔준다. -> OpenGL과 유사하게, glm에서 사용하는 방식. Vulkan 1.1이후 지원
 	VkViewport viewport{};
 	viewport.x = 0.0f;
-	viewport.y = 0.0f;
+	viewport.y = (float)swapChainExtent.height;
 	viewport.width = (float)swapChainExtent.width;
-	viewport.height = (float)swapChainExtent.height;
+	viewport.height = -(float)swapChainExtent.height;
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
