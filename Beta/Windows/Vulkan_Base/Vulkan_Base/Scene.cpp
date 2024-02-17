@@ -17,9 +17,10 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	loadModel("models/viking_room.obj");
 	texture.loadFromFile(fDevice, "textures/viking_room.png");
 
-	object = new GameObject{ fDevice };
+	object = new RotateObject{ fDevice };
 	object->setBuffer(vertices, indices);
 	object->setTexture(samplerDescriptorSetLayout, texture);
+	reinterpret_cast<RotateObject*>(object)->setRotateSpeed(60.f);
 }
 
 Scene::~Scene()
@@ -50,7 +51,7 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	memcpy(uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
 
 
-	object->update(elapsedTime, currentFrame);
+	object->update(elapsedTime);
 }
 
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)

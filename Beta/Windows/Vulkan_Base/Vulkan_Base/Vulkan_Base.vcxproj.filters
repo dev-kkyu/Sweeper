@@ -16,6 +16,12 @@
     <Filter Include="소스 파일\Shader">
       <UniqueIdentifier>{34ceaf1d-266b-4ca0-a4e1-1cded7aba5cd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject">
+      <UniqueIdentifier>{4122e736-a454-4cf5-8bdc-9670dd678d66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\RotateObject">
+      <UniqueIdentifier>{79d6e292-c455-4fb6-9157-9d9dcf158251}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameFramework.cpp">
@@ -34,7 +40,10 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="GameObject.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="RotateObject.cpp">
+      <Filter>GameObject\RotateObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -51,7 +60,10 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="GameObject.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="RotateObject.h">
+      <Filter>GameObject\RotateObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

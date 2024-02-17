@@ -17,10 +17,8 @@ void GameObject::initialize()
 {
 }
 
-void GameObject::update(float elapsedTime, uint32_t currentFrame)
+void GameObject::update(float elapsedTime)
 {
-	// 초당 90도 회전
-	rotateAngle += elapsedTime * glm::radians(90.f);
 }
 
 void GameObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
@@ -31,7 +29,7 @@ void GameObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLa
 
 	vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-	auto model = glm::rotate(glm::mat4(1.0f), rotateAngle, glm::vec3(0.0f, 0.0f, 1.0f));
+	auto model = glm::mat4(1.f);
 	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &model);
 
 	// set = 1에 샘플러 바인드

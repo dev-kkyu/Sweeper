@@ -4,16 +4,14 @@
 
 class GameObject
 {
-private:
+protected:
 	glm::vec3 position;
 	glm::vec3 lookForward;
 
-	float rotateAngle = 0.f;
-
-private:
+protected:
 	vkf::Device& fDevice;
 
-private:
+protected:
 	VkBuffer vertexBuffer;
 	VkDeviceMemory vertexBufferMemory;
 	VkBuffer indexBuffer;
@@ -30,14 +28,14 @@ public:
 	virtual ~GameObject();
 
 	virtual void initialize();
-	virtual void update(float elapsedTime, uint32_t currentFrame);
+	virtual void update(float elapsedTime);
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
 	virtual void release();
 
 	void setBuffer(std::vector<vkf::Vertex> vertices, std::vector<uint32_t> indices);
 	void setTexture(VkDescriptorSetLayout samplerDescriptorSetLayout, vkf::Texture texture);
 
-private:
+protected:
 	void createVertexBuffer(std::vector<vkf::Vertex> vertices);
 	void createIndexBuffer(std::vector<uint32_t> indices);
 	void createSamplerDescriptorPool();
