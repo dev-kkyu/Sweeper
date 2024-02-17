@@ -13,9 +13,6 @@
 #include <set>
 #include <map>
 
-// 전역 변수
-extern const int MAX_FRAMES_IN_FLIGHT = 2;
-
 const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
@@ -126,7 +123,7 @@ void GameFramework::drawFrame()
 	}
 
 	float elapsedTime = gameTimer.Tick(0);
-	pScene->updateUniformBuffer(currentFrame);
+	pScene->update(elapsedTime, currentFrame);
 
 	vkResetFences(fDevice.device, 1, &inFlightFences[currentFrame]);
 
@@ -615,8 +612,6 @@ VkSampleCountFlagBits GameFramework::getMaxUsableSampleCount()
 
 void GameFramework::createCommandBuffers()
 {
-	commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.commandPool = fDevice.commandPool;
@@ -630,10 +625,6 @@ void GameFramework::createCommandBuffers()
 
 void GameFramework::createSyncObjects()
 {
-	imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-
 	VkSemaphoreCreateInfo semaphoreInfo{};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 

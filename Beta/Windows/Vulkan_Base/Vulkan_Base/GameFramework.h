@@ -3,7 +3,6 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include <vector>
 #include <optional>
 
 #include "VulkanFramework.h"
@@ -80,11 +79,11 @@ private:
 	VkDeviceMemory depthImageMemory;
 	VkImageView depthImageView;
 
-	std::vector<VkCommandBuffer> commandBuffers;
+	std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> commandBuffers;
 
-	std::vector<VkSemaphore> imageAvailableSemaphores;
-	std::vector<VkSemaphore> renderFinishedSemaphores;
-	std::vector<VkFence> inFlightFences;
+	std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> imageAvailableSemaphores;
+	std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> renderFinishedSemaphores;
+	std::array<VkFence, MAX_FRAMES_IN_FLIGHT> inFlightFences;
 	uint32_t currentFrame = 0;
 
 
