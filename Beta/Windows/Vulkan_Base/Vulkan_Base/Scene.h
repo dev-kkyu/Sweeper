@@ -9,7 +9,8 @@ private:
 	VkSampleCountFlagBits& msaaSamples;
 	VkRenderPass& renderPass;
 
-	VkDescriptorSetLayout descriptorSetLayout;
+	VkDescriptorSetLayout uboDescriptorSetLayout;
+	VkDescriptorSetLayout samplerDescriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
 	VkPipeline graphicsPipeline;
 
@@ -17,8 +18,8 @@ private:
 	std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> uniformBuffersMemory;
 	std::array<void*, MAX_FRAMES_IN_FLIGHT> uniformBuffersMapped;
 
-	VkDescriptorPool descriptorPool;
-	std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> descriptorSets;
+	VkDescriptorPool uboDescriptorPool;
+	std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> uboDescriptorSets;
 
 
 	std::vector<vkf::Vertex> vertices;
@@ -38,8 +39,8 @@ private:
 	void createDescriptorSetLayout();
 	void createGraphicsPipeline();
 	void createUniformBuffers();
-	void createDescriptorPool();
-	void createDescriptorSets();
+	void createUboDescriptorPool();
+	void createUboDescriptorSets();
 
 	void loadModel(std::string filename);
 
