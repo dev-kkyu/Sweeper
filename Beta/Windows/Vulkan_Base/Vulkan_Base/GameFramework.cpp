@@ -73,7 +73,7 @@ void GameFramework::initVulkan(GLFWwindow* window)
 	createCommandBuffers();
 	createSyncObjects();
 
-	pScene = new Scene{ fDevice, msaaSamples, renderPass };
+	pScene = std::make_unique<Scene>(fDevice, msaaSamples, renderPass);
 	gameTimer.SetWindow(window);
 	gameTimer.SetGpuName(physicalDeviceProperties.deviceName);
 }
@@ -83,7 +83,8 @@ void GameFramework::cleanup()
 	// 파괴 전, vkDeviceWaitIdle(device); 을 하여 하던 작업을 기다려준다.
 	vkDeviceWaitIdle(fDevice.device);
 
-	delete pScene;
+	// 씬 소멸
+	pScene.reset(nullptr);
 
 	cleanupSwapChain();
 
@@ -128,7 +129,7 @@ void GameFramework::drawFrame()
 	vkResetFences(fDevice.device, 1, &inFlightFences[currentFrame]);
 
 	vkResetCommandBuffer(commandBuffers[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
-	
+
 	recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
 
 	VkSubmitInfo submitInfo{};
@@ -174,6 +175,18 @@ void GameFramework::drawFrame()
 	}
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+}
+
+void GameFramework::processKeyboard(int key, int action, int mods)
+{
+	if (pScene)
+		pScene->processKeyboard(key, action, mods);
+}
+
+void GameFramework::processMouse(int button, int action, int mods)
+{
+	if (pScene)
+		pScene->processMouse(button, action, mods);
 }
 
 void GameFramework::cleanupSwapChain()

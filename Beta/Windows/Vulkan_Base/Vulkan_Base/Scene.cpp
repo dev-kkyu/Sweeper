@@ -64,6 +64,14 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	object->draw(commandBuffer, pipelineLayout);
 }
 
+void Scene::processKeyboard(int key, int action, int mods)
+{
+}
+
+void Scene::processMouse(int button, int action, int mods)
+{
+}
+
 void Scene::createDescriptorSetLayout()
 {
 	{

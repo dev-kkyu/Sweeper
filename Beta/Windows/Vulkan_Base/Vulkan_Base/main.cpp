@@ -26,9 +26,6 @@ static void vulkanMain()
 	GLFWwindow* window = glfwCreateWindow(g_Width, g_Height, Title.c_str(), nullptr, nullptr);
 	glfwSetWindowAspectRatio(window, 16, 9);
 
-	// vulkan 생성
-	g_GameFramework.initVulkan(window);
-
 	// 콜백함수 설정
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 	glfwSetKeyCallback(window, keyCallback);
@@ -36,6 +33,8 @@ static void vulkanMain()
 	glfwSetScrollCallback(window, scrollCallback);
 	glfwSetCursorPosCallback(window, cursorPosCallback);
 
+	// vulkan 생성
+	g_GameFramework.initVulkan(window);
 
 	// 메인루프
 	while (!glfwWindowShouldClose(window)) {
@@ -102,6 +101,8 @@ void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+	g_GameFramework.processKeyboard(key, action, mods);
+
 	switch (action)
 	{
 	case GLFW_PRESS:
@@ -133,6 +134,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
+	g_GameFramework.processMouse(button, action, mods);
+
 	switch (action)
 	{
 	case GLFW_PRESS:

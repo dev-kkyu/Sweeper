@@ -43,6 +43,9 @@ public:
 
 	void drawFrame();
 
+	void processKeyboard(int key, int action, int mods);
+	void processMouse(int button, int action, int mods);
+
 private:
 	Timer gameTimer;
 
@@ -50,7 +53,7 @@ private:
 	int& framebufferWidth;
 	int& framebufferHeight;
 
-	Scene* pScene;
+	std::unique_ptr<Scene> pScene;
 
 	vkf::Device fDevice;
 	VkPhysicalDeviceProperties physicalDeviceProperties;
