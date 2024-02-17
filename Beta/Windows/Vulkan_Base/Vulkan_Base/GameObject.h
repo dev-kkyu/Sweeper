@@ -8,6 +8,8 @@ private:
 	glm::vec3 position;
 	glm::vec3 lookForward;
 
+	float rotateAngle = 0.f;
+
 private:
 	vkf::Device& fDevice;
 
@@ -40,4 +42,8 @@ private:
 	void createIndexBuffer(std::vector<uint32_t> indices);
 	void createSamplerDescriptorPool();
 	void createSamplerDescriptorSets(VkDescriptorSetLayout samplerDescriptorSetLayout, vkf::Texture texture);
+};
+
+struct PushConstantData {
+	alignas(16) glm::mat4 model;
 };
