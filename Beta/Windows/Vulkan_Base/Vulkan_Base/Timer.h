@@ -11,10 +11,12 @@ class Timer {
 
 	std::string window_title;
 	std::string gpu_name;
+	int& winWidth;
+	int& winHeight;
 	GLFWwindow* window;
 
 public:
-	Timer(std::string title);
+	Timer(std::string title, int& width, int& height);
 
 	void SetWindow(GLFWwindow* window);
 	void SetGpuName(std::string name);

@@ -47,7 +47,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
 
 
 GameFramework::GameFramework(std::string title, int& width, int& height)
-	: gameTimer{ title }, framebufferWidth{ width }, framebufferHeight{ height }
+	: gameTimer{ title, width, height }, framebufferWidth{ width }, framebufferHeight{ height }
 {
 }
 

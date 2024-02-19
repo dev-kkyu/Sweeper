@@ -4,8 +4,9 @@
 
 #include <GLFW/glfw3.h>
 
-Timer::Timer(std::string title)
-	: last_time{ std::chrono::steady_clock::now() }, accm_time{ std::chrono::seconds{ 0 } }, fps{ 0 }, frame{ 0 }, window_title{ title }, window{ nullptr }
+Timer::Timer(std::string title, int& width, int& height)
+	: last_time{ std::chrono::steady_clock::now() }, accm_time{ std::chrono::seconds{ 0 } }, fps{ 0 }, frame{ 0 },
+	winWidth{ width }, winHeight{ height }, window_title{ title }, window{ nullptr }
 {
 }
 
@@ -38,7 +39,7 @@ float Timer::Tick(int fps_value)		// 경과 시간 리턴, 1 Frame에 단 한번
 		// 창 이름에 FPS 표시
 		if (window) {
 			std::stringstream title;
-			title << window_title << " : " << gpu_name << " - (" << fps << "FPS)";
+			title << window_title << " : " << gpu_name << " [" << winWidth << " * " << winHeight << "] (" << fps << "FPS)";
 			glfwSetWindowTitle(window, title.str().c_str());
 		}
 	}
