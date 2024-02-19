@@ -8,6 +8,8 @@ protected:
 	glm::vec3 position{ 0.f };
 	glm::vec3 look{ 0.f, 0.f, 1.f };	// y는 0으로 가정
 
+	glm::mat4 modelTransform{ 1.f };
+
 protected:
 	vkf::Device& fDevice;
 

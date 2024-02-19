@@ -19,6 +19,7 @@ void GameObject::initialize()
 
 void GameObject::update(float elapsedTime)
 {
+	modelTransform = glm::translate(glm::mat4(1.f), position);
 }
 
 void GameObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
@@ -29,8 +30,7 @@ void GameObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLa
 
 	vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-	auto model = glm::mat4(1.f);
-	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &model);
+	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &modelTransform);
 
 	// set = 1에 샘플러 바인드
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &samplerDescriptorSet, 0, nullptr);
