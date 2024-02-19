@@ -21,9 +21,7 @@ private:
 	VkDescriptorPool uboDescriptorPool;
 	std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> uboDescriptorSets;
 
-
-	std::vector<vkf::Vertex> vertices;
-	std::vector<uint32_t> indices;
+	vkf::Buffer buffer;
 	vkf::Texture texture;
 
 	GameObject* object;
@@ -44,8 +42,6 @@ private:
 	void createUniformBuffers();
 	void createUboDescriptorPool();
 	void createUboDescriptorSets();
-
-	void loadModel(std::string filename);
 
 };
 

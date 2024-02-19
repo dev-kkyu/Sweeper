@@ -40,6 +40,31 @@ namespace vkf
 		}
 	};
 
+	class Buffer
+	{
+	private:
+		vkf::Device* fDevice = nullptr;
+
+	public:
+		std::vector<vkf::Vertex> vertices;
+		std::vector<uint32_t> indices;
+
+		VkBuffer vertexBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
+		VkBuffer indexBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
+
+	public:
+		void loadFromObjFile(vkf::Device& fDevice, std::string filename);
+		void destroy();
+
+	private:
+		void loadObjModel(std::string filename);
+		void createVertexBuffer();
+		void createIndexBuffer();
+
+	};
+
 	class Texture
 	{
 		vkf::Device* fDevice = nullptr;

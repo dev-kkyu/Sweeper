@@ -13,11 +13,8 @@ protected:
 protected:
 	vkf::Device& fDevice;
 
-protected:
 	VkBuffer vertexBuffer = VK_NULL_HANDLE;
-	VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
 	VkBuffer indexBuffer = VK_NULL_HANDLE;
-	VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
 
 	uint32_t vertexCount = 0;
 	uint32_t indexCount = 0;
@@ -42,12 +39,10 @@ public:
 	virtual void moveForward(float value) final;
 	virtual void move(glm::vec3 direction, float value) final;
 
-	void setBuffer(std::vector<vkf::Vertex> vertices, std::vector<uint32_t> indices);
+	void setBuffer(vkf::Buffer& buffer);
 	void setTexture(VkDescriptorSetLayout samplerDescriptorSetLayout, vkf::Texture texture);
 
 protected:
-	void createVertexBuffer(std::vector<vkf::Vertex> vertices);
-	void createIndexBuffer(std::vector<uint32_t> indices);
 	void createSamplerDescriptorPool();
 	void createSamplerDescriptorSets(VkDescriptorSetLayout samplerDescriptorSetLayout, vkf::Texture texture);
 };
