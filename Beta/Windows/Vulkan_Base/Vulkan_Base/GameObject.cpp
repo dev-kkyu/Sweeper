@@ -49,6 +49,36 @@ void GameObject::release()
 	vkFreeMemory(fDevice.device, vertexBufferMemory, nullptr);
 }
 
+void GameObject::setPosition(glm::vec3 position)
+{
+	this->position = position;
+}
+
+void GameObject::setLook(glm::vec3 look)
+{
+	this->look = look;
+}
+
+glm::vec3 GameObject::getPosition() const
+{
+	return position;
+}
+
+glm::vec3 GameObject::getLook() const
+{
+	return look;
+}
+
+void GameObject::moveForward(float value)
+{
+	position += glm::normalize(look) * value;
+}
+
+void GameObject::move(glm::vec3 direction, float value)
+{
+	position += glm::normalize(direction) * value;
+}
+
 void GameObject::setBuffer(std::vector<vkf::Vertex> vertices, std::vector<uint32_t> indices)
 {
 	vertexCount = static_cast<uint32_t>(vertices.size());

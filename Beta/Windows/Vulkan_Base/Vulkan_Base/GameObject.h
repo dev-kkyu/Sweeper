@@ -5,17 +5,17 @@
 class GameObject
 {
 protected:
-	glm::vec3 position;
-	glm::vec3 lookForward;
+	glm::vec3 position{ 0.f };
+	glm::vec3 look{ 0.f, 0.f, 1.f };	// y는 0으로 가정
 
 protected:
 	vkf::Device& fDevice;
 
 protected:
-	VkBuffer vertexBuffer;
-	VkDeviceMemory vertexBufferMemory;
-	VkBuffer indexBuffer;
-	VkDeviceMemory indexBufferMemory;
+	VkBuffer vertexBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
+	VkBuffer indexBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
 
 	uint32_t vertexCount = 0;
 	uint32_t indexCount = 0;
@@ -31,6 +31,14 @@ public:
 	virtual void update(float elapsedTime);
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
 	virtual void release();
+
+	virtual void setPosition(glm::vec3 position) final;
+	virtual void setLook(glm::vec3 look) final;
+	virtual glm::vec3 getPosition() const final;
+	virtual glm::vec3 getLook() const final;
+
+	virtual void moveForward(float value) final;
+	virtual void move(glm::vec3 direction, float value) final;
 
 	void setBuffer(std::vector<vkf::Vertex> vertices, std::vector<uint32_t> indices);
 	void setTexture(VkDescriptorSetLayout samplerDescriptorSetLayout, vkf::Texture texture);
