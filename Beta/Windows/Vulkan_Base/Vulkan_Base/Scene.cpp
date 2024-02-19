@@ -11,23 +11,32 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	createUboDescriptorPool();
 	createUboDescriptorSets();
 
-	createSamplerDescriptorPool(1);
+	createSamplerDescriptorPool(2);
 
-	buffer.loadFromObjFile(fDevice, "models/viking_room.obj");
-	texture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/viking_room.png");
+	plainBuffer.loadFromObjFile(fDevice, "models/tile.obj");
+	plainTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/tile.jpg");
+	boxBuffer.loadFromObjFile(fDevice, "models/box.obj");
+	boxTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/wood.jpg");
 
-	object = new RotateObject;
-	object->setBuffer(buffer);
-	object->setTexture(texture);
-	reinterpret_cast<RotateObject*>(object)->setRotateSpeed(60.f);
+	plainObject = new GameObject;
+	plainObject->setBuffer(plainBuffer);
+	plainObject->setTexture(plainTexture);
+
+	boxObject = new RotateObject;
+	boxObject->setBuffer(boxBuffer);
+	boxObject->setTexture(boxTexture);
+	reinterpret_cast<RotateObject*>(boxObject)->setRotateSpeed(60.f);
 }
 
 Scene::~Scene()
 {
-	delete object;
+	delete boxObject;
+	boxTexture.destroy();
+	boxBuffer.destroy();
 
-	texture.destroy();
-	buffer.destroy();
+	delete plainObject;
+	plainTexture.destroy();
+	plainBuffer.destroy();
 
 	vkDestroyDescriptorPool(fDevice.device, samplerDescriptorPool, nullptr);
 
@@ -47,13 +56,13 @@ Scene::~Scene()
 void Scene::update(float elapsedTime, uint32_t currentFrame)
 {
 	UniformBufferObject ubo{};
-	ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	ubo.view = glm::lookAt(glm::vec3(0.0f, 3.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	ubo.proj = glm::perspective(glm::radians(45.0f), 16.f / 9.f, 0.1f, 10.0f);
 
 	memcpy(uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
 
-
-	object->update(elapsedTime);
+	plainObject->update(elapsedTime);
+	boxObject->update(elapsedTime);
 }
 
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -63,7 +72,8 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	// firstSet은 set의 시작인덱스
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &uboDescriptorSets[currentFrame], 0, nullptr);
 
-	object->draw(commandBuffer, pipelineLayout);
+	plainObject->draw(commandBuffer, pipelineLayout);
+	boxObject->draw(commandBuffer, pipelineLayout);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)

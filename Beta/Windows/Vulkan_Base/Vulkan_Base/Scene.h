@@ -23,10 +23,13 @@ private:
 
 	VkDescriptorPool samplerDescriptorPool;
 
-	vkf::Buffer buffer;
-	vkf::Texture texture;
+	vkf::Buffer plainBuffer;
+	vkf::Texture plainTexture;
+	GameObject* plainObject;
 
-	GameObject* object;
+	vkf::Buffer boxBuffer;
+	vkf::Texture boxTexture;
+	GameObject* boxObject;
 
 public:
 	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass);
