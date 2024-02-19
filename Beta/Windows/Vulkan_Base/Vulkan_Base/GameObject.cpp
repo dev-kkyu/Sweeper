@@ -2,8 +2,7 @@
 
 #include <stdexcept>
 
-GameObject::GameObject(vkf::Device& fDevice)
-	: fDevice{ fDevice }
+GameObject::GameObject()
 {
 	initialize();
 }
@@ -40,7 +39,6 @@ void GameObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLa
 
 void GameObject::release()
 {
-	vkDestroyDescriptorPool(fDevice.device, samplerDescriptorPool, nullptr);
 
 }
 
@@ -83,55 +81,8 @@ void GameObject::setBuffer(vkf::Buffer& buffer)
 	indexCount = static_cast<uint32_t>(buffer.indices.size());
 }
 
-void GameObject::setTexture(VkDescriptorSetLayout samplerDescriptorSetLayout, vkf::Texture texture)
+void GameObject::setTexture(vkf::Texture& texture)
 {
-	createSamplerDescriptorPool();
-	createSamplerDescriptorSets(samplerDescriptorSetLayout, texture);
+	samplerDescriptorSet = texture.samplerDescriptorSet;
 }
 
-void GameObject::createSamplerDescriptorPool()
-{
-	std::array<VkDescriptorPoolSize, 1> poolSizes{};
-	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[0].descriptorCount = 1;
-
-	VkDescriptorPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = 1;
-
-	if (vkCreateDescriptorPool(fDevice.device, &poolInfo, nullptr, &samplerDescriptorPool) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor pool!");
-	}
-}
-
-void GameObject::createSamplerDescriptorSets(VkDescriptorSetLayout samplerDescriptorSetLayout, vkf::Texture texture)
-{
-	VkDescriptorSetAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = samplerDescriptorPool;
-	allocInfo.descriptorSetCount = 1;
-	allocInfo.pSetLayouts = &samplerDescriptorSetLayout;
-
-	if (vkAllocateDescriptorSets(fDevice.device, &allocInfo, &samplerDescriptorSet) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate descriptor sets!");
-	}
-
-	VkDescriptorImageInfo imageInfo{};
-	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	imageInfo.imageView = texture.textureImageView;
-	imageInfo.sampler = texture.textureSampler;
-
-	std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
-
-	descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrites[0].dstSet = samplerDescriptorSet;
-	descriptorWrites[0].dstBinding = 0;
-	descriptorWrites[0].dstArrayElement = 0;
-	descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptorWrites[0].descriptorCount = 1;
-	descriptorWrites[0].pImageInfo = &imageInfo;
-
-	vkUpdateDescriptorSets(fDevice.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-}

@@ -10,7 +10,7 @@ private:
 	float rotateAngle = 0.f;
 
 public:
-	RotateObject(vkf::Device& fDevice);
+	RotateObject();
 	virtual ~RotateObject();
 
 	virtual void initialize() override;

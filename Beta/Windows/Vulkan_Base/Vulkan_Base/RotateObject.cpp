@@ -1,6 +1,6 @@
 #include "RotateObject.h"
 
-RotateObject::RotateObject(vkf::Device& fDevice) : GameObject{ fDevice }
+RotateObject::RotateObject()
 {
 }
 

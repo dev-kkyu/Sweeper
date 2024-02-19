@@ -11,19 +11,16 @@ protected:
 	glm::mat4 modelTransform{ 1.f };
 
 protected:
-	vkf::Device& fDevice;
-
 	VkBuffer vertexBuffer = VK_NULL_HANDLE;
 	VkBuffer indexBuffer = VK_NULL_HANDLE;
 
 	uint32_t vertexCount = 0;
 	uint32_t indexCount = 0;
 
-	VkDescriptorPool samplerDescriptorPool = VK_NULL_HANDLE;
-	VkDescriptorSet samplerDescriptorSet;
+	VkDescriptorSet samplerDescriptorSet = VK_NULL_HANDLE;
 
 public:
-	GameObject(vkf::Device& fDevice);
+	GameObject();
 	virtual ~GameObject();
 
 	virtual void initialize();
@@ -40,11 +37,8 @@ public:
 	virtual void move(glm::vec3 direction, float value) final;
 
 	void setBuffer(vkf::Buffer& buffer);
-	void setTexture(VkDescriptorSetLayout samplerDescriptorSetLayout, vkf::Texture texture);
+	void setTexture(vkf::Texture& texture);
 
-protected:
-	void createSamplerDescriptorPool();
-	void createSamplerDescriptorSets(VkDescriptorSetLayout samplerDescriptorSetLayout, vkf::Texture texture);
 };
 
 struct PushConstantData {

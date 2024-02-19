@@ -11,12 +11,14 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	createUboDescriptorPool();
 	createUboDescriptorSets();
 
-	buffer.loadFromObjFile(fDevice, "models/viking_room.obj");
-	texture.loadFromFile(fDevice, "textures/viking_room.png");
+	createSamplerDescriptorPool(1);
 
-	object = new RotateObject{ fDevice };
+	buffer.loadFromObjFile(fDevice, "models/viking_room.obj");
+	texture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/viking_room.png");
+
+	object = new RotateObject;
 	object->setBuffer(buffer);
-	object->setTexture(samplerDescriptorSetLayout, texture);
+	object->setTexture(texture);
 	reinterpret_cast<RotateObject*>(object)->setRotateSpeed(60.f);
 }
 
@@ -26,6 +28,8 @@ Scene::~Scene()
 
 	texture.destroy();
 	buffer.destroy();
+
+	vkDestroyDescriptorPool(fDevice.device, samplerDescriptorPool, nullptr);
 
 	vkDestroyDescriptorPool(fDevice.device, uboDescriptorPool, nullptr);
 
@@ -304,6 +308,23 @@ void Scene::createUboDescriptorSets()
 		descriptorWrites[0].pBufferInfo = &bufferInfo;
 
 		vkUpdateDescriptorSets(fDevice.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+	}
+}
+
+void Scene::createSamplerDescriptorPool(uint32_t setCount)
+{
+	std::array<VkDescriptorPoolSize, 1> poolSizes{};
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[0].descriptorCount = setCount;
+
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
+	poolInfo.maxSets = setCount;
+
+	if (vkCreateDescriptorPool(fDevice.device, &poolInfo, nullptr, &samplerDescriptorPool) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }
 

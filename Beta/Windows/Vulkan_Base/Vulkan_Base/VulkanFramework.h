@@ -71,19 +71,21 @@ namespace vkf
 		uint32_t mipLevels;
 		VkImage textureImage;
 		VkDeviceMemory textureImageMemory;
-
-	public:
 		VkImageView textureImageView;
 		VkSampler textureSampler;
 
 	public:
-		void loadFromFile(vkf::Device& fDevice, std::string filename);
+		VkDescriptorSet samplerDescriptorSet;
+
+	public:
+		void loadFromFile(vkf::Device& fDevice, VkDescriptorPool samplerDescriptorPool, VkDescriptorSetLayout samplerDescriptorSetLayout, std::string filename);
 		void destroy();
 
 	private:
 		void createTextureImage(std::string filename);
 		void createTextureImageView();
 		void createTextureSampler();
+		void createSamplerDescriptorSets(VkDescriptorPool samplerDescriptorPool, VkDescriptorSetLayout samplerDescriptorSetLayout);
 
 		void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 	};

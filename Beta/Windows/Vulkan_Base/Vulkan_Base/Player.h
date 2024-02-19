@@ -7,7 +7,7 @@ class Player : public GameObject
 protected:
 
 public:
-	Player(vkf::Device& fDevice);
+	Player();
 	~Player();
 };
 

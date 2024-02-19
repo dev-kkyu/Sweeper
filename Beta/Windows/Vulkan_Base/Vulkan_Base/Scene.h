@@ -21,6 +21,8 @@ private:
 	VkDescriptorPool uboDescriptorPool;
 	std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> uboDescriptorSets;
 
+	VkDescriptorPool samplerDescriptorPool;
+
 	vkf::Buffer buffer;
 	vkf::Texture texture;
 
@@ -42,6 +44,8 @@ private:
 	void createUniformBuffers();
 	void createUboDescriptorPool();
 	void createUboDescriptorSets();
+
+	void createSamplerDescriptorPool(uint32_t setCount);
 
 };
 
