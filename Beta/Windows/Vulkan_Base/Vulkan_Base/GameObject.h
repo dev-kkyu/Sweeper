@@ -30,6 +30,7 @@ public:
 	virtual void setLook(glm::vec3 look) final;					// y는 항상 0으로 가정
 	virtual glm::vec3 getPosition() const final;
 	virtual glm::vec3 getLook() const final;
+	virtual glm::vec3 getRight() const final;
 
 	virtual void moveForward(float value) final;
 	virtual void move(glm::vec3 direction, float value) final;

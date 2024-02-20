@@ -71,6 +71,11 @@ glm::vec3 GameObject::getLook() const
 	return glm::normalize(glm::vec3(modelTransform[2]));
 }
 
+glm::vec3 GameObject::getRight() const
+{
+	return glm::normalize(glm::vec3(modelTransform[0]));
+}
+
 void GameObject::moveForward(float value)
 {
 	auto position = getPosition();

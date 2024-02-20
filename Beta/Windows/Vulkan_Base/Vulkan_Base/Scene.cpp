@@ -28,6 +28,9 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	pPlayer->setBuffer(boxBuffer);
 	pPlayer->setTexture(boxTexture);
 	pPlayer->setPosition({ 1.f, 0.f, 1.f });
+	pPlayer->setLook({ 0.f, 0.f, -1.f });
+
+	camera.setPlayer(pPlayer);
 }
 
 Scene::~Scene()
@@ -57,11 +60,14 @@ Scene::~Scene()
 
 void Scene::update(float elapsedTime, uint32_t currentFrame)
 {
+	camera.update(elapsedTime);
+
 	UniformBufferObject ubo{};
-	ubo.view = glm::lookAt(glm::vec3(0.0f, 3.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	ubo.proj = glm::perspective(glm::radians(45.0f), 16.f / 9.f, 0.1f, 10.0f);
+	ubo.view = camera.getView();
+	ubo.proj = camera.getProjection();
 
 	memcpy(uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
+
 
 	plainObject->update(elapsedTime);
 

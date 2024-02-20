@@ -2,6 +2,7 @@
 
 #include "RotateObject.h"
 #include "PlayerObject.h"
+#include "Camera.h"
 
 class Scene
 {
@@ -31,6 +32,8 @@ private:
 	vkf::Buffer boxBuffer;
 	vkf::Texture boxTexture;
 	PlayerObject* pPlayer;
+
+	Camera camera;
 
 	unsigned int keyState;
 
