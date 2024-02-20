@@ -24,7 +24,7 @@ void PlayerObject::update(float elapsedTime)
 		if (keyState & KEY_LEFT) direction += 1.f * right;
 		if (keyState & KEY_RIGHT) direction -= 1.f * right;
 
-		move(direction, elapsedTime * 2.f);
+		move(direction, elapsedTime * 3.f);
 	}
 }
 
@@ -40,4 +40,20 @@ void PlayerObject::release()
 void PlayerObject::processKeyInput(unsigned int keyState)
 {
 	this->keyState = keyState;
+}
+
+void PlayerObject::setStartMousePos(float xpos, float ypos)
+{
+	startXpos = xpos;
+	startYpos = ypos;
+}
+
+void PlayerObject::processMouseCursor(float xpos, float ypos)
+{
+	float moveX = xpos - startXpos;
+	float moveY = ypos - startYpos;
+	startXpos = xpos;
+	startYpos = ypos;
+
+	rotate(-moveX * 100.f);
 }

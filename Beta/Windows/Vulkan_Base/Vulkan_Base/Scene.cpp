@@ -128,8 +128,51 @@ void Scene::processKeyboard(int key, int action, int mods)
 	}
 }
 
-void Scene::processMouse(int button, int action, int mods)
+void Scene::processMouseButton(int button, int action, int mods, float xpos, float ypos)
 {
+	switch (action)
+	{
+	case GLFW_PRESS:
+		switch (button)
+		{
+		case GLFW_MOUSE_BUTTON_LEFT:
+			leftButtonPressed = true;
+			pPlayer->setStartMousePos(xpos, ypos);
+			break;
+		case GLFW_MOUSE_BUTTON_RIGHT:
+			break;
+		case GLFW_MOUSE_BUTTON_MIDDLE:
+			break;
+		case GLFW_MOUSE_BUTTON_4:
+			break;
+		case GLFW_MOUSE_BUTTON_5:
+			break;
+		}
+		break;
+	case GLFW_RELEASE:
+		switch (button)
+		{
+		case GLFW_MOUSE_BUTTON_LEFT:
+			leftButtonPressed = false;
+			break;
+		case GLFW_MOUSE_BUTTON_RIGHT:
+			break;
+		case GLFW_MOUSE_BUTTON_MIDDLE:
+			break;
+		case GLFW_MOUSE_BUTTON_4:
+			break;
+		case GLFW_MOUSE_BUTTON_5:
+			break;
+		}
+		break;
+	}
+}
+
+void Scene::processMouseCursor(float xpos, float ypos)
+{
+	if (leftButtonPressed){
+		pPlayer->processMouseCursor(xpos, ypos);
+	}
 }
 
 void Scene::createDescriptorSetLayout()

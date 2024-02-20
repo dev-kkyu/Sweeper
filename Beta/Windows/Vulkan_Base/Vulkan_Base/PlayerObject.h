@@ -13,6 +13,9 @@ private:
 
 	unsigned int keyState = 0;
 
+	float startXpos = 0.f;
+	float startYpos = 0.f;
+
 public:
 	PlayerObject();
 	virtual ~PlayerObject();
@@ -23,5 +26,8 @@ public:
 	virtual void release() override;
 
 	void processKeyInput(unsigned int keyState);
+	void setStartMousePos(float xpos, float ypos);
+	void processMouseCursor(float xpos, float ypos);
+
 };
 

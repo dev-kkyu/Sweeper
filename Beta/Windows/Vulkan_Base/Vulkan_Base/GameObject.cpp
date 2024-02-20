@@ -92,6 +92,12 @@ void GameObject::move(glm::vec3 direction, float value)
 	}
 }
 
+void GameObject::rotate(float degree)
+{
+	glm::mat4 rotateMatrix = glm::rotate(glm::mat4(1.f), glm::radians(degree), glm::vec3(0.f, 1.f, 0.f));
+	modelTransform = modelTransform * rotateMatrix;
+}
+
 void GameObject::setBuffer(vkf::Buffer& buffer)
 {
 	vertexBuffer = buffer.vertexBuffer;

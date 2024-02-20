@@ -134,7 +134,11 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
-	g_GameFramework.processMouse(button, action, mods);
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
+	xpos = xpos / g_Width * 2. - 1.;
+	ypos = static_cast<double>(g_Height - ypos) / g_Height * 2. - 1.;
+	g_GameFramework.processMouseButton(button, action, mods, float(xpos), float(ypos));
 
 	switch (action)
 	{
@@ -166,4 +170,8 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 void cursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
 	// 좌상단 [0, 0], 우하단 [width, height]
+
+	xpos = xpos / g_Width * 2. - 1.;
+	ypos = static_cast<double>(g_Height - ypos) / g_Height * 2. - 1.;
+	g_GameFramework.processMouseCursor(float(xpos), float(ypos));
 }

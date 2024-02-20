@@ -4,7 +4,7 @@
 
 Camera::Camera()
 {
-	viewTransform = glm::lookAt(glm::vec3(0.f, 0.f, 5.f), glm::vec3(0.f), glm::vec3(0.0f, 1.0f, 0.0f));
+	viewTransform = glm::lookAt(glm::vec3(0.f, 3.f, 10.f), glm::vec3(0.f), glm::vec3(0.0f, 1.0f, 0.0f));
     projectionTransform = glm::perspective(glm::radians(45.0f), 16.f / 9.f, 0.1f, 100.0f);
 }
 

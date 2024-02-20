@@ -35,6 +35,8 @@ public:
 	virtual void moveForward(float value) final;
 	virtual void move(glm::vec3 direction, float value) final;
 
+	virtual void rotate(float degree) final;
+
 	void setBuffer(vkf::Buffer& buffer);
 	void setTexture(vkf::Texture& texture);
 

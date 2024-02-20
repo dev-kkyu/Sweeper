@@ -44,7 +44,8 @@ public:
 	void drawFrame();
 
 	void processKeyboard(int key, int action, int mods);
-	void processMouse(int button, int action, int mods);
+	void processMouseButton(int button, int action, int mods, float xpos, float ypos);
+	void processMouseCursor(float xpos, float ypos);
 
 private:
 	Timer gameTimer;

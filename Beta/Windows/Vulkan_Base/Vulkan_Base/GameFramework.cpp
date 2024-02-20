@@ -183,10 +183,16 @@ void GameFramework::processKeyboard(int key, int action, int mods)
 		pScene->processKeyboard(key, action, mods);
 }
 
-void GameFramework::processMouse(int button, int action, int mods)
+void GameFramework::processMouseButton(int button, int action, int mods, float xpos, float ypos)
 {
 	if (pScene)
-		pScene->processMouse(button, action, mods);
+		pScene->processMouseButton(button, action, mods, xpos, ypos);
+}
+
+void GameFramework::processMouseCursor(float xpos, float ypos)
+{
+	if (pScene)
+		pScene->processMouseCursor(xpos, ypos);
 }
 
 void GameFramework::cleanupSwapChain()
