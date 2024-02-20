@@ -5,9 +5,7 @@
 class GameObject
 {
 protected:
-	glm::vec3 position{ 0.f };
-	glm::vec3 look{ 0.f, 0.f, 1.f };	// y는 0으로 가정
-
+	// up은 항상 (0.f, 1.f, 0.f)이라고 가정한다.
 	glm::mat4 modelTransform{ 1.f };
 
 protected:
@@ -29,7 +27,7 @@ public:
 	virtual void release();
 
 	virtual void setPosition(glm::vec3 position) final;
-	virtual void setLook(glm::vec3 look) final;
+	virtual void setLook(glm::vec3 look) final;					// y는 항상 0으로 가정
 	virtual glm::vec3 getPosition() const final;
 	virtual glm::vec3 getLook() const final;
 

@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include <glm/gtx/vector_angle.hpp>
+
 GameObject::GameObject()
 {
 	initialize();
@@ -18,7 +20,6 @@ void GameObject::initialize()
 
 void GameObject::update(float elapsedTime)
 {
-	modelTransform = glm::translate(glm::mat4(1.f), position);
 }
 
 void GameObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
@@ -44,32 +45,44 @@ void GameObject::release()
 
 void GameObject::setPosition(glm::vec3 position)
 {
-	this->position = position;
+	modelTransform[3] = glm::vec4(position, 1.f);
 }
 
 void GameObject::setLook(glm::vec3 look)
 {
-	this->look = look;
+	glm::vec3 position = getPosition();
+
+	glm::vec3 baseDir{ 0.f, 0.f, 1.f };
+	glm::vec3 normalizedLook = glm::normalize(look);
+	float radianAngle = glm::orientedAngle(baseDir, normalizedLook, glm::vec3(0.f, 1.f, 0.f));
+	glm::mat4 rotateMat = glm::rotate(glm::mat4(1.f), radianAngle, glm::vec3(0.f, 1.f, 0.f));
+
+	modelTransform = rotateMat;
+	setPosition(position);
 }
 
 glm::vec3 GameObject::getPosition() const
 {
-	return position;
+	return glm::vec3(modelTransform[3]);
 }
 
 glm::vec3 GameObject::getLook() const
 {
-	return look;
+	return glm::normalize(glm::vec3(modelTransform[2]));
 }
 
 void GameObject::moveForward(float value)
 {
-	position += glm::normalize(look) * value;
+	auto position = getPosition();
+	position += getLook() * value;
+	setPosition(position);
 }
 
 void GameObject::move(glm::vec3 direction, float value)
 {
+	auto position = getPosition();
 	position += glm::normalize(direction) * value;
+	setPosition(position);
 }
 
 void GameObject::setBuffer(vkf::Buffer& buffer)

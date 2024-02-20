@@ -25,6 +25,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	boxObject = new RotateObject;
 	boxObject->setBuffer(boxBuffer);
 	boxObject->setTexture(boxTexture);
+	boxObject->setPosition({ 1.f, 0.f, 1.f });
 	reinterpret_cast<RotateObject*>(boxObject)->setRotateSpeed(60.f);
 }
 
