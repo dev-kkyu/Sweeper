@@ -1,6 +1,8 @@
 #include "Scene.h"
 #include <stdexcept>
 
+#include <GLFW/glfw3.h>
+
 Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }
 {
@@ -22,16 +24,15 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	plainObject->setBuffer(plainBuffer);
 	plainObject->setTexture(plainTexture);
 
-	boxObject = new RotateObject;
-	boxObject->setBuffer(boxBuffer);
-	boxObject->setTexture(boxTexture);
-	boxObject->setPosition({ 1.f, 0.f, 1.f });
-	reinterpret_cast<RotateObject*>(boxObject)->setRotateSpeed(60.f);
+	pPlayer = new PlayerObject;
+	pPlayer->setBuffer(boxBuffer);
+	pPlayer->setTexture(boxTexture);
+	pPlayer->setPosition({ 1.f, 0.f, 1.f });
 }
 
 Scene::~Scene()
 {
-	delete boxObject;
+	delete pPlayer;
 	boxTexture.destroy();
 	boxBuffer.destroy();
 
@@ -63,7 +64,8 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	memcpy(uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
 
 	plainObject->update(elapsedTime);
-	boxObject->update(elapsedTime);
+
+	pPlayer->update(elapsedTime);
 }
 
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -74,11 +76,50 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &uboDescriptorSets[currentFrame], 0, nullptr);
 
 	plainObject->draw(commandBuffer, pipelineLayout);
-	boxObject->draw(commandBuffer, pipelineLayout);
+	pPlayer->draw(commandBuffer, pipelineLayout);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)
 {
+	switch (action)
+	{
+	case GLFW_PRESS:
+		switch (key) {
+		case GLFW_KEY_W:
+			keyState |= KEY_UP;
+			break;
+		case GLFW_KEY_S:
+			keyState |= KEY_DOWN;
+			break;
+		case GLFW_KEY_A:
+			keyState |= KEY_LEFT;
+			break;
+		case GLFW_KEY_D:
+			keyState |= KEY_RIGHT;
+			break;
+		}
+		pPlayer->processKeyInput(keyState);
+		break;
+	case GLFW_RELEASE:
+		switch (key) {
+		case GLFW_KEY_W:
+			keyState &= ~KEY_UP;
+			break;
+		case GLFW_KEY_S:
+			keyState &= ~KEY_DOWN;
+			break;
+		case GLFW_KEY_A:
+			keyState &= ~KEY_LEFT;
+			break;
+		case GLFW_KEY_D:
+			keyState &= ~KEY_RIGHT;
+			break;
+		}
+		pPlayer->processKeyInput(keyState);
+		break;
+	case GLFW_REPEAT:
+		break;
+	}
 }
 
 void Scene::processMouse(int button, int action, int mods)

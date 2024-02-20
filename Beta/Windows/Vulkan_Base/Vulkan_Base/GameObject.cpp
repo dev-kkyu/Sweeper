@@ -80,9 +80,11 @@ void GameObject::moveForward(float value)
 
 void GameObject::move(glm::vec3 direction, float value)
 {
-	auto position = getPosition();
-	position += glm::normalize(direction) * value;
-	setPosition(position);
+	if (glm::length(direction) > 0.f) {
+		auto position = getPosition();
+		position += glm::normalize(direction) * value;
+		setPosition(position);
+	}
 }
 
 void GameObject::setBuffer(vkf::Buffer& buffer)

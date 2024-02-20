@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RotateObject.h"
+#include "PlayerObject.h"
 
 class Scene
 {
@@ -29,7 +30,9 @@ private:
 
 	vkf::Buffer boxBuffer;
 	vkf::Texture boxTexture;
-	GameObject* boxObject;
+	PlayerObject* pPlayer;
+
+	unsigned int keyState;
 
 public:
 	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass);
