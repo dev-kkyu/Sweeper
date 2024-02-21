@@ -13,22 +13,43 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	createUboDescriptorPool();
 	createUboDescriptorSets();
 
-	createSamplerDescriptorPool(2);
+	createSamplerDescriptorPool(3);
 
-	plainBuffer.loadFromObjFile(fDevice, "models/tile.obj");
-	plainTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/tile.jpg");
-	boxBuffer.loadFromObjFile(fDevice, "models/box.obj");
-	boxTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/wood.jpg");
+	mapBuffer.loadFromObjFile(fDevice, "models/map.obj");
+	mapTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/map.png");
+	mushroomBuffer.loadFromObjFile(fDevice, "models/mushroom.obj");
+	mushroomTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/mushroom.png");
+	warriorBuffer.loadFromObjFile(fDevice, "models/warrior.obj");
+	warriorTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/warrior.png");
 
-	plainObject = new GameObject;
-	plainObject->setBuffer(plainBuffer);
-	plainObject->setTexture(plainTexture);
+
+	mapObject = new GameObject;
+	mapObject->setBuffer(mapBuffer);
+	mapObject->setTexture(mapTexture);
+
+	for (int i = 0; i < mushroomObject.size(); ++i) {
+		mushroomObject[i] = new GameObject;
+		mushroomObject[i]->setBuffer(mushroomBuffer);
+		mushroomObject[i]->setTexture(mushroomTexture);
+		int x = i / 10 - 5;
+		int z = i % 10 - 5;
+		mushroomObject[i]->setPosition({ x * 5.f, 0.f, z * 5.f });
+
+		rotateAngle[i] = float(rand()) / RAND_MAX * 180.f;
+	}
+
+	for (int i = 0; i < warriorObject.size(); ++i) {
+		warriorObject[i] = new GameObject;
+		warriorObject[i]->setBuffer(warriorBuffer);
+		warriorObject[i]->setTexture(warriorTexture);
+		warriorObject[i]->setPosition({ (i - 5) * 5.f, 0.f, 25.f });
+		warriorObject[i]->rotate(180.f);
+	}
 
 	pPlayer = new PlayerObject;
-	pPlayer->setBuffer(boxBuffer);
-	pPlayer->setTexture(boxTexture);
+	pPlayer->setBuffer(warriorBuffer);
+	pPlayer->setTexture(warriorTexture);
 	pPlayer->setPosition({ 1.f, 0.f, 1.f });
-	pPlayer->setLook({ 0.f, 0.f, -1.f });
 
 	camera.setPlayer(pPlayer);
 }
@@ -36,12 +57,21 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 Scene::~Scene()
 {
 	delete pPlayer;
-	boxTexture.destroy();
-	boxBuffer.destroy();
+	for (auto& object : warriorObject) {
+		delete object;
+	}
+	warriorTexture.destroy();
+	warriorBuffer.destroy();
 
-	delete plainObject;
-	plainTexture.destroy();
-	plainBuffer.destroy();
+	for (auto& object : mushroomObject) {
+		delete object;
+	}
+	mushroomTexture.destroy();
+	mushroomBuffer.destroy();
+
+	delete mapObject;
+	mapTexture.destroy();
+	mapBuffer.destroy();
 
 	vkDestroyDescriptorPool(fDevice.device, samplerDescriptorPool, nullptr);
 
@@ -69,7 +99,16 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	memcpy(uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
 
 
-	plainObject->update(elapsedTime);
+	mapObject->update(elapsedTime);
+
+	for (int i = 0; i < mushroomObject.size(); ++i) {
+		mushroomObject[i]->rotate(rotateAngle[i] * elapsedTime);
+		mushroomObject[i]->update(elapsedTime);
+	}
+
+	for (auto& object : warriorObject) {
+		object->update(elapsedTime);
+	}
 
 	pPlayer->update(elapsedTime);
 }
@@ -81,7 +120,13 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	// firstSet은 set의 시작인덱스
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &uboDescriptorSets[currentFrame], 0, nullptr);
 
-	plainObject->draw(commandBuffer, pipelineLayout);
+	mapObject->draw(commandBuffer, pipelineLayout);
+	for (auto& object : mushroomObject) {
+		object->draw(commandBuffer, pipelineLayout);
+	}
+	for (auto& object : warriorObject) {
+		object->draw(commandBuffer, pipelineLayout);
+	}
 	pPlayer->draw(commandBuffer, pipelineLayout);
 }
 

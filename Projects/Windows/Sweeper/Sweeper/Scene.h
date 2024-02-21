@@ -24,12 +24,18 @@ private:
 
 	VkDescriptorPool samplerDescriptorPool;
 
-	vkf::Buffer plainBuffer;
-	vkf::Texture plainTexture;
-	GameObject* plainObject;
+	vkf::Buffer mapBuffer;
+	vkf::Texture mapTexture;
+	GameObject* mapObject;
 
-	vkf::Buffer boxBuffer;
-	vkf::Texture boxTexture;
+	vkf::Buffer mushroomBuffer;
+	vkf::Texture mushroomTexture;
+	std::array<GameObject*, 100> mushroomObject;
+	std::array<float, 100> rotateAngle;
+
+	vkf::Buffer warriorBuffer;
+	vkf::Texture warriorTexture;
+	std::array<GameObject*, 10> warriorObject;
 	PlayerObject* pPlayer;
 
 	Camera camera;
