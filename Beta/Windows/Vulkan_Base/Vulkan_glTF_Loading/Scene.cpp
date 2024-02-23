@@ -13,35 +13,42 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	createUboDescriptorPool();
 	createUboDescriptorSets();
 
-	createSamplerDescriptorPool(2);
+	//createSamplerDescriptorPool(2);
 
-	plainBuffer.loadFromObjFile(fDevice, "models/tile.obj");
-	plainTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/tile.jpg");
-	boxBuffer.loadFromObjFile(fDevice, "models/box.obj");
-	boxTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/wood.jpg");
+	//plainBuffer.loadFromObjFile(fDevice, "models/tile.obj");
+	//plainTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/tile.jpg");
+	//boxBuffer.loadFromObjFile(fDevice, "models/box.obj");
+	//boxTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/wood.jpg");
 
-	plainObject = new GameObject;
-	plainObject->setBuffer(plainBuffer);
-	plainObject->setTexture(plainTexture);
+	//plainObject = new GameObject;
+	//plainObject->setBuffer(plainBuffer);
+	//plainObject->setTexture(plainTexture);
 
-	pPlayer = new PlayerObject;
-	pPlayer->setBuffer(boxBuffer);
-	pPlayer->setTexture(boxTexture);
-	pPlayer->setPosition({ 1.f, 0.f, 1.f });
-	pPlayer->setLook({ 0.f, 0.f, -1.f });
+	//pPlayer = new PlayerObject;
+	//pPlayer->setBuffer(boxBuffer);
+	//pPlayer->setTexture(boxTexture);
+	//pPlayer->setPosition({ 1.f, 0.f, 1.f });
+	//pPlayer->setLook({ 0.f, 0.f, -1.f });
 
-	camera.setPlayer(pPlayer);
+	//camera.setPlayer(pPlayer);
+
+	sampleObj = new GameObject;
+	sampleModel.loadModel(fDevice, samplerDescriptorSetLayout, "models/CesiumMan.glb");
+	sampleObj->setModel(sampleModel);
 }
 
 Scene::~Scene()
 {
-	delete pPlayer;
-	boxTexture.destroy();
-	boxBuffer.destroy();
+	delete sampleObj;
+	sampleModel.destroy();
 
-	delete plainObject;
-	plainTexture.destroy();
-	plainBuffer.destroy();
+	//delete pPlayer;
+	//boxTexture.destroy();
+	//boxBuffer.destroy();
+
+	//delete plainObject;
+	//plainTexture.destroy();
+	//plainBuffer.destroy();
 
 	vkDestroyDescriptorPool(fDevice.device, samplerDescriptorPool, nullptr);
 
@@ -69,9 +76,9 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	memcpy(uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
 
 
-	plainObject->update(elapsedTime);
+	//plainObject->update(elapsedTime);
 
-	pPlayer->update(elapsedTime);
+	//pPlayer->update(elapsedTime);
 }
 
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -81,8 +88,9 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	// firstSet은 set의 시작인덱스
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &uboDescriptorSets[currentFrame], 0, nullptr);
 
-	plainObject->draw(commandBuffer, pipelineLayout);
-	pPlayer->draw(commandBuffer, pipelineLayout);
+	//plainObject->draw(commandBuffer, pipelineLayout);
+	//pPlayer->draw(commandBuffer, pipelineLayout);
+	sampleObj->draw(commandBuffer, pipelineLayout);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)
@@ -104,7 +112,7 @@ void Scene::processKeyboard(int key, int action, int mods)
 			keyState |= KEY_RIGHT;
 			break;
 		}
-		pPlayer->processKeyInput(keyState);
+		//pPlayer->processKeyInput(keyState);
 		break;
 	case GLFW_RELEASE:
 		switch (key) {
@@ -121,7 +129,7 @@ void Scene::processKeyboard(int key, int action, int mods)
 			keyState &= ~KEY_RIGHT;
 			break;
 		}
-		pPlayer->processKeyInput(keyState);
+		//pPlayer->processKeyInput(keyState);
 		break;
 	case GLFW_REPEAT:
 		break;
@@ -137,7 +145,7 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 		{
 		case GLFW_MOUSE_BUTTON_LEFT:
 			leftButtonPressed = true;
-			pPlayer->setStartMousePos(xpos, ypos);
+			//pPlayer->setStartMousePos(xpos, ypos);
 			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
 			break;
@@ -171,7 +179,7 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 void Scene::processMouseCursor(float xpos, float ypos)
 {
 	if (leftButtonPressed){
-		pPlayer->processMouseCursor(xpos, ypos);
+		//pPlayer->processMouseCursor(xpos, ypos);
 	}
 }
 

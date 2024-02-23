@@ -24,13 +24,16 @@ private:
 
 	VkDescriptorPool samplerDescriptorPool;
 
-	vkf::Buffer plainBuffer;
-	vkf::Texture plainTexture;
-	GameObject* plainObject;
+	//vkf::Buffer plainBuffer;
+	//vkf::Texture plainTexture;
+	//GameObject* plainObject;
 
-	vkf::Buffer boxBuffer;
-	vkf::Texture boxTexture;
-	PlayerObject* pPlayer;
+	//vkf::Buffer boxBuffer;
+	//vkf::Texture boxTexture;
+	//PlayerObject* pPlayer;
+
+	GameObject* sampleObj;
+	VulkanglTFModel sampleModel;
 
 	Camera camera;
 

@@ -24,18 +24,21 @@ void GameObject::update(float elapsedTime)
 
 void GameObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
 {
-	VkBuffer vertexBuffers[] = { vertexBuffer };
-	VkDeviceSize offsets[] = { 0 };
-	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+	//VkBuffer vertexBuffers[] = { vertexBuffer };
+	//VkDeviceSize offsets[] = { 0 };
+	//vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-	vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+	//vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &modelTransform);
+	//vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &modelTransform);
 
-	// set = 1에 샘플러 바인드
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &samplerDescriptorSet, 0, nullptr);
+	//// set = 1에 샘플러 바인드
+	//vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &samplerDescriptorSet, 0, nullptr);
 
-	vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
+	//vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
+
+	if (model)
+		model->draw(commandBuffer, pipelineLayout);
 }
 
 void GameObject::release()
@@ -98,17 +101,22 @@ void GameObject::rotate(float degree)
 	modelTransform = modelTransform * rotateMatrix;
 }
 
-void GameObject::setBuffer(vkf::Buffer& buffer)
+void GameObject::setModel(VulkanglTFModel& model)
 {
-	vertexBuffer = buffer.vertexBuffer;
-	indexBuffer = buffer.indexBuffer;
-
-	vertexCount = static_cast<uint32_t>(buffer.vertices.size());
-	indexCount = static_cast<uint32_t>(buffer.indices.size());
+	this->model = &model;
 }
 
-void GameObject::setTexture(vkf::Texture& texture)
-{
-	samplerDescriptorSet = texture.samplerDescriptorSet;
-}
+//void GameObject::setBuffer(vkf::Buffer& buffer)
+//{
+//	vertexBuffer = buffer.vertexBuffer;
+//	indexBuffer = buffer.indexBuffer;
+//
+//	vertexCount = static_cast<uint32_t>(buffer.vertices.size());
+//	indexCount = static_cast<uint32_t>(buffer.indices.size());
+//}
+//
+//void GameObject::setTexture(vkf::Texture& texture)
+//{
+//	samplerDescriptorSet = texture.samplerDescriptorSet;
+//}
 

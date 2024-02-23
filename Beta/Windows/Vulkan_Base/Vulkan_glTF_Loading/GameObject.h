@@ -1,6 +1,7 @@
 #pragma once
 
-#include "VulkanFramework.h"
+//#include "VulkanFramework.h"
+#include "VulkanglTFModel.h"
 
 class GameObject
 {
@@ -9,13 +10,15 @@ protected:
 	glm::mat4 modelTransform{ 1.f };
 
 protected:
-	VkBuffer vertexBuffer = VK_NULL_HANDLE;
-	VkBuffer indexBuffer = VK_NULL_HANDLE;
+	//VkBuffer vertexBuffer = VK_NULL_HANDLE;
+	//VkBuffer indexBuffer = VK_NULL_HANDLE;
 
-	uint32_t vertexCount = 0;
-	uint32_t indexCount = 0;
+	//uint32_t vertexCount = 0;
+	//uint32_t indexCount = 0;
 
-	VkDescriptorSet samplerDescriptorSet = VK_NULL_HANDLE;
+	//VkDescriptorSet samplerDescriptorSet = VK_NULL_HANDLE;
+
+	VulkanglTFModel* model;
 
 public:
 	GameObject();
@@ -37,8 +40,9 @@ public:
 
 	virtual void rotate(float degree) final;
 
-	void setBuffer(vkf::Buffer& buffer);
-	void setTexture(vkf::Texture& texture);
+	//void setBuffer(vkf::Buffer& buffer);
+	//void setTexture(vkf::Texture& texture);
+	void setModel(VulkanglTFModel& model);
 
 };
 

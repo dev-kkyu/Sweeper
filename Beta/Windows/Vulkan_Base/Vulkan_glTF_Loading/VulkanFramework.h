@@ -29,15 +29,12 @@ namespace vkf
 
 	struct Vertex {
 		glm::vec3 pos;
-		glm::vec3 color;
+		glm::vec3 normal;
 		glm::vec2 texCoord;
+		glm::vec3 color;
 
 		static VkVertexInputBindingDescription getBindingDescription();
-		static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
-
-		bool operator==(const Vertex& other) const {
-			return pos == other.pos && color == other.color && texCoord == other.texCoord;
-		}
+		static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions();
 	};
 
 	class Buffer
@@ -55,6 +52,7 @@ namespace vkf
 		VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
 
 	public:
+		void loadFromBuffer(vkf::Device& fDevice, std::vector<vkf::Vertex> vertices, std::vector<uint32_t> indices);
 		void loadFromObjFile(vkf::Device& fDevice, std::string filename);
 		void destroy();
 
@@ -78,11 +76,13 @@ namespace vkf
 		VkDescriptorSet samplerDescriptorSet;
 
 	public:
-		void loadFromFile(vkf::Device& fDevice, VkDescriptorPool samplerDescriptorPool, VkDescriptorSetLayout samplerDescriptorSetLayout, std::string filename);
+		void loadFromFile(vkf::Device& fDevice, std::string filename, VkDescriptorPool samplerDescriptorPool, VkDescriptorSetLayout samplerDescriptorSetLayout);
+		void loadFromBuffer(vkf::Device& fDevice, void* buffer, VkDeviceSize bufferSize, uint32_t texWidth, uint32_t texHeight, VkDescriptorPool samplerDescriptorPool, VkDescriptorSetLayout samplerDescriptorSetLayout);
 		void destroy();
 
 	private:
 		void createTextureImage(std::string filename);
+		void createTextureImage(void* buffer, VkDeviceSize bufferSize, uint32_t texWidth, uint32_t texHeight);
 		void createTextureImageView();
 		void createTextureSampler();
 		void createSamplerDescriptorSets(VkDescriptorPool samplerDescriptorPool, VkDescriptorSetLayout samplerDescriptorSetLayout);
@@ -106,12 +106,4 @@ namespace vkf
 
 	std::vector<char> readFile(const std::string& filename);
 	VkShaderModule createShaderModule(Device& fDevice, const std::vector<char>& code);
-}
-
-namespace std {
-	template<> struct hash<vkf::Vertex> {
-		size_t operator()(vkf::Vertex const& vertex) const {
-			return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
-		}
-	};
 }

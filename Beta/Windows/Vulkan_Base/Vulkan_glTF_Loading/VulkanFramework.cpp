@@ -20,9 +20,9 @@ namespace vkf
 		return bindingDescription;
 	}
 
-	std::array<VkVertexInputAttributeDescription, 3> Vertex::getAttributeDescriptions()
+	std::array<VkVertexInputAttributeDescription, 4> Vertex::getAttributeDescriptions()
 	{
-		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
+		std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
 
 		attributeDescriptions[0].binding = 0;
 		attributeDescriptions[0].location = 0;
@@ -32,14 +32,29 @@ namespace vkf
 		attributeDescriptions[1].binding = 0;
 		attributeDescriptions[1].location = 1;
 		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[1].offset = offsetof(Vertex, color);
+		attributeDescriptions[1].offset = offsetof(Vertex, normal);
 
 		attributeDescriptions[2].binding = 0;
 		attributeDescriptions[2].location = 2;
 		attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
 		attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
 
+		attributeDescriptions[3].binding = 0;
+		attributeDescriptions[3].location = 3;
+		attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[3].offset = offsetof(Vertex, color);
+
 		return attributeDescriptions;
+	}
+
+	void Buffer::loadFromBuffer(vkf::Device& fDevice, std::vector<vkf::Vertex> vertices, std::vector<uint32_t> indices)
+	{
+		this->fDevice = &fDevice;
+		this->vertices = vertices;
+		this->indices = indices;
+
+		createVertexBuffer();
+		createIndexBuffer();
 	}
 
 	void Buffer::loadFromObjFile(vkf::Device& fDevice, std::string filename)
@@ -64,42 +79,48 @@ namespace vkf
 
 	void Buffer::loadObjModel(std::string filename)
 	{
-		tinyobj::attrib_t attrib;
-		std::vector<tinyobj::shape_t> shapes;
-		std::vector<tinyobj::material_t> materials;
-		std::string warn, err;
+		//tinyobj::attrib_t attrib;
+		//std::vector<tinyobj::shape_t> shapes;
+		//std::vector<tinyobj::material_t> materials;
+		//std::string warn, err;
 
-		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str())) {
-			throw std::runtime_error(warn + err);
-		}
+		//if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str())) {
+		//	throw std::runtime_error(warn + err);
+		//}
 
-		std::unordered_map<vkf::Vertex, uint32_t> uniqueVertices{};
+		//std::unordered_map<vkf::Vertex, uint32_t> uniqueVertices{};
 
-		for (const auto& shape : shapes) {
-			for (const auto& index : shape.mesh.indices) {
-				vkf::Vertex vertex{};
+		//for (const auto& shape : shapes) {
+		//	for (const auto& index : shape.mesh.indices) {
+		//		vkf::Vertex vertex{};
 
-				vertex.pos = {
-					attrib.vertices[3 * index.vertex_index + 0],
-					attrib.vertices[3 * index.vertex_index + 1],
-					attrib.vertices[3 * index.vertex_index + 2]
-				};
+		//		vertex.pos = {
+		//			attrib.vertices[3 * index.vertex_index + 0],
+		//			attrib.vertices[3 * index.vertex_index + 1],
+		//			attrib.vertices[3 * index.vertex_index + 2]
+		//		};
 
-				vertex.texCoord = {
-					attrib.texcoords[2 * index.texcoord_index + 0],
-					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-				};
+		//		vertex.normal = {
+		//			attrib.normals[3 * index.normal_index + 0],
+		//			attrib.normals[3 * index.normal_index + 1],
+		//			attrib.normals[3 * index.normal_index + 2]
+		//		};
 
-				vertex.color = { 1.0f, 1.0f, 1.0f };
+		//		vertex.texCoord = {
+		//			attrib.texcoords[2 * index.texcoord_index + 0],
+		//			1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+		//		};
 
-				if (uniqueVertices.count(vertex) == 0) {
-					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-					vertices.push_back(vertex);
-				}
+		//		vertex.color = { 1.0f, 1.0f, 1.0f };
 
-				indices.push_back(uniqueVertices[vertex]);
-			}
-		}
+		//		if (uniqueVertices.count(vertex) == 0) {
+		//			uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+		//			vertices.push_back(vertex);
+		//		}
+
+		//		indices.push_back(uniqueVertices[vertex]);
+		//	}
+		//}
 	}
 
 	void Buffer::createVertexBuffer()
@@ -144,11 +165,21 @@ namespace vkf
 		vkFreeMemory(fDevice->device, stagingBufferMemory, nullptr);
 	}
 
-	void Texture::loadFromFile(vkf::Device& fDevice, VkDescriptorPool samplerDescriptorPool, VkDescriptorSetLayout samplerDescriptorSetLayout, std::string filename)
+	void Texture::loadFromFile(vkf::Device& fDevice, std::string filename, VkDescriptorPool samplerDescriptorPool, VkDescriptorSetLayout samplerDescriptorSetLayout)
 	{
 		this->fDevice = &fDevice;
 
 		createTextureImage(filename);
+		createTextureImageView();
+		createTextureSampler();
+		createSamplerDescriptorSets(samplerDescriptorPool, samplerDescriptorSetLayout);
+	}
+
+	void Texture::loadFromBuffer(vkf::Device& fDevice, void* buffer, VkDeviceSize bufferSize, uint32_t texWidth, uint32_t texHeight, VkDescriptorPool samplerDescriptorPool, VkDescriptorSetLayout samplerDescriptorSetLayout)
+	{
+		this->fDevice = &fDevice;
+
+		createTextureImage(buffer, bufferSize, texWidth, texHeight);
 		createTextureImageView();
 		createTextureSampler();
 		createSamplerDescriptorSets(samplerDescriptorPool, samplerDescriptorSetLayout);
@@ -186,6 +217,31 @@ namespace vkf
 		vkUnmapMemory(fDevice->device, stagingBufferMemory);
 
 		stbi_image_free(pixels);
+
+		vkf::createImage(*fDevice, texWidth, texHeight, mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+
+		vkf::transitionImageLayout(*fDevice, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
+		vkf::copyBufferToImage(*fDevice, stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+		//transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmaps
+
+		vkDestroyBuffer(fDevice->device, stagingBuffer, nullptr);
+		vkFreeMemory(fDevice->device, stagingBufferMemory, nullptr);
+
+		generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, mipLevels);
+	}
+
+	void Texture::createTextureImage(void* buffer, VkDeviceSize bufferSize, uint32_t texWidth, uint32_t texHeight)
+	{
+		mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingBufferMemory;
+		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+		void* data;
+		vkMapMemory(fDevice->device, stagingBufferMemory, 0, bufferSize, 0, &data);
+		memcpy(data, buffer, static_cast<size_t>(bufferSize));
+		vkUnmapMemory(fDevice->device, stagingBufferMemory);
 
 		vkf::createImage(*fDevice, texWidth, texHeight, mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 
