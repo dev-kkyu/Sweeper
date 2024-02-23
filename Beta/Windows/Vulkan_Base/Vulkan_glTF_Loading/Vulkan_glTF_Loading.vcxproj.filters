@@ -22,6 +22,12 @@
     <Filter Include="GameObject\PlayerObject">
       <UniqueIdentifier>{07f9a291-47ab-4665-8512-d626cf731272}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject\GameObjectObj">
+      <UniqueIdentifier>{0a3dd424-d982-48fc-b8ef-fc22e10c6dee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\GameObjectglTF">
+      <UniqueIdentifier>{94c36e63-ccde-46a9-b661-e2b6e78d6d23}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -42,7 +48,7 @@
     <ClCompile Include="VulkanFramework.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="GameObject.cpp">
+    <ClCompile Include="GameObjectBase.cpp">
       <Filter>GameObject</Filter>
     </ClCompile>
     <ClCompile Include="PlayerObject.cpp">
@@ -50,6 +56,12 @@
     </ClCompile>
     <ClCompile Include="VulkanglTFModel.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjectObj.cpp">
+      <Filter>GameObject\GameObjectObj</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjectglTF.cpp">
+      <Filter>GameObject\GameObjectglTF</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -68,7 +80,7 @@
     <ClInclude Include="Camera.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="GameObject.h">
+    <ClInclude Include="GameObjectBase.h">
       <Filter>GameObject</Filter>
     </ClInclude>
     <ClInclude Include="PlayerObject.h">
@@ -76,6 +88,12 @@
     </ClInclude>
     <ClInclude Include="VulkanglTFModel.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjectObj.h">
+      <Filter>GameObject\GameObjectObj</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjectglTF.h">
+      <Filter>GameObject\GameObjectglTF</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

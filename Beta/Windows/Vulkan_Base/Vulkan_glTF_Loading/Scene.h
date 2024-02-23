@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PlayerObject.h"
+#include "GameObjectglTF.h"
 #include "Camera.h"
 
 class Scene
@@ -24,16 +25,16 @@ private:
 
 	VkDescriptorPool samplerDescriptorPool;
 
-	//vkf::Buffer plainBuffer;
-	//vkf::Texture plainTexture;
-	//GameObject* plainObject;
+	vkf::Buffer plainBuffer;
+	vkf::Texture plainTexture;
+	GameObjectObj* plainObject;
 
-	//vkf::Buffer boxBuffer;
-	//vkf::Texture boxTexture;
-	//PlayerObject* pPlayer;
+	vkf::Buffer boxBuffer;
+	vkf::Texture boxTexture;
+	PlayerObject* pPlayer;
 
-	GameObject* sampleObj;
-	VulkanglTFModel sampleModel;
+	GameObjectglTF* sampleModelObject[2];
+	VulkanglTFModel sampleModel[2];
 
 	Camera camera;
 

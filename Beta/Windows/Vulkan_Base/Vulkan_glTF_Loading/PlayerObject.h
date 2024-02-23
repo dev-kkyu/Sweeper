@@ -5,9 +5,9 @@
 #define KEY_LEFT	0x04
 #define KEY_RIGHT	0x08
 
-#include "GameObject.h"
+#include "GameObjectObj.h"
 
-class PlayerObject : public GameObject
+class PlayerObject : public GameObjectObj
 {
 private:
 

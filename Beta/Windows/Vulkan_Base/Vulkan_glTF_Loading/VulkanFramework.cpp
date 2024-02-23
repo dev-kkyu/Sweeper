@@ -1,12 +1,28 @@
 #include "VulkanFramework.h"
 #include <stdexcept>
 #include <fstream>
+#include <unordered_map>
+
+#include <glm/gtx/hash.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
+
+namespace std {
+	template<> struct hash<vkf::Vertex> {
+		size_t operator()(const vkf::Vertex& vertex) const {
+			size_t hashValue = 0;
+			glm::detail::hash_combine(hashValue, hash<glm::vec3>()(vertex.pos));
+			glm::detail::hash_combine(hashValue, hash<glm::vec3>()(vertex.normal));
+			glm::detail::hash_combine(hashValue, hash<glm::vec2>()(vertex.texCoord));
+			glm::detail::hash_combine(hashValue, hash<glm::vec3>()(vertex.color));
+			return hashValue;
+		}
+	};
+}
 
 namespace vkf
 {
@@ -79,48 +95,48 @@ namespace vkf
 
 	void Buffer::loadObjModel(std::string filename)
 	{
-		//tinyobj::attrib_t attrib;
-		//std::vector<tinyobj::shape_t> shapes;
-		//std::vector<tinyobj::material_t> materials;
-		//std::string warn, err;
+		tinyobj::attrib_t attrib;
+		std::vector<tinyobj::shape_t> shapes;
+		std::vector<tinyobj::material_t> materials;
+		std::string warn, err;
 
-		//if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str())) {
-		//	throw std::runtime_error(warn + err);
-		//}
+		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str())) {
+			throw std::runtime_error(warn + err);
+		}
 
-		//std::unordered_map<vkf::Vertex, uint32_t> uniqueVertices{};
+		std::unordered_map<vkf::Vertex, uint32_t> uniqueVertices{};
 
-		//for (const auto& shape : shapes) {
-		//	for (const auto& index : shape.mesh.indices) {
-		//		vkf::Vertex vertex{};
+		for (const auto& shape : shapes) {
+			for (const auto& index : shape.mesh.indices) {
+				vkf::Vertex vertex{};
 
-		//		vertex.pos = {
-		//			attrib.vertices[3 * index.vertex_index + 0],
-		//			attrib.vertices[3 * index.vertex_index + 1],
-		//			attrib.vertices[3 * index.vertex_index + 2]
-		//		};
+				vertex.pos = {
+					attrib.vertices[3 * index.vertex_index + 0],
+					attrib.vertices[3 * index.vertex_index + 1],
+					attrib.vertices[3 * index.vertex_index + 2]
+				};
 
-		//		vertex.normal = {
-		//			attrib.normals[3 * index.normal_index + 0],
-		//			attrib.normals[3 * index.normal_index + 1],
-		//			attrib.normals[3 * index.normal_index + 2]
-		//		};
+				vertex.normal = {
+					attrib.normals[3 * index.normal_index + 0],
+					attrib.normals[3 * index.normal_index + 1],
+					attrib.normals[3 * index.normal_index + 2]
+				};
 
-		//		vertex.texCoord = {
-		//			attrib.texcoords[2 * index.texcoord_index + 0],
-		//			1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-		//		};
+				vertex.texCoord = {
+					attrib.texcoords[2 * index.texcoord_index + 0],
+					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+				};
 
-		//		vertex.color = { 1.0f, 1.0f, 1.0f };
+				vertex.color = { 1.0f, 1.0f, 1.0f };
 
-		//		if (uniqueVertices.count(vertex) == 0) {
-		//			uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-		//			vertices.push_back(vertex);
-		//		}
+				if (uniqueVertices.count(vertex) == 0) {
+					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+					vertices.push_back(vertex);
+				}
 
-		//		indices.push_back(uniqueVertices[vertex]);
-		//	}
-		//}
+				indices.push_back(uniqueVertices[vertex]);
+			}
+		}
 	}
 
 	void Buffer::createVertexBuffer()

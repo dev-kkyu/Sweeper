@@ -30,7 +30,7 @@ void VulkanglTFModel::loadModel(vkf::Device& fDevice, VkDescriptorSetLayout samp
 	loadglTFFile(filename);
 }
 
-void VulkanglTFModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
+void VulkanglTFModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, glm::mat4 parentMatrix)
 {
 	// All vertices and indices are stored in single buffers, so we only need to bind once
 	VkDeviceSize offsets[1] = { 0 };
@@ -38,11 +38,11 @@ void VulkanglTFModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipel
 	vkCmdBindIndexBuffer(commandBuffer, buffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 	// Render all nodes at top-level
 	for (auto& node : nodes) {
-		drawNode(commandBuffer, pipelineLayout, node);
+		drawNode(commandBuffer, pipelineLayout, node, parentMatrix);
 	}
 }
 
-void VulkanglTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, VulkanglTFModel::Node* node)
+void VulkanglTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, VulkanglTFModel::Node* node, const glm::mat4& parentMatrix)
 {
 	if (node->mesh.primitives.size() > 0) {
 		// Pass the node's matrix via push constants
@@ -53,6 +53,8 @@ void VulkanglTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout p
 			nodeMatrix = currentParent->matrix * nodeMatrix;
 			currentParent = currentParent->parent;
 		}
+		// 월드 좌표계로 이동
+		nodeMatrix = parentMatrix * nodeMatrix;
 		// Pass the final matrix to the vertex shader using push constants
 		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &nodeMatrix);
 		for (VulkanglTFModel::Primitive& primitive : node->mesh.primitives) {
@@ -66,7 +68,7 @@ void VulkanglTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout p
 		}
 	}
 	for (auto& child : node->children) {
-		drawNode(commandBuffer, pipelineLayout, child);
+		drawNode(commandBuffer, pipelineLayout, child, parentMatrix);
 	}
 }
 

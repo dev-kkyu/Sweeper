@@ -30,7 +30,7 @@ void PlayerObject::update(float elapsedTime)
 
 void PlayerObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
 {
-	GameObject::draw(commandBuffer, pipelineLayout);
+	GameObjectObj::draw(commandBuffer, pipelineLayout);
 }
 
 void PlayerObject::release()

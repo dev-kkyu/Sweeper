@@ -13,42 +13,55 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	createUboDescriptorPool();
 	createUboDescriptorSets();
 
-	//createSamplerDescriptorPool(2);
+	createSamplerDescriptorPool(2);
 
-	//plainBuffer.loadFromObjFile(fDevice, "models/tile.obj");
-	//plainTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/tile.jpg");
-	//boxBuffer.loadFromObjFile(fDevice, "models/box.obj");
-	//boxTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/wood.jpg");
+	plainBuffer.loadFromObjFile(fDevice, "models/tile.obj");
+	plainTexture.loadFromFile(fDevice, "textures/tile.jpg", samplerDescriptorPool, samplerDescriptorSetLayout);
+	boxBuffer.loadFromObjFile(fDevice, "models/box.obj");
+	boxTexture.loadFromFile(fDevice, "textures/wood.jpg", samplerDescriptorPool, samplerDescriptorSetLayout);
 
-	//plainObject = new GameObject;
-	//plainObject->setBuffer(plainBuffer);
-	//plainObject->setTexture(plainTexture);
+	plainObject = new GameObjectObj;
+	plainObject->setBuffer(plainBuffer);
+	plainObject->setTexture(plainTexture);
 
-	//pPlayer = new PlayerObject;
-	//pPlayer->setBuffer(boxBuffer);
-	//pPlayer->setTexture(boxTexture);
-	//pPlayer->setPosition({ 1.f, 0.f, 1.f });
-	//pPlayer->setLook({ 0.f, 0.f, -1.f });
+	pPlayer = new PlayerObject;
+	pPlayer->setBuffer(boxBuffer);
+	pPlayer->setTexture(boxTexture);
+	pPlayer->setPosition({ 1.f, 0.f, 1.f });
+	pPlayer->setLook({ 0.f, 0.f, -1.f });
 
-	//camera.setPlayer(pPlayer);
+	camera.setPlayer(pPlayer);
 
-	sampleObj = new GameObject;
-	sampleModel.loadModel(fDevice, samplerDescriptorSetLayout, "models/CesiumMan.glb");
-	sampleObj->setModel(sampleModel);
+	sampleModel[0].loadModel(fDevice, samplerDescriptorSetLayout, "models/FlightHelmet/glTF/FlightHelmet.gltf");
+	sampleModel[1].loadModel(fDevice, samplerDescriptorSetLayout, "models/CesiumMan/glTF-Binary/CesiumMan.glb");
+	//sampleModel[1].loadModel(fDevice, samplerDescriptorSetLayout, "models/CesiumMan/glTF/CesiumMan.gltf");
+	//sampleModel[1].loadModel(fDevice, samplerDescriptorSetLayout, "models/CesiumMan/glTF-Embedded/CesiumMan.gltf");
+
+	sampleModelObject[0] = new GameObjectglTF;
+	sampleModelObject[1] = new GameObjectglTF;
+
+	sampleModelObject[0]->setModel(sampleModel[0]);
+	sampleModelObject[0]->setPosition({ 0.f, 2.f, 0.f });
+	sampleModelObject[0]->setScale(glm::vec3{ 3.f });
+	sampleModelObject[1]->setModel(sampleModel[1]);
+	sampleModelObject[1]->setPosition({ 2.f, 0.f, 0.f });
+	sampleModelObject[1]->setScale(glm::vec3{ 2.f });
 }
 
 Scene::~Scene()
 {
-	delete sampleObj;
-	sampleModel.destroy();
+	delete sampleModelObject[0];
+	delete sampleModelObject[1];
+	sampleModel[0].destroy();
+	sampleModel[1].destroy();
 
-	//delete pPlayer;
-	//boxTexture.destroy();
-	//boxBuffer.destroy();
+	delete pPlayer;
+	boxTexture.destroy();
+	boxBuffer.destroy();
 
-	//delete plainObject;
-	//plainTexture.destroy();
-	//plainBuffer.destroy();
+	delete plainObject;
+	plainTexture.destroy();
+	plainBuffer.destroy();
 
 	vkDestroyDescriptorPool(fDevice.device, samplerDescriptorPool, nullptr);
 
@@ -76,9 +89,12 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	memcpy(uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
 
 
-	//plainObject->update(elapsedTime);
+	plainObject->update(elapsedTime);
 
-	//pPlayer->update(elapsedTime);
+	pPlayer->update(elapsedTime);
+
+	sampleModelObject[0]->update(elapsedTime);
+	sampleModelObject[1]->update(elapsedTime);
 }
 
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -88,9 +104,10 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	// firstSet은 set의 시작인덱스
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &uboDescriptorSets[currentFrame], 0, nullptr);
 
-	//plainObject->draw(commandBuffer, pipelineLayout);
-	//pPlayer->draw(commandBuffer, pipelineLayout);
-	sampleObj->draw(commandBuffer, pipelineLayout);
+	plainObject->draw(commandBuffer, pipelineLayout);
+	pPlayer->draw(commandBuffer, pipelineLayout);
+	sampleModelObject[0]->draw(commandBuffer, pipelineLayout);
+	sampleModelObject[1]->draw(commandBuffer, pipelineLayout);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)
@@ -112,7 +129,7 @@ void Scene::processKeyboard(int key, int action, int mods)
 			keyState |= KEY_RIGHT;
 			break;
 		}
-		//pPlayer->processKeyInput(keyState);
+		pPlayer->processKeyInput(keyState);
 		break;
 	case GLFW_RELEASE:
 		switch (key) {
@@ -129,7 +146,7 @@ void Scene::processKeyboard(int key, int action, int mods)
 			keyState &= ~KEY_RIGHT;
 			break;
 		}
-		//pPlayer->processKeyInput(keyState);
+		pPlayer->processKeyInput(keyState);
 		break;
 	case GLFW_REPEAT:
 		break;
@@ -145,7 +162,7 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 		{
 		case GLFW_MOUSE_BUTTON_LEFT:
 			leftButtonPressed = true;
-			//pPlayer->setStartMousePos(xpos, ypos);
+			pPlayer->setStartMousePos(xpos, ypos);
 			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
 			break;
@@ -179,7 +196,7 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 void Scene::processMouseCursor(float xpos, float ypos)
 {
 	if (leftButtonPressed){
-		//pPlayer->processMouseCursor(xpos, ypos);
+		pPlayer->processMouseCursor(xpos, ypos);
 	}
 }
 

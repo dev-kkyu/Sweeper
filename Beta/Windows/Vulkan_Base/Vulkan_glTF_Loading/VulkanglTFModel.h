@@ -77,10 +77,10 @@ public:
 
 	void loadModel(vkf::Device& fDevice, VkDescriptorSetLayout samplerDescriptorSetLayout, std::string filename);
 
-	void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
+	void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, glm::mat4 parentMatrix = glm::mat4(1.f));
 
 private:
-	void drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, VulkanglTFModel::Node* node);
+	void drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, VulkanglTFModel::Node* node, const glm::mat4& parentMatrix);
 
 	void loadglTFFile(std::string filename);
 

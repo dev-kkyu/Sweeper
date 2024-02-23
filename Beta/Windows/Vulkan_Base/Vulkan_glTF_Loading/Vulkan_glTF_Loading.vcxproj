@@ -137,7 +137,9 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="GameFramework.cpp" />
-    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GameObjectBase.cpp" />
+    <ClCompile Include="GameObjectglTF.cpp" />
+    <ClCompile Include="GameObjectObj.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PlayerObject.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -148,7 +150,9 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="GameFramework.h" />
-    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="GameObjectBase.h" />
+    <ClInclude Include="GameObjectglTF.h" />
+    <ClInclude Include="GameObjectObj.h" />
     <ClInclude Include="PlayerObject.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Timer.h" />
