@@ -25,11 +25,11 @@ private:
 
 	VkDescriptorPool samplerDescriptorPool;
 
-	vkf::Buffer plainBuffer;
+	vkf::MeshBuffer plainBuffer;
 	vkf::Texture plainTexture;
 	GameObjectObj* plainObject;
 
-	vkf::Buffer boxBuffer;
+	vkf::MeshBuffer boxBuffer;
 	vkf::Texture boxTexture;
 	PlayerObject* pPlayer;
 

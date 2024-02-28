@@ -19,7 +19,7 @@ namespace vkf
 	struct Device
 	{
 		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-		VkDevice device;
+		VkDevice logicalDevice;
 		VkQueue graphicsQueue;
 		VkQueue presentQueue;
 		VkCommandPool commandPool;
@@ -39,7 +39,7 @@ namespace vkf
 		}
 	};
 
-	class Buffer
+	class MeshBuffer
 	{
 	private:
 		vkf::Device* fDevice = nullptr;

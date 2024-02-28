@@ -63,7 +63,7 @@ namespace vkf
 		return attributeDescriptions;
 	}
 
-	void Buffer::loadFromBuffer(vkf::Device& fDevice, const std::vector<vkf::Vertex>& vertices, const std::vector<uint32_t>& indices)
+	void MeshBuffer::loadFromBuffer(vkf::Device& fDevice, const std::vector<vkf::Vertex>& vertices, const std::vector<uint32_t>& indices)
 	{
 		this->fDevice = &fDevice;
 
@@ -71,24 +71,24 @@ namespace vkf
 		createIndexBuffer(indices);
 	}
 
-	void Buffer::loadFromObjFile(vkf::Device& fDevice, std::string filename)
+	void MeshBuffer::loadFromObjFile(vkf::Device& fDevice, std::string filename)
 	{
 		auto [vertices, indices] = loadObjModel(filename);
 		loadFromBuffer(fDevice, vertices, indices);
 	}
 
-	void Buffer::destroy()
+	void MeshBuffer::destroy()
 	{
 		if (fDevice) {
-			vkDestroyBuffer(fDevice->device, indexBuffer, nullptr);
-			vkFreeMemory(fDevice->device, indexBufferMemory, nullptr);
+			vkDestroyBuffer(fDevice->logicalDevice, indexBuffer, nullptr);
+			vkFreeMemory(fDevice->logicalDevice, indexBufferMemory, nullptr);
 
-			vkDestroyBuffer(fDevice->device, vertexBuffer, nullptr);
-			vkFreeMemory(fDevice->device, vertexBufferMemory, nullptr);
+			vkDestroyBuffer(fDevice->logicalDevice, vertexBuffer, nullptr);
+			vkFreeMemory(fDevice->logicalDevice, vertexBufferMemory, nullptr);
 		}
 	}
 
-	std::pair<std::vector<vkf::Vertex>, std::vector<uint32_t>> Buffer::loadObjModel(std::string filename)
+	std::pair<std::vector<vkf::Vertex>, std::vector<uint32_t>> MeshBuffer::loadObjModel(std::string filename)
 	{
 		std::vector<vkf::Vertex> vertices;
 		std::vector<uint32_t> indices;
@@ -139,7 +139,7 @@ namespace vkf
 		return { vertices, indices };
 	}
 
-	void Buffer::createVertexBuffer(const std::vector<vkf::Vertex>& vertices)
+	void MeshBuffer::createVertexBuffer(const std::vector<vkf::Vertex>& vertices)
 	{
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
@@ -148,19 +148,19 @@ namespace vkf
 		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 		void* data;
-		vkMapMemory(fDevice->device, stagingBufferMemory, 0, bufferSize, 0, &data);
+		vkMapMemory(fDevice->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, vertices.data(), (size_t)bufferSize);
-		vkUnmapMemory(fDevice->device, stagingBufferMemory);
+		vkUnmapMemory(fDevice->logicalDevice, stagingBufferMemory);
 
 		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 
 		vkf::copyBuffer(*fDevice, stagingBuffer, vertexBuffer, bufferSize);
 
-		vkDestroyBuffer(fDevice->device, stagingBuffer, nullptr);
-		vkFreeMemory(fDevice->device, stagingBufferMemory, nullptr);
+		vkDestroyBuffer(fDevice->logicalDevice, stagingBuffer, nullptr);
+		vkFreeMemory(fDevice->logicalDevice, stagingBufferMemory, nullptr);
 	}
 
-	void Buffer::createIndexBuffer(const std::vector<uint32_t>& indices)
+	void MeshBuffer::createIndexBuffer(const std::vector<uint32_t>& indices)
 	{
 		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
@@ -169,16 +169,16 @@ namespace vkf
 		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 		void* data;
-		vkMapMemory(fDevice->device, stagingBufferMemory, 0, bufferSize, 0, &data);
+		vkMapMemory(fDevice->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, indices.data(), (size_t)bufferSize);
-		vkUnmapMemory(fDevice->device, stagingBufferMemory);
+		vkUnmapMemory(fDevice->logicalDevice, stagingBufferMemory);
 
 		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
 
 		vkf::copyBuffer(*fDevice, stagingBuffer, indexBuffer, bufferSize);
 
-		vkDestroyBuffer(fDevice->device, stagingBuffer, nullptr);
-		vkFreeMemory(fDevice->device, stagingBufferMemory, nullptr);
+		vkDestroyBuffer(fDevice->logicalDevice, stagingBuffer, nullptr);
+		vkFreeMemory(fDevice->logicalDevice, stagingBufferMemory, nullptr);
 
 		indexCount = static_cast<uint32_t>(indices.size());
 	}
@@ -206,11 +206,11 @@ namespace vkf
 	void Texture::destroy()
 	{
 		if (fDevice) {
-			vkDestroySampler(fDevice->device, textureSampler, nullptr);
-			vkDestroyImageView(fDevice->device, textureImageView, nullptr);
+			vkDestroySampler(fDevice->logicalDevice, textureSampler, nullptr);
+			vkDestroyImageView(fDevice->logicalDevice, textureImageView, nullptr);
 
-			vkDestroyImage(fDevice->device, textureImage, nullptr);
-			vkFreeMemory(fDevice->device, textureImageMemory, nullptr);
+			vkDestroyImage(fDevice->logicalDevice, textureImage, nullptr);
+			vkFreeMemory(fDevice->logicalDevice, textureImageMemory, nullptr);
 		}
 	}
 
@@ -230,9 +230,9 @@ namespace vkf
 		vkf::createBuffer(*fDevice, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 		void* data;
-		vkMapMemory(fDevice->device, stagingBufferMemory, 0, imageSize, 0, &data);
+		vkMapMemory(fDevice->logicalDevice, stagingBufferMemory, 0, imageSize, 0, &data);
 		memcpy(data, pixels, static_cast<size_t>(imageSize));
-		vkUnmapMemory(fDevice->device, stagingBufferMemory);
+		vkUnmapMemory(fDevice->logicalDevice, stagingBufferMemory);
 
 		stbi_image_free(pixels);
 
@@ -242,8 +242,8 @@ namespace vkf
 		vkf::copyBufferToImage(*fDevice, stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
 		//transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmaps
 
-		vkDestroyBuffer(fDevice->device, stagingBuffer, nullptr);
-		vkFreeMemory(fDevice->device, stagingBufferMemory, nullptr);
+		vkDestroyBuffer(fDevice->logicalDevice, stagingBuffer, nullptr);
+		vkFreeMemory(fDevice->logicalDevice, stagingBufferMemory, nullptr);
 
 		generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, mipLevels);
 	}
@@ -257,9 +257,9 @@ namespace vkf
 		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 		void* data;
-		vkMapMemory(fDevice->device, stagingBufferMemory, 0, bufferSize, 0, &data);
+		vkMapMemory(fDevice->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, buffer, static_cast<size_t>(bufferSize));
-		vkUnmapMemory(fDevice->device, stagingBufferMemory);
+		vkUnmapMemory(fDevice->logicalDevice, stagingBufferMemory);
 
 		vkf::createImage(*fDevice, texWidth, texHeight, mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 
@@ -267,8 +267,8 @@ namespace vkf
 		vkf::copyBufferToImage(*fDevice, stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
 		//transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmaps
 
-		vkDestroyBuffer(fDevice->device, stagingBuffer, nullptr);
-		vkFreeMemory(fDevice->device, stagingBufferMemory, nullptr);
+		vkDestroyBuffer(fDevice->logicalDevice, stagingBuffer, nullptr);
+		vkFreeMemory(fDevice->logicalDevice, stagingBufferMemory, nullptr);
 
 		generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, mipLevels);
 	}
@@ -301,7 +301,7 @@ namespace vkf
 		samplerInfo.maxLod = static_cast<float>(mipLevels);
 		samplerInfo.mipLodBias = 0.0f;
 
-		if (vkCreateSampler(fDevice->device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+		if (vkCreateSampler(fDevice->logicalDevice, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create texture sampler!");
 		}
 	}
@@ -314,7 +314,7 @@ namespace vkf
 		allocInfo.descriptorSetCount = 1;
 		allocInfo.pSetLayouts = &samplerDescriptorSetLayout;
 
-		if (vkAllocateDescriptorSets(fDevice->device, &allocInfo, &samplerDescriptorSet) != VK_SUCCESS) {
+		if (vkAllocateDescriptorSets(fDevice->logicalDevice, &allocInfo, &samplerDescriptorSet) != VK_SUCCESS) {
 			throw std::runtime_error("failed to allocate descriptor sets!");
 		}
 
@@ -333,7 +333,7 @@ namespace vkf
 		descriptorWrites[0].descriptorCount = 1;
 		descriptorWrites[0].pImageInfo = &imageInfo;
 
-		vkUpdateDescriptorSets(fDevice->device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+		vkUpdateDescriptorSets(fDevice->logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 	}
 
 	void Texture::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels)
@@ -438,7 +438,7 @@ namespace vkf
 		viewInfo.subresourceRange.layerCount = 1;
 
 		VkImageView imageView;
-		if (vkCreateImageView(fDevice.device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
+		if (vkCreateImageView(fDevice.logicalDevice, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create texture image view!");
 		}
 
@@ -462,23 +462,23 @@ namespace vkf
 		imageInfo.samples = numSamples;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if (vkCreateImage(fDevice.device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+		if (vkCreateImage(fDevice.logicalDevice, &imageInfo, nullptr, &image) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create image!");
 		}
 
 		VkMemoryRequirements memRequirements;
-		vkGetImageMemoryRequirements(fDevice.device, image, &memRequirements);
+		vkGetImageMemoryRequirements(fDevice.logicalDevice, image, &memRequirements);
 
 		VkMemoryAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		allocInfo.allocationSize = memRequirements.size;
 		allocInfo.memoryTypeIndex = findMemoryType(fDevice, memRequirements.memoryTypeBits, properties);
 
-		if (vkAllocateMemory(fDevice.device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+		if (vkAllocateMemory(fDevice.logicalDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
 			throw std::runtime_error("failed to allocate image memory!");
 		}
 
-		vkBindImageMemory(fDevice.device, image, imageMemory, 0);
+		vkBindImageMemory(fDevice.logicalDevice, image, imageMemory, 0);
 	}
 
 	void transitionImageLayout(Device& fDevice, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
@@ -563,23 +563,23 @@ namespace vkf
 		bufferInfo.usage = usage;
 		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if (vkCreateBuffer(fDevice.device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+		if (vkCreateBuffer(fDevice.logicalDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create buffer!");
 		}
 
 		VkMemoryRequirements memRequirements;
-		vkGetBufferMemoryRequirements(fDevice.device, buffer, &memRequirements);
+		vkGetBufferMemoryRequirements(fDevice.logicalDevice, buffer, &memRequirements);
 
 		VkMemoryAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		allocInfo.allocationSize = memRequirements.size;
 		allocInfo.memoryTypeIndex = findMemoryType(fDevice, memRequirements.memoryTypeBits, properties);
 
-		if (vkAllocateMemory(fDevice.device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+		if (vkAllocateMemory(fDevice.logicalDevice, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
 			throw std::runtime_error("failed to allocate buffer memory!");
 		}
 
-		vkBindBufferMemory(fDevice.device, buffer, bufferMemory, 0);
+		vkBindBufferMemory(fDevice.logicalDevice, buffer, bufferMemory, 0);
 	}
 
 	VkCommandBuffer beginSingleTimeCommands(Device& fDevice)
@@ -591,7 +591,7 @@ namespace vkf
 		allocInfo.commandBufferCount = 1;
 
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(fDevice.device, &allocInfo, &commandBuffer);
+		vkAllocateCommandBuffers(fDevice.logicalDevice, &allocInfo, &commandBuffer);
 
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -614,7 +614,7 @@ namespace vkf
 		vkQueueSubmit(fDevice.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		vkQueueWaitIdle(fDevice.graphicsQueue);
 
-		vkFreeCommandBuffers(fDevice.device, fDevice.commandPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(fDevice.logicalDevice, fDevice.commandPool, 1, &commandBuffer);
 	}
 
 	void copyBuffer(Device& fDevice, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
@@ -669,7 +669,7 @@ namespace vkf
 		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
 		VkShaderModule shaderModule;
-		if (vkCreateShaderModule(fDevice.device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+		if (vkCreateShaderModule(fDevice.logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create shader module!");
 		}
 

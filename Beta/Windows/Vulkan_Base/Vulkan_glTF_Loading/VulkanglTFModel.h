@@ -16,7 +16,7 @@ public:
 	VkDescriptorPool samplerDescriptorPool = VK_NULL_HANDLE;
 	VkDescriptorSetLayout samplerDescriptorSetLayout = VK_NULL_HANDLE;
 
-	vkf::Buffer buffer;
+	vkf::MeshBuffer buffer;
 	uint32_t indexCount = 0;
 
 	// The following structures roughly represent the glTF scene structure

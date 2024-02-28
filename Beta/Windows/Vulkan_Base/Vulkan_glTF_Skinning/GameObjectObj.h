@@ -22,7 +22,7 @@ public:
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
 	virtual void release();
 
-	void setBuffer(vkf::Buffer& buffer);
-	void setTexture(vkf::Texture& texture);
+	void setBuffer(const vkf::MeshBuffer& buffer);
+	void setTexture(const vkf::Texture& texture);
 };
 

@@ -19,7 +19,7 @@ void VulkanglTFModel::destroy()
 		image.texture.destroy();
 	}
 
-	vkDestroyDescriptorPool(fDevice->device, samplerDescriptorPool, nullptr);
+	vkDestroyDescriptorPool(fDevice->logicalDevice, samplerDescriptorPool, nullptr);
 }
 
 void VulkanglTFModel::loadModel(vkf::Device& fDevice, VkDescriptorSetLayout samplerDescriptorSetLayout, std::string filename)
@@ -130,7 +130,7 @@ void VulkanglTFModel::createSamplerDescriptorPool(uint32_t setCount)
 	poolInfo.pPoolSizes = poolSizes.data();
 	poolInfo.maxSets = setCount;
 
-	if (vkCreateDescriptorPool(fDevice->device, &poolInfo, nullptr, &samplerDescriptorPool) != VK_SUCCESS) {
+	if (vkCreateDescriptorPool(fDevice->logicalDevice, &poolInfo, nullptr, &samplerDescriptorPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }

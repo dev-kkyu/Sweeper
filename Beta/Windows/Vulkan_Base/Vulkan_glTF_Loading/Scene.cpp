@@ -63,19 +63,19 @@ Scene::~Scene()
 	plainTexture.destroy();
 	plainBuffer.destroy();
 
-	vkDestroyDescriptorPool(fDevice.device, samplerDescriptorPool, nullptr);
+	vkDestroyDescriptorPool(fDevice.logicalDevice, samplerDescriptorPool, nullptr);
 
-	vkDestroyDescriptorPool(fDevice.device, uboDescriptorPool, nullptr);
+	vkDestroyDescriptorPool(fDevice.logicalDevice, uboDescriptorPool, nullptr);
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		vkDestroyBuffer(fDevice.device, uniformBuffers[i], nullptr);
-		vkFreeMemory(fDevice.device, uniformBuffersMemory[i], nullptr);
+		vkDestroyBuffer(fDevice.logicalDevice, uniformBuffers[i], nullptr);
+		vkFreeMemory(fDevice.logicalDevice, uniformBuffersMemory[i], nullptr);
 	}
 
-	vkDestroyPipeline(fDevice.device, graphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(fDevice.device, pipelineLayout, nullptr);
-	vkDestroyDescriptorSetLayout(fDevice.device, samplerDescriptorSetLayout, nullptr);
-	vkDestroyDescriptorSetLayout(fDevice.device, uboDescriptorSetLayout, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, graphicsPipeline, nullptr);
+	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout, nullptr);
+	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, samplerDescriptorSetLayout, nullptr);
+	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, uboDescriptorSetLayout, nullptr);
 }
 
 void Scene::update(float elapsedTime, uint32_t currentFrame)
@@ -215,7 +215,7 @@ void Scene::createDescriptorSetLayout()
 		layoutInfo.bindingCount = 1;
 		layoutInfo.pBindings = &uboLayoutBinding;
 
-		if (vkCreateDescriptorSetLayout(fDevice.device, &layoutInfo, nullptr, &uboDescriptorSetLayout) != VK_SUCCESS) {
+		if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &uboDescriptorSetLayout) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create descriptor set layout!");
 		}
 	}
@@ -233,7 +233,7 @@ void Scene::createDescriptorSetLayout()
 		layoutInfo.bindingCount = 1;
 		layoutInfo.pBindings = &samplerLayoutBinding;
 
-		if (vkCreateDescriptorSetLayout(fDevice.device, &layoutInfo, nullptr, &samplerDescriptorSetLayout) != VK_SUCCESS) {
+		if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &samplerDescriptorSetLayout) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create descriptor set layout!");
 		}
 	}
@@ -347,7 +347,7 @@ void Scene::createGraphicsPipeline()
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
-	if (vkCreatePipelineLayout(fDevice.device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
@@ -368,12 +368,12 @@ void Scene::createGraphicsPipeline()
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(fDevice.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkDestroyShaderModule(fDevice.device, fragShaderModule, nullptr);
-	vkDestroyShaderModule(fDevice.device, vertShaderModule, nullptr);
+	vkDestroyShaderModule(fDevice.logicalDevice, fragShaderModule, nullptr);
+	vkDestroyShaderModule(fDevice.logicalDevice, vertShaderModule, nullptr);
 }
 
 void Scene::createUniformBuffers()
@@ -383,7 +383,7 @@ void Scene::createUniformBuffers()
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
 
-		vkMapMemory(fDevice.device, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
+		vkMapMemory(fDevice.logicalDevice, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
 	}
 }
 
@@ -399,7 +399,7 @@ void Scene::createUboDescriptorPool()
 	poolInfo.pPoolSizes = poolSizes.data();
 	poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
-	if (vkCreateDescriptorPool(fDevice.device, &poolInfo, nullptr, &uboDescriptorPool) != VK_SUCCESS) {
+	if (vkCreateDescriptorPool(fDevice.logicalDevice, &poolInfo, nullptr, &uboDescriptorPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }
@@ -413,7 +413,7 @@ void Scene::createUboDescriptorSets()
 	allocInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size());
 	allocInfo.pSetLayouts = layouts.data();
 
-	if (vkAllocateDescriptorSets(fDevice.device, &allocInfo, uboDescriptorSets.data()) != VK_SUCCESS) {
+	if (vkAllocateDescriptorSets(fDevice.logicalDevice, &allocInfo, uboDescriptorSets.data()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	}
 
@@ -433,7 +433,7 @@ void Scene::createUboDescriptorSets()
 		descriptorWrites[0].descriptorCount = 1;
 		descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-		vkUpdateDescriptorSets(fDevice.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+		vkUpdateDescriptorSets(fDevice.logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 	}
 }
 
@@ -449,7 +449,7 @@ void Scene::createSamplerDescriptorPool(uint32_t setCount)
 	poolInfo.pPoolSizes = poolSizes.data();
 	poolInfo.maxSets = setCount;
 
-	if (vkCreateDescriptorPool(fDevice.device, &poolInfo, nullptr, &samplerDescriptorPool) != VK_SUCCESS) {
+	if (vkCreateDescriptorPool(fDevice.logicalDevice, &poolInfo, nullptr, &samplerDescriptorPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }

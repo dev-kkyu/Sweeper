@@ -36,7 +36,7 @@ void GameObjectObj::release()
 {
 }
 
-void GameObjectObj::setBuffer(vkf::Buffer& buffer)
+void GameObjectObj::setBuffer(const vkf::MeshBuffer& buffer)
 {
 	vertexBuffer = buffer.vertexBuffer;
 	indexBuffer = buffer.indexBuffer;
@@ -44,7 +44,7 @@ void GameObjectObj::setBuffer(vkf::Buffer& buffer)
 	indexCount = buffer.indexCount;
 }
 
-void GameObjectObj::setTexture(vkf::Texture& texture)
+void GameObjectObj::setTexture(const vkf::Texture& texture)
 {
 	samplerDescriptorSet = texture.samplerDescriptorSet;
 }
