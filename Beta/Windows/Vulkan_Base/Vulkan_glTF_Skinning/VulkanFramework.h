@@ -45,8 +45,7 @@ namespace vkf
 		vkf::Device* fDevice = nullptr;
 
 	public:
-		std::vector<vkf::Vertex> vertices;
-		std::vector<uint32_t> indices;
+		uint32_t indexCount = 0;
 
 		VkBuffer vertexBuffer = VK_NULL_HANDLE;
 		VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
@@ -54,14 +53,14 @@ namespace vkf
 		VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
 
 	public:
-		void loadFromBuffer(vkf::Device& fDevice, std::vector<vkf::Vertex> vertices, std::vector<uint32_t> indices);
+		void loadFromBuffer(vkf::Device& fDevice, const std::vector<vkf::Vertex>& vertices, const std::vector<uint32_t>& indices);
 		void loadFromObjFile(vkf::Device& fDevice, std::string filename);
 		void destroy();
 
 	private:
-		void loadObjModel(std::string filename);
-		void createVertexBuffer();
-		void createIndexBuffer();
+		std::pair<std::vector<vkf::Vertex>, std::vector<uint32_t>> loadObjModel(std::string filename);
+		void createVertexBuffer(const std::vector<vkf::Vertex>& vertices);
+		void createIndexBuffer(const std::vector<uint32_t>& indices);
 
 	};
 

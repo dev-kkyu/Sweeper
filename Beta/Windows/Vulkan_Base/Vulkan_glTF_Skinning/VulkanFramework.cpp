@@ -63,23 +63,18 @@ namespace vkf
 		return attributeDescriptions;
 	}
 
-	void Buffer::loadFromBuffer(vkf::Device& fDevice, std::vector<vkf::Vertex> vertices, std::vector<uint32_t> indices)
+	void Buffer::loadFromBuffer(vkf::Device& fDevice, const std::vector<vkf::Vertex>& vertices, const std::vector<uint32_t>& indices)
 	{
 		this->fDevice = &fDevice;
-		this->vertices = vertices;
-		this->indices = indices;
 
-		createVertexBuffer();
-		createIndexBuffer();
+		createVertexBuffer(vertices);
+		createIndexBuffer(indices);
 	}
 
 	void Buffer::loadFromObjFile(vkf::Device& fDevice, std::string filename)
 	{
-		this->fDevice = &fDevice;
-
-		loadObjModel(filename);
-		createVertexBuffer();
-		createIndexBuffer();
+		auto [vertices, indices] = loadObjModel(filename);
+		loadFromBuffer(fDevice, vertices, indices);
 	}
 
 	void Buffer::destroy()
@@ -93,8 +88,11 @@ namespace vkf
 		}
 	}
 
-	void Buffer::loadObjModel(std::string filename)
+	std::pair<std::vector<vkf::Vertex>, std::vector<uint32_t>> Buffer::loadObjModel(std::string filename)
 	{
+		std::vector<vkf::Vertex> vertices;
+		std::vector<uint32_t> indices;
+
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
@@ -137,9 +135,11 @@ namespace vkf
 				indices.push_back(uniqueVertices[vertex]);
 			}
 		}
+
+		return { vertices, indices };
 	}
 
-	void Buffer::createVertexBuffer()
+	void Buffer::createVertexBuffer(const std::vector<vkf::Vertex>& vertices)
 	{
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
@@ -160,7 +160,7 @@ namespace vkf
 		vkFreeMemory(fDevice->device, stagingBufferMemory, nullptr);
 	}
 
-	void Buffer::createIndexBuffer()
+	void Buffer::createIndexBuffer(const std::vector<uint32_t>& indices)
 	{
 		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
@@ -179,6 +179,8 @@ namespace vkf
 
 		vkDestroyBuffer(fDevice->device, stagingBuffer, nullptr);
 		vkFreeMemory(fDevice->device, stagingBufferMemory, nullptr);
+
+		indexCount = static_cast<uint32_t>(indices.size());
 	}
 
 	void Texture::loadFromFile(vkf::Device& fDevice, std::string filename, VkDescriptorPool samplerDescriptorPool, VkDescriptorSetLayout samplerDescriptorSetLayout)

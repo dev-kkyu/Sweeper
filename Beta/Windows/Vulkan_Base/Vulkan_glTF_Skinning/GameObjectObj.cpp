@@ -41,8 +41,7 @@ void GameObjectObj::setBuffer(vkf::Buffer& buffer)
 	vertexBuffer = buffer.vertexBuffer;
 	indexBuffer = buffer.indexBuffer;
 
-	vertexCount = static_cast<uint32_t>(buffer.vertices.size());
-	indexCount = static_cast<uint32_t>(buffer.indices.size());
+	indexCount = buffer.indexCount;
 }
 
 void GameObjectObj::setTexture(vkf::Texture& texture)
