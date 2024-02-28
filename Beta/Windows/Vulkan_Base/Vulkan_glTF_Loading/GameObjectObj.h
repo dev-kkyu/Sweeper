@@ -9,7 +9,6 @@ protected:
 	VkBuffer vertexBuffer = VK_NULL_HANDLE;
 	VkBuffer indexBuffer = VK_NULL_HANDLE;
 
-	uint32_t vertexCount = 0;
 	uint32_t indexCount = 0;
 
 	VkDescriptorSet samplerDescriptorSet = VK_NULL_HANDLE;

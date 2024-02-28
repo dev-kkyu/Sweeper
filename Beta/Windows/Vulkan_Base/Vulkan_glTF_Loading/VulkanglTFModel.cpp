@@ -97,13 +97,13 @@ void VulkanglTFModel::loadglTFFile(std::string filename)
 	std::vector<vkf::Vertex> vertexBuffer;
 
 	if (fileLoaded) {
-		loadImages(&glTFInput);
-		loadMaterials(&glTFInput);
-		loadTextures(&glTFInput);
+		loadImages(glTFInput);
+		loadMaterials(glTFInput);
+		loadTextures(glTFInput);
 		const tinygltf::Scene& scene = glTFInput.scenes[0];
 		for (size_t i = 0; i < scene.nodes.size(); i++) {
 			const tinygltf::Node node = glTFInput.nodes[scene.nodes[i]];
-			loadNode(&node, &glTFInput, nullptr, indexBuffer, vertexBuffer);
+			loadNode(node, glTFInput, nullptr, indexBuffer, vertexBuffer);
 		}
 	}
 	else {
@@ -135,9 +135,8 @@ void VulkanglTFModel::createSamplerDescriptorPool(uint32_t setCount)
 	}
 }
 
-void VulkanglTFModel::loadImages(void* pinput)
+void VulkanglTFModel::loadImages(tinygltf::Model& input)
 {
-	tinygltf::Model& input = *(reinterpret_cast<tinygltf::Model*>(pinput));
 	createSamplerDescriptorPool(static_cast<uint32_t>(input.images.size()));
 	// Images can be stored inside the glTF (which is the case for the sample model), so instead of directly
 		// loading them from disk, we fetch them from the glTF loader and upload the buffers
@@ -174,18 +173,16 @@ void VulkanglTFModel::loadImages(void* pinput)
 	}
 }
 
-void VulkanglTFModel::loadTextures(void* pinput)
+void VulkanglTFModel::loadTextures(tinygltf::Model& input)
 {
-	tinygltf::Model& input = *(reinterpret_cast<tinygltf::Model*>(pinput));
 	textures.resize(input.textures.size());
 	for (size_t i = 0; i < input.textures.size(); i++) {
 		textures[i].imageIndex = input.textures[i].source;
 	}
 }
 
-void VulkanglTFModel::loadMaterials(void* pinput)
+void VulkanglTFModel::loadMaterials(tinygltf::Model& input)
 {
-	tinygltf::Model& input = *(reinterpret_cast<tinygltf::Model*>(pinput));
 	materials.resize(input.materials.size());
 	for (size_t i = 0; i < input.materials.size(); i++) {
 		// We only read the most basic properties required for our sample
@@ -201,11 +198,8 @@ void VulkanglTFModel::loadMaterials(void* pinput)
 	}
 }
 
-void VulkanglTFModel::loadNode(const void* pinputNode, const void* pinput, VulkanglTFModel::Node* parent, std::vector<uint32_t>& indexBuffer, std::vector<vkf::Vertex>& vertexBuffer)
+void VulkanglTFModel::loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, VulkanglTFModel::Node* parent, std::vector<uint32_t>& indexBuffer, std::vector<vkf::Vertex>& vertexBuffer)
 {
-	const tinygltf::Node& inputNode = *(reinterpret_cast<const tinygltf::Node*>(pinputNode));
-	const tinygltf::Model& input = *(reinterpret_cast<const tinygltf::Model*>(pinput));
-
 	VulkanglTFModel::Node* node = new VulkanglTFModel::Node{};
 	node->matrix = glm::mat4(1.0f);
 	node->parent = parent;
@@ -229,7 +223,7 @@ void VulkanglTFModel::loadNode(const void* pinputNode, const void* pinput, Vulka
 	// Load node's children
 	if (inputNode.children.size() > 0) {
 		for (size_t i = 0; i < inputNode.children.size(); i++) {
-			loadNode(&input.nodes[inputNode.children[i]], &input, node, indexBuffer, vertexBuffer);
+			loadNode(input.nodes[inputNode.children[i]], input, node, indexBuffer, vertexBuffer);
 		}
 	}
 

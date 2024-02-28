@@ -2,6 +2,12 @@
 
 #include "VulkanFramework.h"
 
+namespace tinygltf
+{
+	class Node;
+	class Model;
+}
+
 class VulkanglTFModel
 {
 public:
@@ -85,10 +91,10 @@ private:
 	void loadglTFFile(std::string filename);
 
 	void createSamplerDescriptorPool(uint32_t setCount);
-	void loadImages(void* pinput);
-	void loadTextures(void* pinput);
-	void loadMaterials(void* pinput);
-	void loadNode(const void* pinputNode, const void* pinput, VulkanglTFModel::Node* parent, std::vector<uint32_t>& indexBuffer, std::vector<vkf::Vertex>& vertexBuffer);
+	void loadImages(tinygltf::Model& input);
+	void loadTextures(tinygltf::Model& input);
+	void loadMaterials(tinygltf::Model& input);
+	void loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, VulkanglTFModel::Node* parent, std::vector<uint32_t>& indexBuffer, std::vector<vkf::Vertex>& vertexBuffer);
 
 
 };
