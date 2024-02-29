@@ -25,6 +25,11 @@ namespace vkf
 		VkCommandPool commandPool;
 	};
 
+	struct UniformBufferObject {
+		alignas(16) glm::mat4 view;
+		alignas(16) glm::mat4 proj;
+	};
+
 	struct Vertex {
 		glm::vec3 pos;
 		glm::vec3 normal;
@@ -37,6 +42,18 @@ namespace vkf
 		bool operator==(const Vertex& other) const {
 			return pos == other.pos && normal == other.normal && texCoord == other.texCoord && color == other.color;
 		}
+	};
+
+	struct SkinVertex {
+		glm::vec3 pos;
+		glm::vec3 normal;
+		glm::vec2 uv;
+		glm::vec3 color;
+		glm::vec4 jointIndices;
+		glm::vec4 jointWeights;
+
+		static VkVertexInputBindingDescription getBindingDescription();
+		static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions();
 	};
 
 	class MeshBuffer
@@ -61,7 +78,31 @@ namespace vkf
 		std::pair<std::vector<vkf::Vertex>, std::vector<uint32_t>> loadObjModel(std::string filename);
 		void createVertexBuffer(const std::vector<vkf::Vertex>& vertices);
 		void createIndexBuffer(const std::vector<uint32_t>& indices);
+	};
 
+	class BufferObject
+	{
+	private:
+		vkf::Device* fDevice = nullptr;
+
+		std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT> buffers{};
+		std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> buffersMemory{};
+
+		VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+
+	public:
+		std::array<void*, MAX_FRAMES_IN_FLIGHT> buffersMapped{};
+		std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> descriptorSets{};
+
+	public:
+		void createUniformBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout);		// ubo, ssbo 중 하나만 생성 및 호출할 것
+		void createShaderStorageBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout);
+		void destroy();
+
+	private:
+		void createBuffers(VkDeviceSize bufferSize, VkBufferUsageFlags usage);
+		void createDescriptorPool(VkDescriptorType type);
+		void createDescriptorSets(VkDescriptorSetLayout descriptorSetLayout, VkDeviceSize bufferSize, VkDescriptorType descriptorType);
 	};
 
 	class Texture

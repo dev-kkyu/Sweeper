@@ -9,16 +9,14 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
 
-	createUniformBuffers();
-	createUboDescriptorPool();
-	createUboDescriptorSets();
+	uniformBufferObject.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 
 	createSamplerDescriptorPool(2);
 
 	plainBuffer.loadFromObjFile(fDevice, "models/tile.obj");
-	plainTexture.loadFromFile(fDevice, "textures/tile.jpg", samplerDescriptorPool, samplerDescriptorSetLayout);
+	plainTexture.loadFromFile(fDevice, "textures/tile.jpg", samplerDescriptorPool, descriptorSetLayout.sampler);
 	boxBuffer.loadFromObjFile(fDevice, "models/box.obj");
-	boxTexture.loadFromFile(fDevice, "textures/wood.jpg", samplerDescriptorPool, samplerDescriptorSetLayout);
+	boxTexture.loadFromFile(fDevice, "textures/wood.jpg", samplerDescriptorPool, descriptorSetLayout.sampler);
 
 	plainObject = new GameObjectObj;
 	plainObject->setBuffer(plainBuffer);
@@ -32,10 +30,10 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 
 	camera.setPlayer(pPlayer);
 
-	sampleModel[0].loadModel(fDevice, samplerDescriptorSetLayout, "models/FlightHelmet/glTF/FlightHelmet.gltf");
-	sampleModel[1].loadModel(fDevice, samplerDescriptorSetLayout, "models/CesiumMan/glTF-Binary/CesiumMan.glb");
-	//sampleModel[1].loadModel(fDevice, samplerDescriptorSetLayout, "models/CesiumMan/glTF/CesiumMan.gltf");
-	//sampleModel[1].loadModel(fDevice, samplerDescriptorSetLayout, "models/CesiumMan/glTF-Embedded/CesiumMan.gltf");
+	sampleModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/FlightHelmet/glTF/FlightHelmet.gltf");
+	sampleModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Binary/CesiumMan.glb");
+	//sampleModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF/CesiumMan.gltf");
+	//sampleModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Embedded/CesiumMan.gltf");
 
 	sampleModelObject[0] = new GameObjectglTF;
 	sampleModelObject[1] = new GameObjectglTF;
@@ -65,28 +63,26 @@ Scene::~Scene()
 
 	vkDestroyDescriptorPool(fDevice.logicalDevice, samplerDescriptorPool, nullptr);
 
-	vkDestroyDescriptorPool(fDevice.logicalDevice, uboDescriptorPool, nullptr);
+	uniformBufferObject.destroy();
 
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		vkDestroyBuffer(fDevice.logicalDevice, uniformBuffers[i], nullptr);
-		vkFreeMemory(fDevice.logicalDevice, uniformBuffersMemory[i], nullptr);
-	}
-
-	vkDestroyPipeline(fDevice.logicalDevice, graphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout, nullptr);
-	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, samplerDescriptorSetLayout, nullptr);
-	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, uboDescriptorSetLayout, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.model, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.skinModel, nullptr);
+	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout.model, nullptr);
+	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout.skinModel, nullptr);
+	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.ssbo, nullptr);
+	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.sampler, nullptr);
+	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.ubo, nullptr);
 }
 
 void Scene::update(float elapsedTime, uint32_t currentFrame)
 {
 	camera.update(elapsedTime);
 
-	UniformBufferObject ubo{};
+	vkf::UniformBufferObject ubo{};
 	ubo.view = camera.getView();
 	ubo.proj = camera.getProjection();
 
-	memcpy(uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
+	memcpy(uniformBufferObject.buffersMapped[currentFrame], &ubo, sizeof(ubo));
 
 
 	plainObject->update(elapsedTime);
@@ -99,15 +95,15 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.model);
 
 	// firstSet은 set의 시작인덱스
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &uboDescriptorSets[currentFrame], 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 
-	plainObject->draw(commandBuffer, pipelineLayout);
-	pPlayer->draw(commandBuffer, pipelineLayout);
-	sampleModelObject[0]->draw(commandBuffer, pipelineLayout);
-	sampleModelObject[1]->draw(commandBuffer, pipelineLayout);
+	plainObject->draw(commandBuffer, pipelineLayout.model);
+	pPlayer->draw(commandBuffer, pipelineLayout.model);
+	sampleModelObject[0]->draw(commandBuffer, pipelineLayout.model);
+	sampleModelObject[1]->draw(commandBuffer, pipelineLayout.model);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)
@@ -195,54 +191,46 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 
 void Scene::processMouseCursor(float xpos, float ypos)
 {
-	if (leftButtonPressed){
+	if (leftButtonPressed) {
 		pPlayer->processMouseCursor(xpos, ypos);
 	}
 }
 
 void Scene::createDescriptorSetLayout()
 {
-	{
-		VkDescriptorSetLayoutBinding uboLayoutBinding{};
-		uboLayoutBinding.binding = 0;
-		uboLayoutBinding.descriptorCount = 1;
-		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		uboLayoutBinding.pImmutableSamplers = nullptr;
-		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	VkDescriptorSetLayoutBinding uboLayoutBinding{};
+	uboLayoutBinding.binding = 0;
+	uboLayoutBinding.descriptorCount = 1;
+	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uboLayoutBinding.pImmutableSamplers = nullptr;
+	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-		VkDescriptorSetLayoutCreateInfo layoutInfo{};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = 1;
-		layoutInfo.pBindings = &uboLayoutBinding;
+	VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+	samplerLayoutBinding.binding = 0;
+	samplerLayoutBinding.descriptorCount = 1;
+	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	samplerLayoutBinding.pImmutableSamplers = nullptr;
+	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-		if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &uboDescriptorSetLayout) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create descriptor set layout!");
-		}
+	VkDescriptorSetLayoutCreateInfo layoutInfo{};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = 1;
+	layoutInfo.pBindings = &uboLayoutBinding;
+
+	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.ubo) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor set layout!");
 	}
 
-	{
-		VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-		samplerLayoutBinding.binding = 0;
-		samplerLayoutBinding.descriptorCount = 1;
-		samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		samplerLayoutBinding.pImmutableSamplers = nullptr;
-		samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-		VkDescriptorSetLayoutCreateInfo layoutInfo{};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = 1;
-		layoutInfo.pBindings = &samplerLayoutBinding;
-
-		if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &samplerDescriptorSetLayout) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create descriptor set layout!");
-		}
+	layoutInfo.pBindings = &samplerLayoutBinding;
+	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.sampler) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor set layout!");
 	}
 }
 
 void Scene::createGraphicsPipeline()
 {
-	auto vertShaderCode = vkf::readFile("shaders/vert.spv");
-	auto fragShaderCode = vkf::readFile("shaders/frag.spv");
+	auto vertShaderCode = vkf::readFile("shaders/model.vert.spv");
+	auto fragShaderCode = vkf::readFile("shaders/model.frag.spv");
 
 	VkShaderModule vertShaderModule = vkf::createShaderModule(fDevice, vertShaderCode);
 	VkShaderModule fragShaderModule = vkf::createShaderModule(fDevice, fragShaderCode);
@@ -330,9 +318,9 @@ void Scene::createGraphicsPipeline()
 	dynamicState.pDynamicStates = dynamicStates.data();
 
 	// 여러 개의 디스크립터 셋을 사용할 때, set의 index를 pSetLayouts의 index와 맞춰줘야 한다.
-	std::vector<VkDescriptorSetLayout> descriptorSetLayout{ 2 };
-	descriptorSetLayout[0] = uboDescriptorSetLayout;
-	descriptorSetLayout[1] = samplerDescriptorSetLayout;
+	std::vector<VkDescriptorSetLayout> setLayout{ 2 };
+	setLayout[0] = descriptorSetLayout.ubo;
+	setLayout[1] = descriptorSetLayout.sampler;
 
 	// push constant
 	VkPushConstantRange pushConstantRange{};
@@ -342,12 +330,12 @@ void Scene::createGraphicsPipeline()
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayout.size());
-	pipelineLayoutInfo.pSetLayouts = descriptorSetLayout.data();
+	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayout.size());
+	pipelineLayoutInfo.pSetLayouts = setLayout.data();
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
-	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout.model) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
@@ -363,78 +351,17 @@ void Scene::createGraphicsPipeline()
 	pipelineInfo.pDepthStencilState = &depthStencil;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.layout = pipelineLayout;
+	pipelineInfo.layout = pipelineLayout.model;
 	pipelineInfo.renderPass = renderPass;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.model) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
 	vkDestroyShaderModule(fDevice.logicalDevice, fragShaderModule, nullptr);
 	vkDestroyShaderModule(fDevice.logicalDevice, vertShaderModule, nullptr);
-}
-
-void Scene::createUniformBuffers()
-{
-	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
-
-		vkMapMemory(fDevice.logicalDevice, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
-	}
-}
-
-void Scene::createUboDescriptorPool()
-{
-	std::array<VkDescriptorPoolSize, 1> poolSizes{};
-	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
-	VkDescriptorPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
-	if (vkCreateDescriptorPool(fDevice.logicalDevice, &poolInfo, nullptr, &uboDescriptorPool) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor pool!");
-	}
-}
-
-void Scene::createUboDescriptorSets()
-{
-	std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, uboDescriptorSetLayout);
-	VkDescriptorSetAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = uboDescriptorPool;
-	allocInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size());
-	allocInfo.pSetLayouts = layouts.data();
-
-	if (vkAllocateDescriptorSets(fDevice.logicalDevice, &allocInfo, uboDescriptorSets.data()) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate descriptor sets!");
-	}
-
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		VkDescriptorBufferInfo bufferInfo{};
-		bufferInfo.buffer = uniformBuffers[i];
-		bufferInfo.offset = 0;
-		bufferInfo.range = sizeof(UniformBufferObject);
-
-		std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
-
-		descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[0].dstSet = uboDescriptorSets[i];
-		descriptorWrites[0].dstBinding = 0;
-		descriptorWrites[0].dstArrayElement = 0;
-		descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		descriptorWrites[0].descriptorCount = 1;
-		descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-		vkUpdateDescriptorSets(fDevice.logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-	}
 }
 
 void Scene::createSamplerDescriptorPool(uint32_t setCount)

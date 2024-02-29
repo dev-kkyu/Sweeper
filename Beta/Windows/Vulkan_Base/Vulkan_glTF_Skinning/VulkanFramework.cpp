@@ -63,6 +63,53 @@ namespace vkf
 		return attributeDescriptions;
 	}
 
+	VkVertexInputBindingDescription SkinVertex::getBindingDescription()
+	{
+		VkVertexInputBindingDescription bindingDescription{};
+		bindingDescription.binding = 0;
+		bindingDescription.stride = sizeof(SkinVertex);
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		return bindingDescription;
+	}
+
+	std::array<VkVertexInputAttributeDescription, 6> SkinVertex::getAttributeDescriptions()
+	{
+		std::array<VkVertexInputAttributeDescription, 6> attributeDescriptions{};
+
+		attributeDescriptions[0].binding = 0;
+		attributeDescriptions[0].location = 0;
+		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[0].offset = offsetof(SkinVertex, pos);
+
+		attributeDescriptions[1].binding = 0;
+		attributeDescriptions[1].location = 1;
+		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[1].offset = offsetof(SkinVertex, normal);
+
+		attributeDescriptions[2].binding = 0;
+		attributeDescriptions[2].location = 2;
+		attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+		attributeDescriptions[2].offset = offsetof(SkinVertex, uv);
+
+		attributeDescriptions[3].binding = 0;
+		attributeDescriptions[3].location = 3;
+		attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[3].offset = offsetof(SkinVertex, color);
+
+		attributeDescriptions[4].binding = 0;
+		attributeDescriptions[4].location = 4;
+		attributeDescriptions[4].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+		attributeDescriptions[4].offset = offsetof(SkinVertex, jointIndices);
+
+		attributeDescriptions[5].binding = 0;
+		attributeDescriptions[5].location = 5;
+		attributeDescriptions[5].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+		attributeDescriptions[5].offset = offsetof(SkinVertex, jointWeights);
+
+		return attributeDescriptions;
+	}
+
 	void MeshBuffer::loadFromBuffer(vkf::Device& fDevice, const std::vector<vkf::Vertex>& vertices, const std::vector<uint32_t>& indices)
 	{
 		this->fDevice = &fDevice;
@@ -85,6 +132,95 @@ namespace vkf
 
 			vkDestroyBuffer(fDevice->logicalDevice, vertexBuffer, nullptr);
 			vkFreeMemory(fDevice->logicalDevice, vertexBufferMemory, nullptr);
+		}
+	}
+
+	void BufferObject::createUniformBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout)
+	{
+		this->fDevice = &fDevice;
+
+		createBuffers(sizeof(UniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+		createDescriptorPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		createDescriptorSets(descriptorSetLayout, sizeof(UniformBufferObject), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+	}
+
+	void BufferObject::createShaderStorageBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout)
+	{
+		this->fDevice = &fDevice;
+
+		// Todo : ssbo 만들 때 작성하기
+	}
+
+	void BufferObject::destroy()
+	{
+		if (fDevice) {
+			vkDestroyDescriptorPool(fDevice->logicalDevice, descriptorPool, nullptr);
+
+			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+				vkUnmapMemory(fDevice->logicalDevice, buffersMemory[i]);
+
+				vkDestroyBuffer(fDevice->logicalDevice, buffers[i], nullptr);
+				vkFreeMemory(fDevice->logicalDevice, buffersMemory[i], nullptr);
+			}
+		}
+	}
+
+	void BufferObject::createBuffers(VkDeviceSize bufferSize, VkBufferUsageFlags usage)
+	{
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+			vkf::createBuffer(*fDevice, bufferSize, usage, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, buffers[i], buffersMemory[i]);
+
+			vkMapMemory(fDevice->logicalDevice, buffersMemory[i], 0, bufferSize, 0, &buffersMapped[i]);
+		}
+	}
+
+	void BufferObject::createDescriptorPool(VkDescriptorType type)
+	{
+		std::array<VkDescriptorPoolSize, 1> poolSizes{};
+		poolSizes[0].type = type;
+		poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+
+		VkDescriptorPoolCreateInfo poolInfo{};
+		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+		poolInfo.pPoolSizes = poolSizes.data();
+		poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+
+		if (vkCreateDescriptorPool(fDevice->logicalDevice, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create descriptor pool!");
+		}
+	}
+
+	void BufferObject::createDescriptorSets(VkDescriptorSetLayout descriptorSetLayout, VkDeviceSize bufferSize, VkDescriptorType descriptorType)
+	{
+		std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
+		VkDescriptorSetAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = descriptorPool;
+		allocInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size());
+		allocInfo.pSetLayouts = layouts.data();
+
+		if (vkAllocateDescriptorSets(fDevice->logicalDevice, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
+			throw std::runtime_error("failed to allocate descriptor sets!");
+		}
+
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+			VkDescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = buffers[i];
+			bufferInfo.offset = 0;
+			bufferInfo.range = bufferSize;
+
+			std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
+
+			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[0].dstSet = descriptorSets[i];
+			descriptorWrites[0].dstBinding = 0;
+			descriptorWrites[0].dstArrayElement = 0;
+			descriptorWrites[0].descriptorType = descriptorType;
+			descriptorWrites[0].descriptorCount = 1;
+			descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+			vkUpdateDescriptorSets(fDevice->logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 		}
 	}
 

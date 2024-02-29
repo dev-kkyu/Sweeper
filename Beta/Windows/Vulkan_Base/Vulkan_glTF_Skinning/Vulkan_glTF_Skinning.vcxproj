@@ -159,6 +159,12 @@
     <ClInclude Include="VulkanFramework.h" />
     <ClInclude Include="VulkanglTFModel.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\model.frag" />
+    <None Include="shaders\model.vert" />
+    <None Include="shaders\skinnedmodel.frag" />
+    <None Include="shaders\skinnedmodel.vert" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

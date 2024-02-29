@@ -25,6 +25,9 @@
     <Filter Include="GameObjectBase\GameObjectObj\PlayerObject">
       <UniqueIdentifier>{48096a18-5bd7-4ac1-a336-380d85d13c9d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Shader">
+      <UniqueIdentifier>{7cc3ce41-3863-47b2-8921-95915a5c721a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -92,5 +95,19 @@
     <ClInclude Include="VulkanglTFModel.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\model.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\model.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\skinnedmodel.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\skinnedmodel.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>
