@@ -110,6 +110,65 @@ namespace vkf
 		return attributeDescriptions;
 	}
 
+	Shader::Shader(vkf::Device& fDevice, std::string vertFilename, std::string fragFilename)
+	{
+		this->fDevice = &fDevice;
+		createShader(vertFilename, fragFilename);
+	}
+
+	Shader::~Shader()
+	{
+		destroy();
+	}
+
+	void Shader::createShader(const std::string& vertFilename, const std::string& fragFilename)
+	{
+		std::vector<char> vertShaderCode = vkf::readFile(vertFilename);
+		std::vector<char> fragShaderCode = vkf::readFile(fragFilename);
+
+		vertShaderModule = createShaderModule(vertShaderCode);
+		fragShaderModule = createShaderModule(fragShaderCode);
+
+		VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+		vertShaderStageInfo.module = vertShaderModule;
+		vertShaderStageInfo.pName = "main";
+
+		VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+		fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+		fragShaderStageInfo.module = fragShaderModule;
+		fragShaderStageInfo.pName = "main";
+
+		// shaderStages를 만들어 준다.
+		shaderStages[0] = vertShaderStageInfo;
+		shaderStages[1] = fragShaderStageInfo;
+	}
+
+	void Shader::destroy()
+	{
+		if (fDevice) {
+			vkDestroyShaderModule(fDevice->logicalDevice, fragShaderModule, nullptr);
+			vkDestroyShaderModule(fDevice->logicalDevice, vertShaderModule, nullptr);
+		}
+	}
+
+	VkShaderModule Shader::createShaderModule(const std::vector<char>& code)
+	{
+		VkShaderModuleCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		createInfo.codeSize = code.size();
+		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+		VkShaderModule shaderModule;
+		if (vkCreateShaderModule(fDevice->logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create shader module!");
+		}
+
+		return shaderModule;
+	}
+
 	void MeshBuffer::loadFromBuffer(vkf::Device& fDevice, const std::vector<vkf::Vertex>& vertices, const std::vector<uint32_t>& indices)
 	{
 		this->fDevice = &fDevice;
@@ -795,20 +854,5 @@ namespace vkf
 		file.close();
 
 		return buffer;
-	}
-
-	VkShaderModule createShaderModule(Device& fDevice, const std::vector<char>& code)
-	{
-		VkShaderModuleCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		createInfo.codeSize = code.size();
-		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-
-		VkShaderModule shaderModule;
-		if (vkCreateShaderModule(fDevice.logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create shader module!");
-		}
-
-		return shaderModule;
 	}
 }

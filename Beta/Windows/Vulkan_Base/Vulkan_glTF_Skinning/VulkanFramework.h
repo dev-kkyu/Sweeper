@@ -56,6 +56,27 @@ namespace vkf
 		static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions();
 	};
 
+	class Shader
+	{
+	private:
+		vkf::Device* fDevice = nullptr;
+
+		VkShaderModule vertShaderModule = VK_NULL_HANDLE;
+		VkShaderModule fragShaderModule = VK_NULL_HANDLE;
+
+	public:
+		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages{};
+
+	public:
+		Shader(vkf::Device& fDevice, std::string vertFilename, std::string fragFilename);
+		~Shader();
+
+	private:
+		void createShader(const std::string& vertFilename, const std::string& fragFilename);
+		void destroy();
+		VkShaderModule createShaderModule(const std::vector<char>& code);
+	};
+
 	class MeshBuffer
 	{
 	private:
@@ -147,5 +168,4 @@ namespace vkf
 	uint32_t findMemoryType(Device& fDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 	std::vector<char> readFile(const std::string& filename);
-	VkShaderModule createShaderModule(Device& fDevice, const std::vector<char>& code);
 }

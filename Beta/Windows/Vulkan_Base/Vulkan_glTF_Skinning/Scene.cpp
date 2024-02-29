@@ -30,7 +30,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 
 	camera.setPlayer(pPlayer);
 
-	sampleModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/FlightHelmet/glTF/FlightHelmet.gltf");
+	sampleModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/deer.gltf");
 	sampleModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Binary/CesiumMan.glb");
 	//sampleModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF/CesiumMan.gltf");
 	//sampleModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Embedded/CesiumMan.gltf");
@@ -39,8 +39,8 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	sampleModelObject[1] = new GameObjectglTF;
 
 	sampleModelObject[0]->setModel(sampleModel[0]);
-	sampleModelObject[0]->setPosition({ 0.f, 2.f, 0.f });
-	sampleModelObject[0]->setScale(glm::vec3{ 3.f });
+	sampleModelObject[0]->setPosition({ 0.f, 1.5f, 0.f });
+	sampleModelObject[0]->setScale(glm::vec3{ 1.f });
 	sampleModelObject[1]->setModel(sampleModel[1]);
 	sampleModelObject[1]->setPosition({ 2.f, 0.f, 0.f });
 	sampleModelObject[1]->setScale(glm::vec3{ 2.f });
@@ -212,6 +212,13 @@ void Scene::createDescriptorSetLayout()
 	samplerLayoutBinding.pImmutableSamplers = nullptr;
 	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
+	VkDescriptorSetLayoutBinding ssboLayoutBinding{};
+	ssboLayoutBinding.binding = 0;
+	ssboLayoutBinding.descriptorCount = 1;
+	ssboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	ssboLayoutBinding.pImmutableSamplers = nullptr;
+	ssboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
 	VkDescriptorSetLayoutCreateInfo layoutInfo{};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	layoutInfo.bindingCount = 1;
@@ -225,29 +232,16 @@ void Scene::createDescriptorSetLayout()
 	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.sampler) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor set layout!");
 	}
+
+	layoutInfo.pBindings = &ssboLayoutBinding;
+	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.ssbo) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor set layout!");
+	}
 }
 
 void Scene::createGraphicsPipeline()
 {
-	auto vertShaderCode = vkf::readFile("shaders/model.vert.spv");
-	auto fragShaderCode = vkf::readFile("shaders/model.frag.spv");
-
-	VkShaderModule vertShaderModule = vkf::createShaderModule(fDevice, vertShaderCode);
-	VkShaderModule fragShaderModule = vkf::createShaderModule(fDevice, fragShaderCode);
-
-	VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-	vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-	vertShaderStageInfo.module = vertShaderModule;
-	vertShaderStageInfo.pName = "main";
-
-	VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-	fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	fragShaderStageInfo.module = fragShaderModule;
-	fragShaderStageInfo.pName = "main";
-
-	VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+	vkf::Shader modelShader{ fDevice, "shaders/model.vert.spv", "shaders/model.frag.spv" };
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -256,8 +250,8 @@ void Scene::createGraphicsPipeline()
 	auto attributeDescriptions = vkf::Vertex::getAttributeDescriptions();
 
 	vertexInputInfo.vertexBindingDescriptionCount = 1;
-	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
 	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
 	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
@@ -318,9 +312,10 @@ void Scene::createGraphicsPipeline()
 	dynamicState.pDynamicStates = dynamicStates.data();
 
 	// 여러 개의 디스크립터 셋을 사용할 때, set의 index를 pSetLayouts의 index와 맞춰줘야 한다.
-	std::vector<VkDescriptorSetLayout> setLayout{ 2 };
+	std::vector<VkDescriptorSetLayout> setLayout{ 3 };
 	setLayout[0] = descriptorSetLayout.ubo;
 	setLayout[1] = descriptorSetLayout.sampler;
+	setLayout[2] = descriptorSetLayout.ssbo;									// skinModel에서만 사용
 
 	// push constant
 	VkPushConstantRange pushConstantRange{};
@@ -330,7 +325,7 @@ void Scene::createGraphicsPipeline()
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayout.size());
+	pipelineLayoutInfo.setLayoutCount = 2;										// model에서는 1번 인덱스까지만 사용
 	pipelineLayoutInfo.pSetLayouts = setLayout.data();
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
@@ -339,10 +334,15 @@ void Scene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
+	pipelineLayoutInfo.setLayoutCount = 3;										// skinModel에서는 2번 인덱스까지 사용
+	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout.skinModel) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create pipeline layout!");
+	}
+
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipelineInfo.stageCount = 2;
-	pipelineInfo.pStages = shaderStages;
+	pipelineInfo.stageCount = static_cast<uint32_t>(modelShader.shaderStages.size());
+	pipelineInfo.pStages = modelShader.shaderStages.data();
 	pipelineInfo.pVertexInputState = &vertexInputInfo;
 	pipelineInfo.pInputAssemblyState = &inputAssembly;
 	pipelineInfo.pViewportState = &viewportState;
@@ -360,8 +360,23 @@ void Scene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkDestroyShaderModule(fDevice.logicalDevice, fragShaderModule, nullptr);
-	vkDestroyShaderModule(fDevice.logicalDevice, vertShaderModule, nullptr);
+	// skinModel용 pipeline 생성
+	pipelineInfo.layout = pipelineLayout.skinModel;
+
+	vkf::Shader skinModelShader{ fDevice, "shaders/skinnedmodel.vert.spv", "shaders/skinnedmodel.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(skinModelShader.shaderStages.size());
+	pipelineInfo.pStages = skinModelShader.shaderStages.data();
+
+	auto skinBindingDescription = vkf::SkinVertex::getBindingDescription();
+	auto skinAttributeDescriptions = vkf::SkinVertex::getAttributeDescriptions();
+	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.pVertexBindingDescriptions = &skinBindingDescription;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(skinAttributeDescriptions.size());
+	vertexInputInfo.pVertexAttributeDescriptions = skinAttributeDescriptions.data();
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.skinModel) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
 }
 
 void Scene::createSamplerDescriptorPool(uint32_t setCount)
