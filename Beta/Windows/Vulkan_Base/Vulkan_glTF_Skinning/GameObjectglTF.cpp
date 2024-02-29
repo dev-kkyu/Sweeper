@@ -12,11 +12,11 @@ void GameObjectglTF::initialize()
 {
 }
 
-void GameObjectglTF::update(float elapsedTime)
+void GameObjectglTF::update(float elapsedTime, uint32_t currentFrame)
 {
 }
 
-void GameObjectglTF::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
+void GameObjectglTF::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
 	if (model)
 		model->draw(commandBuffer, pipelineLayout, modelTransform);

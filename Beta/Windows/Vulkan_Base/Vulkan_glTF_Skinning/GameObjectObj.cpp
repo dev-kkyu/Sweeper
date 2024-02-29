@@ -12,11 +12,11 @@ void GameObjectObj::initialize()
 {
 }
 
-void GameObjectObj::update(float elapsedTime)
+void GameObjectObj::update(float elapsedTime, uint32_t currentFrame)
 {
 }
 
-void GameObjectObj::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
+void GameObjectObj::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
 	VkBuffer vertexBuffers[] = { vertexBuffer };
 	VkDeviceSize offsets[] = { 0 };
@@ -24,7 +24,7 @@ void GameObjectObj::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelin
 
 	vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &modelTransform);
+	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &modelTransform);
 
 	// set = 1에 샘플러 바인드
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &samplerDescriptorSet, 0, nullptr);

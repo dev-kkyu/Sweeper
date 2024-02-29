@@ -224,6 +224,16 @@ namespace vkf
 		}
 	}
 
+	void BufferObject::copyTo(const void* data, VkDeviceSize size, uint32_t currentFrame)
+	{
+		::memcpy(buffersMapped[currentFrame], data, size);
+	}
+
+	void BufferObject::updateUniformBuffer(const UniformBufferObject& ubo, uint32_t currentFrame)
+	{
+		copyTo(&ubo, sizeof(ubo), currentFrame);
+	}
+
 	void BufferObject::createBuffers(VkDeviceSize bufferSize, VkBufferUsageFlags usage)
 	{
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {

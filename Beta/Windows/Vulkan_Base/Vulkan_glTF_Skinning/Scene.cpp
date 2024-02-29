@@ -82,15 +82,15 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	ubo.view = camera.getView();
 	ubo.proj = camera.getProjection();
 
-	memcpy(uniformBufferObject.buffersMapped[currentFrame], &ubo, sizeof(ubo));
+	uniformBufferObject.updateUniformBuffer(ubo, currentFrame);
 
 
-	plainObject->update(elapsedTime);
+	plainObject->update(elapsedTime, currentFrame);
 
-	pPlayer->update(elapsedTime);
+	pPlayer->update(elapsedTime, currentFrame);
 
-	sampleModelObject[0]->update(elapsedTime);
-	sampleModelObject[1]->update(elapsedTime);
+	sampleModelObject[0]->update(elapsedTime, currentFrame);
+	sampleModelObject[1]->update(elapsedTime, currentFrame);
 }
 
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -100,10 +100,10 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	// firstSet은 set의 시작인덱스
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 
-	plainObject->draw(commandBuffer, pipelineLayout.model);
-	pPlayer->draw(commandBuffer, pipelineLayout.model);
-	sampleModelObject[0]->draw(commandBuffer, pipelineLayout.model);
-	sampleModelObject[1]->draw(commandBuffer, pipelineLayout.model);
+	plainObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
+	pPlayer->draw(commandBuffer, pipelineLayout.model, currentFrame);
+	sampleModelObject[0]->draw(commandBuffer, pipelineLayout.model, currentFrame);
+	sampleModelObject[1]->draw(commandBuffer, pipelineLayout.model, currentFrame);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)
@@ -321,7 +321,7 @@ void Scene::createGraphicsPipeline()
 	VkPushConstantRange pushConstantRange{};
 	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 	pushConstantRange.offset = 0;
-	pushConstantRange.size = sizeof(PushConstantData);
+	pushConstantRange.size = sizeof(vkf::PushConstantData);
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

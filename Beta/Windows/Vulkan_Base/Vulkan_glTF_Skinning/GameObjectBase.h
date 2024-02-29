@@ -14,8 +14,8 @@ public:
 	virtual ~GameObjectBase();
 
 	virtual void initialize() = 0;
-	virtual void update(float elapsedTime) = 0;
-	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) = 0;
+	virtual void update(float elapsedTime, uint32_t currentFrame) = 0;
+	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) = 0;
 	virtual void release() = 0;
 
 	virtual void setPosition(glm::vec3 position) final;
@@ -30,8 +30,4 @@ public:
 
 	virtual void rotate(float degree) final;
 
-};
-
-struct PushConstantData {
-	alignas(16) glm::mat4 model;
 };
