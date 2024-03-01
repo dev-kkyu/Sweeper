@@ -96,12 +96,14 @@ namespace vkf
 
 	public:
 		void loadFromBuffer(vkf::Device& fDevice, const std::vector<vkf::Vertex>& vertices, const std::vector<uint32_t>& indices);
+		void loadFromBuffer(vkf::Device& fDevice, const std::vector<vkf::SkinVertex>& vertices, const std::vector<uint32_t>& indices);
 		void loadFromObjFile(vkf::Device& fDevice, std::string filename);
 		void destroy();
 
 	private:
 		std::pair<std::vector<vkf::Vertex>, std::vector<uint32_t>> loadObjModel(std::string filename);
 		void createVertexBuffer(const std::vector<vkf::Vertex>& vertices);
+		void createVertexBuffer(const std::vector<vkf::SkinVertex>& vertices);
 		void createIndexBuffer(const std::vector<uint32_t>& indices);
 	};
 

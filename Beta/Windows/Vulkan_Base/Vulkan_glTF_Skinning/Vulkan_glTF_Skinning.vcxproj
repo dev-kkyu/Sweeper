@@ -146,6 +146,7 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="VulkanFramework.cpp" />
     <ClCompile Include="VulkanglTFModel.cpp" />
+    <ClCompile Include="VulkanglTFSkinModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -158,6 +159,7 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="VulkanFramework.h" />
     <ClInclude Include="VulkanglTFModel.h" />
+    <ClInclude Include="VulkanglTFSkinModel.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\model.frag" />

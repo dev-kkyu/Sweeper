@@ -3,7 +3,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 
-#define TINYGLTF_IMPLEMENTATION
 #define TINYGLTF_NO_STB_IMAGE_WRITE
 #include <tiny_gltf.h>
 

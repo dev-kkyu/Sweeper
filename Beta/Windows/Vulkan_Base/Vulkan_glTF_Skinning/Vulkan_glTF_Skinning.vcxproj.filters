@@ -63,6 +63,9 @@
     <ClCompile Include="GameObjectglTF.cpp">
       <Filter>GameObjectBase\GameObjectglTF</Filter>
     </ClCompile>
+    <ClCompile Include="VulkanglTFSkinModel.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObjectBase.h">
@@ -93,6 +96,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="VulkanglTFModel.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanglTFSkinModel.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

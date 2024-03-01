@@ -5,11 +5,15 @@
 
 #include <glm/gtx/hash.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#define TINYGLTF_IMPLEMENTATION				// 이 선언 이후 tiny_gltf.h include 하면 컴파일이 됨 -> 프로젝트에서 단 한곳에서만 컴파일 해야함 (cpp)
+#define TINYGLTF_NO_STB_IMAGE_WRITE			// image_write 할 일이 없으면 stb_image_write.h 파일이 없어도 되는데, 그러려면 이 선언을 해야함
+#include <tiny_gltf.h>						// stb_image.h, json.hpp 필요함 (stb_image_write.h 도 원래는 필요)
 
-#define TINYOBJLOADER_IMPLEMENTATION
+#define TINYOBJLOADER_IMPLEMENTATION		// 이 선언 이후 tiny_obj_loader.h include 하면 컴파일이 됨 -> 프로젝트에서 단 한번만 해야함 (cpp)
 #include <tiny_obj_loader.h>
+
+#define STB_IMAGE_IMPLEMENTATION			// tiny_gltf 내에 include stb_image.h 들어있다. 따라서 tiny_gltf.h 보다 아래에 있어야함 -> 중복 정의 문제
+#include <stb_image.h>						// 혹은 tiny_gltf 위에 define을 하고, include stb_image를 생략
 
 namespace std {
 	template<> struct hash<vkf::Vertex> {
@@ -175,6 +179,18 @@ namespace vkf
 
 		createVertexBuffer(vertices);
 		createIndexBuffer(indices);
+
+		indexCount = static_cast<uint32_t>(indices.size());
+	}
+
+	void MeshBuffer::loadFromBuffer(vkf::Device& fDevice, const std::vector<vkf::SkinVertex>& vertices, const std::vector<uint32_t>& indices)
+	{
+		this->fDevice = &fDevice;
+
+		createVertexBuffer(vertices);
+		createIndexBuffer(indices);
+
+		indexCount = static_cast<uint32_t>(indices.size());
 	}
 
 	void MeshBuffer::loadFromObjFile(vkf::Device& fDevice, std::string filename)
@@ -192,6 +208,120 @@ namespace vkf
 			vkDestroyBuffer(fDevice->logicalDevice, vertexBuffer, nullptr);
 			vkFreeMemory(fDevice->logicalDevice, vertexBufferMemory, nullptr);
 		}
+	}
+
+	std::pair<std::vector<vkf::Vertex>, std::vector<uint32_t>> MeshBuffer::loadObjModel(std::string filename)
+	{
+		std::vector<vkf::Vertex> vertices;
+		std::vector<uint32_t> indices;
+
+		tinyobj::attrib_t attrib;
+		std::vector<tinyobj::shape_t> shapes;
+		std::vector<tinyobj::material_t> materials;
+		std::string warn, err;
+
+		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str())) {
+			throw std::runtime_error(warn + err);
+		}
+
+		std::unordered_map<vkf::Vertex, uint32_t> uniqueVertices{};
+
+		for (const auto& shape : shapes) {
+			for (const auto& index : shape.mesh.indices) {
+				vkf::Vertex vertex{};
+
+				vertex.pos = {
+					attrib.vertices[3 * index.vertex_index + 0],
+					attrib.vertices[3 * index.vertex_index + 1],
+					attrib.vertices[3 * index.vertex_index + 2]
+				};
+
+				vertex.normal = {
+					attrib.normals[3 * index.normal_index + 0],
+					attrib.normals[3 * index.normal_index + 1],
+					attrib.normals[3 * index.normal_index + 2]
+				};
+
+				vertex.texCoord = {
+					attrib.texcoords[2 * index.texcoord_index + 0],
+					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+				};
+
+				vertex.color = { 1.0f, 1.0f, 1.0f };
+
+				if (uniqueVertices.count(vertex) == 0) {
+					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+					vertices.push_back(vertex);
+				}
+
+				indices.push_back(uniqueVertices[vertex]);
+			}
+		}
+
+		return { vertices, indices };
+	}
+
+	void MeshBuffer::createVertexBuffer(const std::vector<vkf::Vertex>& vertices)
+	{
+		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingBufferMemory;
+		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+		void* data;
+		vkMapMemory(fDevice->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+		memcpy(data, vertices.data(), (size_t)bufferSize);
+		vkUnmapMemory(fDevice->logicalDevice, stagingBufferMemory);
+
+		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+
+		vkf::copyBuffer(*fDevice, stagingBuffer, vertexBuffer, bufferSize);
+
+		vkDestroyBuffer(fDevice->logicalDevice, stagingBuffer, nullptr);
+		vkFreeMemory(fDevice->logicalDevice, stagingBufferMemory, nullptr);
+	}
+
+	void MeshBuffer::createVertexBuffer(const std::vector<vkf::SkinVertex>& vertices)
+	{
+		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingBufferMemory;
+		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+		void* data;
+		vkMapMemory(fDevice->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+		memcpy(data, vertices.data(), (size_t)bufferSize);
+		vkUnmapMemory(fDevice->logicalDevice, stagingBufferMemory);
+
+		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+
+		vkf::copyBuffer(*fDevice, stagingBuffer, vertexBuffer, bufferSize);
+
+		vkDestroyBuffer(fDevice->logicalDevice, stagingBuffer, nullptr);
+		vkFreeMemory(fDevice->logicalDevice, stagingBufferMemory, nullptr);
+	}
+
+	void MeshBuffer::createIndexBuffer(const std::vector<uint32_t>& indices)
+	{
+		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingBufferMemory;
+		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+		void* data;
+		vkMapMemory(fDevice->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+		memcpy(data, indices.data(), (size_t)bufferSize);
+		vkUnmapMemory(fDevice->logicalDevice, stagingBufferMemory);
+
+		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+
+		vkf::copyBuffer(*fDevice, stagingBuffer, indexBuffer, bufferSize);
+
+		vkDestroyBuffer(fDevice->logicalDevice, stagingBuffer, nullptr);
+		vkFreeMemory(fDevice->logicalDevice, stagingBufferMemory, nullptr);
 	}
 
 	void BufferObject::createUniformBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout)
@@ -291,101 +421,6 @@ namespace vkf
 
 			vkUpdateDescriptorSets(fDevice->logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 		}
-	}
-
-	std::pair<std::vector<vkf::Vertex>, std::vector<uint32_t>> MeshBuffer::loadObjModel(std::string filename)
-	{
-		std::vector<vkf::Vertex> vertices;
-		std::vector<uint32_t> indices;
-
-		tinyobj::attrib_t attrib;
-		std::vector<tinyobj::shape_t> shapes;
-		std::vector<tinyobj::material_t> materials;
-		std::string warn, err;
-
-		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str())) {
-			throw std::runtime_error(warn + err);
-		}
-
-		std::unordered_map<vkf::Vertex, uint32_t> uniqueVertices{};
-
-		for (const auto& shape : shapes) {
-			for (const auto& index : shape.mesh.indices) {
-				vkf::Vertex vertex{};
-
-				vertex.pos = {
-					attrib.vertices[3 * index.vertex_index + 0],
-					attrib.vertices[3 * index.vertex_index + 1],
-					attrib.vertices[3 * index.vertex_index + 2]
-				};
-
-				vertex.normal = {
-					attrib.normals[3 * index.normal_index + 0],
-					attrib.normals[3 * index.normal_index + 1],
-					attrib.normals[3 * index.normal_index + 2]
-				};
-
-				vertex.texCoord = {
-					attrib.texcoords[2 * index.texcoord_index + 0],
-					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-				};
-
-				vertex.color = { 1.0f, 1.0f, 1.0f };
-
-				if (uniqueVertices.count(vertex) == 0) {
-					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-					vertices.push_back(vertex);
-				}
-
-				indices.push_back(uniqueVertices[vertex]);
-			}
-		}
-
-		return { vertices, indices };
-	}
-
-	void MeshBuffer::createVertexBuffer(const std::vector<vkf::Vertex>& vertices)
-	{
-		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
-
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-		void* data;
-		vkMapMemory(fDevice->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, vertices.data(), (size_t)bufferSize);
-		vkUnmapMemory(fDevice->logicalDevice, stagingBufferMemory);
-
-		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
-
-		vkf::copyBuffer(*fDevice, stagingBuffer, vertexBuffer, bufferSize);
-
-		vkDestroyBuffer(fDevice->logicalDevice, stagingBuffer, nullptr);
-		vkFreeMemory(fDevice->logicalDevice, stagingBufferMemory, nullptr);
-	}
-
-	void MeshBuffer::createIndexBuffer(const std::vector<uint32_t>& indices)
-	{
-		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
-
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-		void* data;
-		vkMapMemory(fDevice->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, indices.data(), (size_t)bufferSize);
-		vkUnmapMemory(fDevice->logicalDevice, stagingBufferMemory);
-
-		vkf::createBuffer(*fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
-
-		vkf::copyBuffer(*fDevice, stagingBuffer, indexBuffer, bufferSize);
-
-		vkDestroyBuffer(fDevice->logicalDevice, stagingBuffer, nullptr);
-		vkFreeMemory(fDevice->logicalDevice, stagingBufferMemory, nullptr);
-
-		indexCount = static_cast<uint32_t>(indices.size());
 	}
 
 	void Texture::loadFromFile(vkf::Device& fDevice, std::string filename, VkDescriptorPool samplerDescriptorPool, VkDescriptorSetLayout samplerDescriptorSetLayout)
