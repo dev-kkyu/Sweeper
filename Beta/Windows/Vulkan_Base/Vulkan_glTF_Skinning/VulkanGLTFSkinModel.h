@@ -12,7 +12,7 @@ namespace tinygltf
 	class Model;
 }
 
-class VulkanglTFSkinModel
+class VulkanGLTFSkinModel
 {
 private:
 	vkf::Device* fDevice = nullptr;

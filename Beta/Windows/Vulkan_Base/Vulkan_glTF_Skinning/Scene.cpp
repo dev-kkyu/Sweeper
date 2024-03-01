@@ -18,7 +18,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	boxBuffer.loadFromObjFile(fDevice, "models/box.obj");
 	boxTexture.loadFromFile(fDevice, "textures/wood.jpg", samplerDescriptorPool, descriptorSetLayout.sampler);
 
-	plainObject = new GameObjectObj;
+	plainObject = new OBJModelObject;
 	plainObject->setBuffer(plainBuffer);
 	plainObject->setTexture(plainTexture);
 
@@ -35,8 +35,8 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	//sampleModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF/CesiumMan.gltf");
 	//sampleModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Embedded/CesiumMan.gltf");
 
-	sampleModelObject[0] = new GameObjectglTF;
-	sampleModelObject[1] = new GameObjectglTF;
+	sampleModelObject[0] = new GLTFModelObject;
+	sampleModelObject[1] = new GLTFModelObject;
 
 	sampleModelObject[0]->setModel(sampleModel[0]);
 	sampleModelObject[0]->setPosition({ 0.f, 1.5f, 0.f });

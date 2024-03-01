@@ -1,22 +1,22 @@
-#include "GameObjectObj.h"
+#include "OBJModelObject.h"
 
-GameObjectObj::GameObjectObj()
+OBJModelObject::OBJModelObject()
 {
 }
 
-GameObjectObj::~GameObjectObj()
+OBJModelObject::~OBJModelObject()
 {
 }
 
-void GameObjectObj::initialize()
+void OBJModelObject::initialize()
 {
 }
 
-void GameObjectObj::update(float elapsedTime, uint32_t currentFrame)
+void OBJModelObject::update(float elapsedTime, uint32_t currentFrame)
 {
 }
 
-void GameObjectObj::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
+void OBJModelObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
 	VkBuffer vertexBuffers[] = { vertexBuffer };
 	VkDeviceSize offsets[] = { 0 };
@@ -32,11 +32,11 @@ void GameObjectObj::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelin
 	vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
 }
 
-void GameObjectObj::release()
+void OBJModelObject::release()
 {
 }
 
-void GameObjectObj::setBuffer(const vkf::MeshBuffer& buffer)
+void OBJModelObject::setBuffer(const vkf::MeshBuffer& buffer)
 {
 	vertexBuffer = buffer.vertexBuffer;
 	indexBuffer = buffer.indexBuffer;
@@ -44,7 +44,7 @@ void GameObjectObj::setBuffer(const vkf::MeshBuffer& buffer)
 	indexCount = buffer.indexCount;
 }
 
-void GameObjectObj::setTexture(const vkf::Texture& texture)
+void OBJModelObject::setTexture(const vkf::Texture& texture)
 {
 	samplerDescriptorSet = texture.samplerDescriptorSet;
 }

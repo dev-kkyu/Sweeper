@@ -1,4 +1,4 @@
-#include "VulkanglTFSkinModel.h"
+#include "VulkanGLTFSkinModel.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
@@ -6,12 +6,12 @@
 #define TINYGLTF_NO_STB_IMAGE_WRITE
 #include <tiny_gltf.h>
 
-glm::mat4 VulkanglTFSkinModel::Node::getLocalMatrix()
+glm::mat4 VulkanGLTFSkinModel::Node::getLocalMatrix()
 {
 	return glm::translate(glm::mat4(1.0f), translation) * glm::mat4(rotation) * glm::scale(glm::mat4(1.0f), scale) * matrix;
 }
 
-void VulkanglTFSkinModel::destroy()
+void VulkanGLTFSkinModel::destroy()
 {
 	buffer.destroy();
 
@@ -22,7 +22,7 @@ void VulkanglTFSkinModel::destroy()
 	vkDestroyDescriptorPool(fDevice->logicalDevice, samplerDescriptorPool, nullptr);
 }
 
-void VulkanglTFSkinModel::loadModel(vkf::Device& fDevice, VkDescriptorSetLayout samplerDescriptorSetLayout, std::string filename)
+void VulkanGLTFSkinModel::loadModel(vkf::Device& fDevice, VkDescriptorSetLayout samplerDescriptorSetLayout, std::string filename)
 {
 	this->fDevice = &fDevice;
 	this->samplerDescriptorSetLayout = samplerDescriptorSetLayout;
@@ -30,7 +30,7 @@ void VulkanglTFSkinModel::loadModel(vkf::Device& fDevice, VkDescriptorSetLayout 
 	loadglTFFile(filename);
 }
 
-void VulkanglTFSkinModel::loadglTFFile(std::string filename)
+void VulkanGLTFSkinModel::loadglTFFile(std::string filename)
 {
 	tinygltf::TinyGLTF	gltfContext;
 	std::string			error, warning;
@@ -77,7 +77,7 @@ void VulkanglTFSkinModel::loadglTFFile(std::string filename)
 	buffer.loadFromBuffer(*fDevice, vertexBuffer, indexBuffer);
 }
 
-void VulkanglTFSkinModel::createSamplerDescriptorPool(uint32_t setCount)
+void VulkanGLTFSkinModel::createSamplerDescriptorPool(uint32_t setCount)
 {
 	std::array<VkDescriptorPoolSize, 1> poolSizes{};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -94,7 +94,7 @@ void VulkanglTFSkinModel::createSamplerDescriptorPool(uint32_t setCount)
 	}
 }
 
-void VulkanglTFSkinModel::loadImages()
+void VulkanGLTFSkinModel::loadImages()
 {
 	// 이미지 개수만큼 DescriptorPool 미리 만들어 준다.
 	createSamplerDescriptorPool(static_cast<uint32_t>(glTFInput->images.size()));
@@ -132,7 +132,7 @@ void VulkanglTFSkinModel::loadImages()
 	}
 }
 
-void VulkanglTFSkinModel::loadTextures()
+void VulkanGLTFSkinModel::loadTextures()
 {
 	textures.resize(glTFInput->textures.size());
 	for (size_t i = 0; i < glTFInput->textures.size(); i++) {
@@ -140,7 +140,7 @@ void VulkanglTFSkinModel::loadTextures()
 	}
 }
 
-void VulkanglTFSkinModel::loadMaterials()
+void VulkanGLTFSkinModel::loadMaterials()
 {
 	materials.resize(glTFInput->materials.size());
 	for (size_t i = 0; i < glTFInput->materials.size(); i++) {
@@ -157,7 +157,7 @@ void VulkanglTFSkinModel::loadMaterials()
 	}
 }
 
-void VulkanglTFSkinModel::loadMeshes(const tinygltf::Node& inputNode, std::vector<vkf::SkinVertex>& vertexBuffer, std::vector<uint32_t>& indexBuffer)
+void VulkanGLTFSkinModel::loadMeshes(const tinygltf::Node& inputNode, std::vector<vkf::SkinVertex>& vertexBuffer, std::vector<uint32_t>& indexBuffer)
 {
 	// Load node's children
 	if (inputNode.children.size() > 0)

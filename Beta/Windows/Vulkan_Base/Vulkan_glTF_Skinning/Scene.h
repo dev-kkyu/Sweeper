@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PlayerObject.h"
-#include "GameObjectglTF.h"
+#include "GLTFModelObject.h"
 #include "Camera.h"
 
 class Scene
@@ -33,14 +33,14 @@ private:
 
 	vkf::MeshBuffer plainBuffer;
 	vkf::Texture plainTexture;
-	GameObjectObj* plainObject;
+	OBJModelObject* plainObject;
 
 	vkf::MeshBuffer boxBuffer;
 	vkf::Texture boxTexture;
 	PlayerObject* pPlayer;
 
-	GameObjectglTF* sampleModelObject[2];
-	VulkanglTFModel sampleModel[2];
+	GLTFModelObject* sampleModelObject[2];
+	VulkanGLTFModel sampleModel[2];
 
 	Camera camera;
 

@@ -1,24 +1,24 @@
 #pragma once
 
 #include "GameObjectBase.h"
-#include "VulkanglTFModel.h"
+#include "VulkanGLTFSkinModel.h"
 
-class GameObjectglTF : public GameObjectBase
+class GLTFSkinModelObject : public GameObjectBase
 {
 protected:
 
-	VulkanglTFModel* model = nullptr;
+	VulkanGLTFSkinModel* model = nullptr;
 
 public:
-	GameObjectglTF();
-	virtual ~GameObjectglTF();
+	GLTFSkinModelObject();
+	virtual ~GLTFSkinModelObject();
 
 	virtual void initialize() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void release() override;
 
-	void setModel(VulkanglTFModel& model);
+	void setModel(VulkanGLTFSkinModel& model);
 
 };
 

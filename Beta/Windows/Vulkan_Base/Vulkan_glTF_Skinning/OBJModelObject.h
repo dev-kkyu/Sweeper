@@ -2,7 +2,7 @@
 
 #include "GameObjectBase.h"
 
-class GameObjectObj : public GameObjectBase
+class OBJModelObject : public GameObjectBase
 {
 protected:
 
@@ -14,8 +14,8 @@ protected:
 	VkDescriptorSet samplerDescriptorSet = VK_NULL_HANDLE;
 
 public:
-	GameObjectObj();
-	virtual ~GameObjectObj();
+	OBJModelObject();
+	virtual ~OBJModelObject();
 
 	virtual void initialize() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;

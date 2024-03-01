@@ -16,17 +16,20 @@
     <Filter Include="GameObjectBase">
       <UniqueIdentifier>{816ed17b-a837-401d-8fd7-1e51dfbccb50}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameObjectBase\GameObjectObj">
-      <UniqueIdentifier>{bead6ec3-329f-4f83-b0de-bf01bf92ad06}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GameObjectBase\GameObjectglTF">
-      <UniqueIdentifier>{65d09a39-8cf5-44f3-b43b-e280988b8ac1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GameObjectBase\GameObjectObj\PlayerObject">
-      <UniqueIdentifier>{48096a18-5bd7-4ac1-a336-380d85d13c9d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\Shader">
       <UniqueIdentifier>{7cc3ce41-3863-47b2-8921-95915a5c721a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\OBJModelObject">
+      <UniqueIdentifier>{bead6ec3-329f-4f83-b0de-bf01bf92ad06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\OBJModelObject\PlayerObject">
+      <UniqueIdentifier>{48096a18-5bd7-4ac1-a336-380d85d13c9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\GLTFModelObject">
+      <UniqueIdentifier>{65d09a39-8cf5-44f3-b43b-e280988b8ac1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\GLTFSkinModelObject">
+      <UniqueIdentifier>{f282031b-5e4c-4b16-ae64-b2f008a0e43d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -48,23 +51,26 @@
     <ClCompile Include="VulkanFramework.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="VulkanglTFModel.cpp">
+    <ClCompile Include="VulkanGLTFModel.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="GameObjectBase.cpp">
       <Filter>GameObjectBase</Filter>
     </ClCompile>
     <ClCompile Include="PlayerObject.cpp">
-      <Filter>GameObjectBase\GameObjectObj\PlayerObject</Filter>
+      <Filter>GameObjectBase\OBJModelObject\PlayerObject</Filter>
     </ClCompile>
-    <ClCompile Include="GameObjectObj.cpp">
-      <Filter>GameObjectBase\GameObjectObj</Filter>
+    <ClCompile Include="OBJModelObject.cpp">
+      <Filter>GameObjectBase\OBJModelObject</Filter>
     </ClCompile>
-    <ClCompile Include="GameObjectglTF.cpp">
-      <Filter>GameObjectBase\GameObjectglTF</Filter>
+    <ClCompile Include="GLTFModelObject.cpp">
+      <Filter>GameObjectBase\GLTFModelObject</Filter>
     </ClCompile>
-    <ClCompile Include="VulkanglTFSkinModel.cpp">
+    <ClCompile Include="VulkanGLTFSkinModel.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="GLTFSkinModelObject.cpp">
+      <Filter>GameObjectBase\GLTFSkinModelObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -72,13 +78,13 @@
       <Filter>GameObjectBase</Filter>
     </ClInclude>
     <ClInclude Include="PlayerObject.h">
-      <Filter>GameObjectBase\GameObjectObj\PlayerObject</Filter>
+      <Filter>GameObjectBase\OBJModelObject\PlayerObject</Filter>
     </ClInclude>
-    <ClInclude Include="GameObjectObj.h">
-      <Filter>GameObjectBase\GameObjectObj</Filter>
+    <ClInclude Include="OBJModelObject.h">
+      <Filter>GameObjectBase\OBJModelObject</Filter>
     </ClInclude>
-    <ClInclude Include="GameObjectglTF.h">
-      <Filter>GameObjectBase\GameObjectglTF</Filter>
+    <ClInclude Include="GLTFModelObject.h">
+      <Filter>GameObjectBase\GLTFModelObject</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>헤더 파일</Filter>
@@ -95,11 +101,14 @@
     <ClInclude Include="VulkanFramework.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanglTFModel.h">
+    <ClInclude Include="VulkanGLTFModel.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanglTFSkinModel.h">
+    <ClInclude Include="VulkanGLTFSkinModel.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="GLTFSkinModelObject.h">
+      <Filter>GameObjectBase\GLTFSkinModelObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

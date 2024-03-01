@@ -8,7 +8,7 @@ namespace tinygltf
 	class Model;
 }
 
-class VulkanglTFModel
+class VulkanGLTFModel
 {
 public:
 	vkf::Device* fDevice = nullptr;
@@ -86,7 +86,7 @@ public:
 	void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, glm::mat4 parentMatrix = glm::mat4(1.f));
 
 private:
-	void drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, VulkanglTFModel::Node* node, const glm::mat4& parentMatrix);
+	void drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, VulkanGLTFModel::Node* node, const glm::mat4& parentMatrix);
 
 	void loadglTFFile(std::string filename);
 
@@ -94,7 +94,7 @@ private:
 	void loadImages(tinygltf::Model& input);
 	void loadTextures(tinygltf::Model& input);
 	void loadMaterials(tinygltf::Model& input);
-	void loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, VulkanglTFModel::Node* parent, std::vector<uint32_t>& indexBuffer, std::vector<vkf::Vertex>& vertexBuffer);
+	void loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, VulkanGLTFModel::Node* parent, std::vector<uint32_t>& indexBuffer, std::vector<vkf::Vertex>& vertexBuffer);
 
 
 };
