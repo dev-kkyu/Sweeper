@@ -14,10 +14,9 @@ namespace tinygltf
 
 class VulkanGLTFSkinModel
 {
-private:
+public:
 	vkf::Device* fDevice = nullptr;
 
-public:
 	std::shared_ptr<tinygltf::Model> glTFInput;
 
 	VkDescriptorPool samplerDescriptorPool = VK_NULL_HANDLE;
