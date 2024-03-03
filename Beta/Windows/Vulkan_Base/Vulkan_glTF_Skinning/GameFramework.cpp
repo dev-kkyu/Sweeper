@@ -75,7 +75,7 @@ void GameFramework::initVulkan(GLFWwindow* window)
 
 	pScene = std::make_unique<Scene>(fDevice, msaaSamples, renderPass);
 	gameTimer.SetWindow(window);
-	gameTimer.SetGpuName(physicalDeviceProperties.deviceName);
+	gameTimer.SetGpuName(fDevice.physicalDeviceProperties.deviceName);
 }
 
 void GameFramework::cleanup()
@@ -333,13 +333,14 @@ void GameFramework::pickPhysicalDevice()
 	if (!candidates.empty() && candidates.rbegin()->first > 0) {
 		fDevice.physicalDevice = candidates.rbegin()->second;
 		// 물리 디바이스 선택 하자마자 바로 속성 조회하고, massSamples를 선택해 준다.
-		vkGetPhysicalDeviceProperties(fDevice.physicalDevice, &physicalDeviceProperties);
+		vkGetPhysicalDeviceProperties(fDevice.physicalDevice, &fDevice.physicalDeviceProperties);
+		vkGetPhysicalDeviceMemoryProperties(fDevice.physicalDevice, &fDevice.physicalDeviceMemoryProperties);
 
 		msaaSamples = getMaxUsableSampleCount();
 
-		std::cout << "Select device : " << physicalDeviceProperties.deviceName << std::endl;
-		std::cout << "Device type : " << (physicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ? "INTEGRATED" :
-			physicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU ? "DISCRETE" : "Etc.") << std::endl;
+		std::cout << "Select device : " << fDevice.physicalDeviceProperties.deviceName << std::endl;
+		std::cout << "Device type : " << (fDevice.physicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ? "INTEGRATED" :
+			fDevice.physicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU ? "DISCRETE" : "Etc.") << std::endl;
 	}
 	else {
 		throw std::runtime_error("failed to find a suitable GPU!");
@@ -618,7 +619,7 @@ bool GameFramework::hasStencilComponent(VkFormat format)
 
 VkSampleCountFlagBits GameFramework::getMaxUsableSampleCount()
 {
-	VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+	VkSampleCountFlags counts = fDevice.physicalDeviceProperties.limits.framebufferColorSampleCounts & fDevice.physicalDeviceProperties.limits.framebufferDepthSampleCounts;
 	if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
 	if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
 	if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }

@@ -38,6 +38,8 @@ void VulkanGLTFSkinModel::loadglTFFile(std::string filename)
 	glTFInput = std::make_shared<tinygltf::Model>();
 
 	bool fileLoaded = false;
+
+	// 확장자가 glb인지 검사하여 glb이면 binary로 열고, 아니면 .gltf로 간주
 	size_t dotPosition = filename.find_last_of('.');
 	if (dotPosition != std::string::npos && dotPosition != filename.length() - 1) {
 		std::string extention = filename.substr(dotPosition + 1);
@@ -177,9 +179,7 @@ void VulkanGLTFSkinModel::loadMeshes(const tinygltf::Node& inputNode, std::vecto
 		for (size_t i = 0; i < mesh.primitives.size(); i++)
 		{
 			const tinygltf::Primitive& glTFPrimitive = mesh.primitives[i];
-			uint32_t                   firstIndex = static_cast<uint32_t>(indexBuffer.size());
 			uint32_t                   vertexStart = static_cast<uint32_t>(vertexBuffer.size());
-			uint32_t                   indexCount = 0;
 			bool                       hasSkin = false;
 			// Vertices
 			{

@@ -23,6 +23,9 @@ namespace vkf
 		VkQueue graphicsQueue;
 		VkQueue presentQueue;
 		VkCommandPool commandPool;
+
+		VkPhysicalDeviceProperties physicalDeviceProperties;				// physicalDevice 선택시 메모리 속성과 함께 얻어준다.
+		VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
 	};
 
 	struct UniformBufferObject {
