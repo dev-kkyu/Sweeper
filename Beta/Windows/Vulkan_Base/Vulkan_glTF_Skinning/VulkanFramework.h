@@ -126,7 +126,7 @@ namespace vkf
 
 	public:
 		void createUniformBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout);		// ubo, ssbo 중 하나만 생성 및 호출할 것
-		void createShaderStorageBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout);
+		void createShaderStorageBufferObjects(vkf::Device& fDevice, VkDeviceSize bufferSize, VkDescriptorSetLayout descriptorSetLayout);
 		void destroy();
 
 		void copyTo(const void* data, VkDeviceSize size, uint32_t currentFrame);

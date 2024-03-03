@@ -29,7 +29,7 @@ void VulkanGLTFModel::loadModel(vkf::Device& fDevice, VkDescriptorSetLayout samp
 	loadglTFFile(filename);
 }
 
-void VulkanGLTFModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, glm::mat4 parentMatrix)
+void VulkanGLTFModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const glm::mat4& worldMatrix)
 {
 	// All vertices and indices are stored in single buffers, so we only need to bind once
 	VkDeviceSize offsets[1] = { 0 };
@@ -37,11 +37,11 @@ void VulkanGLTFModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipel
 	vkCmdBindIndexBuffer(commandBuffer, buffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 	// Render all nodes at top-level
 	for (auto& node : nodes) {
-		drawNode(commandBuffer, pipelineLayout, node, parentMatrix);
+		drawNode(commandBuffer, pipelineLayout, node, worldMatrix);
 	}
 }
 
-void VulkanGLTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, VulkanGLTFModel::Node* node, const glm::mat4& parentMatrix)
+void VulkanGLTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, VulkanGLTFModel::Node* node, const glm::mat4& worldMatrix)
 {
 	if (node->mesh.primitives.size() > 0) {
 		// Pass the node's matrix via push constants
@@ -53,7 +53,7 @@ void VulkanGLTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout p
 			currentParent = currentParent->parent;
 		}
 		// 월드 좌표계로 이동
-		nodeMatrix = parentMatrix * nodeMatrix;
+		nodeMatrix = worldMatrix * nodeMatrix;
 		// Pass the final matrix to the vertex shader using push constants
 		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &nodeMatrix);
 		for (VulkanGLTFModel::Primitive& primitive : node->mesh.primitives) {
@@ -67,7 +67,7 @@ void VulkanGLTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout p
 		}
 	}
 	for (auto& child : node->children) {
-		drawNode(commandBuffer, pipelineLayout, child, parentMatrix);
+		drawNode(commandBuffer, pipelineLayout, child, worldMatrix);
 	}
 }
 

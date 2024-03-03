@@ -11,6 +11,7 @@ using Node = VulkanGLTFSkinModel::Node;
 using AnimationSampler = VulkanGLTFSkinModel::AnimationSampler;
 using AnimationChannel = VulkanGLTFSkinModel::AnimationChannel;
 using Primitive = VulkanGLTFSkinModel::Primitive;
+using TextureID = VulkanGLTFSkinModel::TextureID;
 
 GLTFSkinModelObject::GLTFSkinModelObject()
 {
@@ -18,6 +19,7 @@ GLTFSkinModelObject::GLTFSkinModelObject()
 
 GLTFSkinModelObject::~GLTFSkinModelObject()
 {
+	release();
 }
 
 void GLTFSkinModelObject::initialize()
@@ -26,19 +28,47 @@ void GLTFSkinModelObject::initialize()
 
 void GLTFSkinModelObject::update(float elapsedTime, uint32_t currentFrame)
 {
+	updateAnimation(elapsedTime, currentFrame);
 }
 
 void GLTFSkinModelObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
+	model->bindBuffers(commandBuffer);
+
+	// Render all nodes at top-level
+	for (auto& node : nodes)
+	{
+		drawNode(commandBuffer, pipelineLayout, currentFrame, node, modelTransform);
+	}
 }
 
 void GLTFSkinModelObject::release()
 {
+	for (auto& skin : skins) {
+		skin.ssbo.destroy();
+	}
 }
 
-void GLTFSkinModelObject::setModel(VulkanGLTFSkinModel& model)
+void GLTFSkinModelObject::initModel(VulkanGLTFSkinModel& model, VkDescriptorSetLayout ssboDescriptorSetLayout)
 {
 	this->model = &model;
+
+	const tinygltf::Model& glTFInput = *(this->model->glTFInput);
+	const tinygltf::Scene& scene = glTFInput.scenes[0];
+	uint32_t indexBufferCount = 0;
+	for (size_t i = 0; i < scene.nodes.size(); i++)
+	{
+		const tinygltf::Node node = glTFInput.nodes[scene.nodes[i]];
+		loadNode(node, nullptr, scene.nodes[i], indexBufferCount);
+	}
+	loadSkins(ssboDescriptorSetLayout);
+	loadAnimations();
+	// Calculate initial pose
+	for (uint32_t k = 0; k < MAX_FRAMES_IN_FLIGHT; ++k) {
+		for (auto& node : nodes) {
+			updateJoints(node, k);
+		}
+	}
 }
 
 std::shared_ptr<Node> GLTFSkinModelObject::findNode(std::shared_ptr<Node> parent, uint32_t index)
@@ -73,7 +103,7 @@ std::shared_ptr<Node> GLTFSkinModelObject::nodeFromIndex(uint32_t index)
 	return nodeFound;
 }
 
-void GLTFSkinModelObject::loadSkins()
+void GLTFSkinModelObject::loadSkins(VkDescriptorSetLayout ssboDescriptorSetLayout)
 {
 	tinygltf::Model& input = *(model->glTFInput);
 
@@ -106,18 +136,11 @@ void GLTFSkinModelObject::loadSkins()
 			skins[i].inverseBindMatrices.resize(accessor.count);
 			memcpy(skins[i].inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
 
-			// 이 스킨에 대한 역 바인드 행렬을 Shader Storage Buffer Object에 저장
-			// Todo : ssbo 생성하고, 나중에 descriptor pool, set 만들어야 한다 -> loadmodel 할 때, setlayout도 받아와야 한다.
-			// skins[i].ssbo.createShaderStorageBufferObjects(*model->fDevice, )...
-
-			// To keep this sample simple, we create a host visible shader storage buffer
-			//VK_CHECK_RESULT(vulkanDevice->createBuffer(
-			//	VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-			//	VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			//	&skins[i].ssbo,
-			//	sizeof(glm::mat4) * skins[i].inverseBindMatrices.size(),
-			//	skins[i].inverseBindMatrices.data()));
-			//VK_CHECK_RESULT(skins[i].ssbo.map());
+			// 이 스킨에 대한 역 바인드 행렬을 담을 공간을 Shader Storage Buffer Object에 생성 및 저장
+			skins[i].ssbo.createShaderStorageBufferObjects(*model->fDevice, sizeof(glm::mat4) * skins[i].inverseBindMatrices.size(), ssboDescriptorSetLayout);
+			for (uint32_t k = 0; k < MAX_FRAMES_IN_FLIGHT; ++k) {
+				skins[i].ssbo.copyTo(skins[i].inverseBindMatrices.data(), sizeof(glm::mat4) * skins[i].inverseBindMatrices.size(), k);
+			}
 		}
 	}
 }
@@ -299,14 +322,14 @@ glm::mat4 GLTFSkinModelObject::getNodeMatrix(std::shared_ptr<Node> node)
 }
 
 // 현재 애니메이션 프레임에서 joint 행렬을 업데이트하고 GPU에 전달
-void GLTFSkinModelObject::updateJoints(std::shared_ptr<Node> node)
+void GLTFSkinModelObject::updateJoints(std::shared_ptr<Node> node, uint32_t currentFrame)
 {
 	if (node->skin > -1)
 	{
 		// Update the joint matrices
-		glm::mat4              inverseTransform = glm::inverse(getNodeMatrix(node));
-		Skin                   skin = skins[node->skin];
-		size_t                 numJoints = (uint32_t)skin.joints.size();
+		glm::mat4 inverseTransform = glm::inverse(getNodeMatrix(node));
+		Skin& skin = skins[node->skin];
+		size_t numJoints = (uint32_t)skin.joints.size();
 		std::vector<glm::mat4> jointMatrices(numJoints);
 		for (size_t i = 0; i < numJoints; i++)
 		{
@@ -314,17 +337,16 @@ void GLTFSkinModelObject::updateJoints(std::shared_ptr<Node> node)
 			jointMatrices[i] = inverseTransform * jointMatrices[i];
 		}
 		// Update ssbo
-		// Todo
-		//skin.ssbo.copyTo(jointMatrices.data(), jointMatrices.size() * sizeof(glm::mat4));
+		skin.ssbo.copyTo(jointMatrices.data(), jointMatrices.size() * sizeof(glm::mat4), currentFrame);
 	}
 
 	for (auto& child : node->children)
 	{
-		updateJoints(child);
+		updateJoints(child, currentFrame);
 	}
 }
 
-void GLTFSkinModelObject::updateAnimation(float elapsedTime)
+void GLTFSkinModelObject::updateAnimation(float elapsedTime, uint32_t currentFrame)
 {
 	if (activeAnimation > static_cast<uint32_t>(animations.size()) - 1)
 	{
@@ -382,6 +404,43 @@ void GLTFSkinModelObject::updateAnimation(float elapsedTime)
 	}
 	for (auto& node : nodes)
 	{
-		updateJoints(node);
+		updateJoints(node, currentFrame);
+	}
+}
+
+void GLTFSkinModelObject::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame, std::shared_ptr<Node> node, const glm::mat4& worldMatrix)
+{
+	if (node->mesh.primitives.size() > 0)
+	{
+		// Pass the node's matrix via push constants
+		// Traverse the node hierarchy to the top-most parent to get the final matrix of the current node
+		glm::mat4				nodeMatrix = node->matrix;
+		std::shared_ptr<Node>	currentParent = node->parent;
+		while (currentParent)
+		{
+			nodeMatrix = currentParent->matrix * nodeMatrix;
+			currentParent = currentParent->parent;
+		}
+		// 월드 좌표계로 이동
+		nodeMatrix = worldMatrix * nodeMatrix;
+		// Pass the final matrix to the vertex shader using push constants
+		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &nodeMatrix);
+		// 현재 노드의 skin data에 해당하는 ssbo를 2번에 바인드 한다.
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &skins[node->skin].ssbo.descriptorSets[currentFrame], 0, nullptr);
+		for (Primitive& primitive : node->mesh.primitives)
+		{
+			if (primitive.indexCount > 0)
+			{
+				// Get the texture index for this primitive
+				TextureID texture = model->textures[model->materials[primitive.materialIndex].baseColorTextureIndex];
+				// 현재 프리미티브 텍스처의 디스크립터 셋을 1번에 바인드 한다.
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &model->images[texture.imageIndex].texture.samplerDescriptorSet, 0, nullptr);
+				vkCmdDrawIndexed(commandBuffer, primitive.indexCount, 1, primitive.firstIndex, 0, 0);
+			}
+		}
+	}
+	for (auto& child : node->children)
+	{
+		drawNode(commandBuffer, pipelineLayout, currentFrame, child, worldMatrix);
 	}
 }

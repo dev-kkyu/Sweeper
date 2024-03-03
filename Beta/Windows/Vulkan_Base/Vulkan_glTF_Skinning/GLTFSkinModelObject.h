@@ -27,17 +27,18 @@ public:
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void release() override;
 
-	void setModel(VulkanGLTFSkinModel& model);
+	void initModel(VulkanGLTFSkinModel& model, VkDescriptorSetLayout ssboDescriptorSetLayout);
 
 private:
 	std::shared_ptr<Node>	findNode(std::shared_ptr<Node> parent, uint32_t index);
 	std::shared_ptr<Node>	nodeFromIndex(uint32_t index);
-	void					loadSkins();
+	void					loadSkins(VkDescriptorSetLayout ssboDescriptorSetLayout);
 	void					loadAnimations();
 	void					loadNode(const tinygltf::Node& inputNode, std::shared_ptr<Node> parent, uint32_t nodeIndex, uint32_t& indexBufferCount);
 	glm::mat4				getNodeMatrix(std::shared_ptr<Node> node);
-	void					updateJoints(std::shared_ptr<Node> node);
-	void					updateAnimation(float elapsedTime);
+	void					updateJoints(std::shared_ptr<Node> node, uint32_t currentFrame);
+	void					updateAnimation(float elapsedTime, uint32_t currentFrame);
+	void					drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame, std::shared_ptr<Node> node, const glm::mat4& worldMatrix);
 
 };
 

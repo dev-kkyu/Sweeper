@@ -30,6 +30,14 @@ void VulkanGLTFSkinModel::loadModel(vkf::Device& fDevice, VkDescriptorSetLayout 
 	loadglTFFile(filename);
 }
 
+void VulkanGLTFSkinModel::bindBuffers(VkCommandBuffer commandBuffer)
+{
+	// All vertices and indices are stored in single buffers, so we only need to bind once
+	VkDeviceSize offsets[1] = { 0 };
+	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &buffer.vertexBuffer, offsets);
+	vkCmdBindIndexBuffer(commandBuffer, buffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+}
+
 void VulkanGLTFSkinModel::loadglTFFile(std::string filename)
 {
 	tinygltf::TinyGLTF	gltfContext;

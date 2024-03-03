@@ -75,7 +75,7 @@ public:
 		std::shared_ptr<Node>				skeletonRoot;
 		std::vector<glm::mat4>				inverseBindMatrices;
 		std::vector<std::shared_ptr<Node>>	joints;
-		vkf::BufferObject					ssbo;
+		vkf::BufferObject					ssbo;					// º“∏Íµ… ∂ß destroy «ÿ¡‡æﬂ «‘
 	};
 
 	struct AnimationSampler
@@ -119,6 +119,8 @@ public:
 	void destroy();
 
 	void loadModel(vkf::Device& fDevice, VkDescriptorSetLayout samplerDescriptorSetLayout, std::string filename);
+
+	void bindBuffers(VkCommandBuffer commandBuffer);
 
 private:
 

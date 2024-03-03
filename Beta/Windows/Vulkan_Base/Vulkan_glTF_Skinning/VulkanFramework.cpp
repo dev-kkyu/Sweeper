@@ -333,11 +333,13 @@ namespace vkf
 		createDescriptorSets(descriptorSetLayout, sizeof(UniformBufferObject), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 	}
 
-	void BufferObject::createShaderStorageBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout)
+	void BufferObject::createShaderStorageBufferObjects(vkf::Device& fDevice, VkDeviceSize bufferSize, VkDescriptorSetLayout descriptorSetLayout)
 	{
 		this->fDevice = &fDevice;
 
-		// Todo : ssbo 만들 때 작성하기
+		createBuffers(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+		createDescriptorPool(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+		createDescriptorSets(descriptorSetLayout, bufferSize, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 	}
 
 	void BufferObject::destroy()
@@ -354,9 +356,9 @@ namespace vkf
 		}
 	}
 
-	void BufferObject::copyTo(const void* data, VkDeviceSize size, uint32_t currentFrame)
+	void BufferObject::copyTo(const void* data, VkDeviceSize bufferSize, uint32_t currentFrame)
 	{
-		::memcpy(buffersMapped[currentFrame], data, size);
+		::memcpy(buffersMapped[currentFrame], data, bufferSize);
 	}
 
 	void BufferObject::updateUniformBuffer(const UniformBufferObject& ubo, uint32_t currentFrame)
