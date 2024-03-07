@@ -28,7 +28,7 @@ void GLTFSkinModelObject::initialize()
 
 void GLTFSkinModelObject::update(float elapsedTime, uint32_t currentFrame)
 {
-	updateAnimation(elapsedTime, currentFrame);
+	updateAnimation(elapsedTime * animateSpeed, currentFrame);
 }
 
 void GLTFSkinModelObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
@@ -69,6 +69,11 @@ void GLTFSkinModelObject::initModel(VulkanGLTFSkinModel& model, VkDescriptorSetL
 			updateJoints(node, k);
 		}
 	}
+}
+
+void GLTFSkinModelObject::setAnimateSpeed(float speed)
+{
+	animateSpeed = speed;
 }
 
 std::shared_ptr<Node> GLTFSkinModelObject::findNode(std::shared_ptr<Node> parent, uint32_t index)

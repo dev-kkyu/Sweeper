@@ -18,6 +18,8 @@ protected:
 
 	uint32_t activeAnimation = 0;
 
+	float animateSpeed = 1.f;
+
 public:
 	GLTFSkinModelObject();
 	virtual ~GLTFSkinModelObject();
@@ -28,6 +30,8 @@ public:
 	virtual void release() override;
 
 	void initModel(VulkanGLTFSkinModel& model, VkDescriptorSetLayout ssboDescriptorSetLayout);
+
+	void setAnimateSpeed(float speed);
 
 private:
 	std::shared_ptr<Node>	findNode(std::shared_ptr<Node> parent, uint32_t index);

@@ -2,6 +2,7 @@
 
 #include "PlayerObject.h"
 #include "GLTFModelObject.h"
+#include "GLTFSkinModelObject.h"
 #include "Camera.h"
 
 class Scene
@@ -39,8 +40,11 @@ private:
 	vkf::Texture boxTexture;
 	PlayerObject* pPlayer;
 
-	GLTFModelObject* sampleModelObject[2];
-	VulkanGLTFModel sampleModel[2];
+	GLTFModelObject* gltfModelObject;
+	VulkanGLTFModel gltfModel;
+
+	GLTFSkinModelObject* skinModelObject[2];
+	VulkanGLTFSkinModel skinModel[2];
 
 	Camera camera;
 

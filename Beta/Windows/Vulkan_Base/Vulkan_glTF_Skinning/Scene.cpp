@@ -30,28 +30,38 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 
 	camera.setPlayer(pPlayer);
 
-	sampleModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/deer.gltf");
-	sampleModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Binary/CesiumMan.glb");
-	//sampleModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF/CesiumMan.gltf");
-	//sampleModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Embedded/CesiumMan.gltf");
+	gltfModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/deer.gltf");
 
-	sampleModelObject[0] = new GLTFModelObject;
-	sampleModelObject[1] = new GLTFModelObject;
+	skinModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Binary/CesiumMan.glb");
+	//skinModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF/CesiumMan.gltf");
+	//skinModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Embedded/CesiumMan.gltf");
+	skinModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/mushroom.glb");
 
-	sampleModelObject[0]->setModel(sampleModel[0]);
-	sampleModelObject[0]->setPosition({ 0.f, 1.5f, 0.f });
-	sampleModelObject[0]->setScale(glm::vec3{ 1.f });
-	sampleModelObject[1]->setModel(sampleModel[1]);
-	sampleModelObject[1]->setPosition({ 2.f, 0.f, 0.f });
-	sampleModelObject[1]->setScale(glm::vec3{ 2.f });
+	gltfModelObject = new GLTFModelObject;
+	gltfModelObject->setModel(gltfModel);
+	gltfModelObject->setPosition({ 0.f, 1.5f, 0.f });
+	gltfModelObject->setScale(glm::vec3{ 1.f });
+
+	skinModelObject[0] = new GLTFSkinModelObject;
+	skinModelObject[0]->initModel(skinModel[0], descriptorSetLayout.ssbo);
+	skinModelObject[0]->setPosition({ 2.f, 0.f, 0.f });
+	skinModelObject[0]->setScale(glm::vec3{ 2.f });
+	skinModelObject[0]->setAnimateSpeed(1.5f);
+	skinModelObject[1] = new GLTFSkinModelObject;
+	skinModelObject[1]->initModel(skinModel[1], descriptorSetLayout.ssbo);
+	skinModelObject[1]->setPosition({ -2.f, 0.f, 0.f });
+	skinModelObject[1]->setScale(glm::vec3{ 2.f });
 }
 
 Scene::~Scene()
 {
-	delete sampleModelObject[0];
-	delete sampleModelObject[1];
-	sampleModel[0].destroy();
-	sampleModel[1].destroy();
+	delete skinModelObject[0];
+	delete skinModelObject[1];
+	skinModel[0].destroy();
+	skinModel[1].destroy();
+
+	delete gltfModelObject;
+	gltfModel.destroy();
 
 	delete pPlayer;
 	boxTexture.destroy();
@@ -89,8 +99,10 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 
 	pPlayer->update(elapsedTime, currentFrame);
 
-	sampleModelObject[0]->update(elapsedTime, currentFrame);
-	sampleModelObject[1]->update(elapsedTime, currentFrame);
+	gltfModelObject->update(elapsedTime, currentFrame);
+
+	skinModelObject[0]->update(elapsedTime, currentFrame);
+	skinModelObject[1]->update(elapsedTime, currentFrame);
 }
 
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -102,8 +114,12 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 
 	plainObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
 	pPlayer->draw(commandBuffer, pipelineLayout.model, currentFrame);
-	sampleModelObject[0]->draw(commandBuffer, pipelineLayout.model, currentFrame);
-	sampleModelObject[1]->draw(commandBuffer, pipelineLayout.model, currentFrame);
+	gltfModelObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
+
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.skinModel);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.skinModel, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
+	skinModelObject[0]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
+	skinModelObject[1]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)

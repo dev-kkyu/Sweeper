@@ -1,4 +1,4 @@
-#include "VulkanglTFModel.h"
+ï»¿#include "VulkanglTFModel.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
@@ -53,7 +53,7 @@ void VulkanglTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout p
 			nodeMatrix = currentParent->matrix * nodeMatrix;
 			currentParent = currentParent->parent;
 		}
-		// ¿ùµå ÁÂÇ¥°è·Î ÀÌµ¿
+		// ì›”ë“œ ì¢Œí‘œê³„ë¡œ ì´ë™
 		nodeMatrix = parentMatrix * nodeMatrix;
 		// Pass the final matrix to the vertex shader using push constants
 		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &nodeMatrix);
