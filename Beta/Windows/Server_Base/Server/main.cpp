@@ -6,6 +6,7 @@
 #include <atomic>
 #include <mutex>
 
+#define ASIO_STANDALONE
 #include "asio.hpp"
 
 #define SERVER_PORT		7777
@@ -15,8 +16,6 @@
 class Session;
 std::array<std::shared_ptr<Session>, MAX_USER> players;
 std::mutex g_mutex;
-
-std::atomic_int g_user_ID;
 
 int getNewClientID()
 {
@@ -37,7 +36,7 @@ private:
 	int my_id;
 	unsigned char read_buffer[BUFF_SIZE];
 	unsigned char remain_data[BUFF_SIZE];
-	size_t remain_size;
+	int remain_size;
 
 public:
 	Session(asio::ip::tcp::socket socket, int new_id) : socket{ std::move(socket) }, my_id{ new_id }
@@ -49,7 +48,7 @@ public:
 	{
 		doRead();		// 수신하기를 시작한다.
 
-		// 최초 접속시 할 일
+		// Todo : 최초 접속시 할 일
 	}
 
 private:
@@ -62,7 +61,7 @@ private:
 				if (ec) {		// 실패했을 때
 					if (ec.value() == asio::error::operation_aborted)
 						return;
-					std::cout << "Receive Error on Session[" << my_id << "] EC[" << ec << "]\n";
+					std::cout << "Receive Error on Session[" << my_id << "]: [" << ec << "]: " << ec.message() << std::endl;
 					players[my_id] = nullptr;													// 나를 제거한다.
 					return;
 				}
@@ -121,7 +120,7 @@ private:
 
 	void processPacket(unsigned char* packet)
 	{
-		// 패킷 처리
+		// Todo : 패킷 처리
 	}
 };
 
@@ -133,8 +132,7 @@ private:
 
 public:
 	Server(asio::io_context& io_context, int port)
-		: acceptor(io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
-		socket(io_context)
+		: acceptor{ io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port) }, socket{ io_context }
 	{
 		do_accept();				// 접속을 받기 시작한다.
 	}
@@ -152,21 +150,21 @@ private:
 					g_mutex.unlock();
 					players[p_id]->start();
 
+					std::cout << "플레이어 " << p_id << " 접속\n";
+
 					do_accept();	// 다음 접속을 기다린다.
 				}
 			});
 	}
 };
 
-void workerThread(asio::io_context* service)
+void workerThread(asio::io_context* context)
 {
-	service->run();
+	context->run();
 }
 
 int main()
 {
-	std::locale::global(std::locale("ko_KR.UTF-8"));	// 로케일 설정
-
 	asio::io_context io_context;
 	Server server{ io_context, SERVER_PORT };			// 서버 열기
 
