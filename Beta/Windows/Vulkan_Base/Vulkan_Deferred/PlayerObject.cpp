@@ -24,13 +24,14 @@ void PlayerObject::update(float elapsedTime, uint32_t currentFrame)
 		if (keyState & KEY_LEFT) direction += 1.f * right;
 		if (keyState & KEY_RIGHT) direction -= 1.f * right;
 
-		move(direction, elapsedTime * 3.f);
+		move(direction, elapsedTime * 4.f);
 	}
+	GLTFSkinModelObject::update(elapsedTime, currentFrame);
 }
 
 void PlayerObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
-	OBJModelObject::draw(commandBuffer, pipelineLayout, currentFrame);
+	GLTFSkinModelObject::draw(commandBuffer, pipelineLayout, currentFrame);
 }
 
 void PlayerObject::release()
