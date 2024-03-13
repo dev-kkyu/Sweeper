@@ -5,9 +5,9 @@
 #define KEY_LEFT	0x04
 #define KEY_RIGHT	0x08
 
-#include "OBJModelObject.h"
+#include "GLTFSkinModelObject.h"
 
-class PlayerObject : public OBJModelObject
+class PlayerObject : public GLTFSkinModelObject
 {
 private:
 

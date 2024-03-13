@@ -1,8 +1,9 @@
 #pragma once
 
+#include "OBJModelObject.h"
 #include "PlayerObject.h"
-#include "GLTFModelObject.h"
-#include "GLTFSkinModelObject.h"
+//#include "GLTFModelObject.h"
+//#include "GLTFSkinModelObject.h"	// included PlayerObject
 #include "Camera.h"
 
 class Scene
@@ -32,19 +33,23 @@ private:
 
 	VkDescriptorPool samplerDescriptorPool;
 
-	vkf::MeshBuffer plainBuffer;
-	vkf::Texture plainTexture;
-	OBJModelObject* plainObject;
+	// obj ¸Ê
+	vkf::MeshBuffer mapBuffer;
+	vkf::Texture mapTexture;
+	OBJModelObject* mapObject;
 
-	vkf::MeshBuffer boxBuffer;
-	vkf::Texture boxTexture;
+	// obj Àü»ç
+	vkf::MeshBuffer warriorBuffer;
+	vkf::Texture warriorTexture;
+	std::array<OBJModelObject*, 10> warriorObject;
+
+	// gltf skin ¹ö¼¸
+	VulkanGLTFSkinModel mushroomModel;
+	std::array<GLTFSkinModelObject*, 100> mushroomObject;
+
+	// gltf skin ÀÓ½Ã »ùÇÃ
+	VulkanGLTFSkinModel playerModel;
 	PlayerObject* pPlayer;
-
-	GLTFModelObject* gltfModelObject;
-	VulkanGLTFModel gltfModel;
-
-	GLTFSkinModelObject* skinModelObject[2];
-	VulkanGLTFSkinModel skinModel[2];
 
 	Camera camera;
 

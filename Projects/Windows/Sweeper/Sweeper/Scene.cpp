@@ -11,65 +11,70 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 
 	uniformBufferObject.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 
-	createSamplerDescriptorPool(2);
+	createSamplerDescriptorPool(2);		// obj에 사용할 텍스처 별도로 불러올것
 
-	plainBuffer.loadFromObjFile(fDevice, "models/tile.obj");
-	plainTexture.loadFromFile(fDevice, "textures/tile.jpg", samplerDescriptorPool, descriptorSetLayout.sampler);
-	boxBuffer.loadFromObjFile(fDevice, "models/box.obj");
-	boxTexture.loadFromFile(fDevice, "textures/wood.jpg", samplerDescriptorPool, descriptorSetLayout.sampler);
+	// obj와 텍스처 로드
+	mapBuffer.loadFromObjFile(fDevice, "models/map.obj");
+	mapTexture.loadFromFile(fDevice, "textures/map.png", samplerDescriptorPool, descriptorSetLayout.sampler);
+	warriorBuffer.loadFromObjFile(fDevice, "models/warrior.obj");
+	warriorTexture.loadFromFile(fDevice, "textures/warrior.png", samplerDescriptorPool, descriptorSetLayout.sampler);
 
-	plainObject = new OBJModelObject;
-	plainObject->setBuffer(plainBuffer);
-	plainObject->setTexture(plainTexture);
+	// gltf skin모델 로드
+	mushroomModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/mushroom.glb");
+	playerModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Binary/CesiumMan.glb");
 
+	// 맵 생성
+	mapObject = new OBJModelObject;
+	mapObject->setBuffer(mapBuffer);
+	mapObject->setTexture(mapTexture);
+
+	// 버섯 생성
+	for (int i = 0; i < mushroomObject.size(); ++i) {
+		mushroomObject[i] = new GLTFSkinModelObject;
+		mushroomObject[i]->initModel(mushroomModel, descriptorSetLayout.ssbo);
+		int x = i / 10 - 5;
+		int z = i % 10 - 5;
+		mushroomObject[i]->setPosition({ x * 5.f, 0.f, z * 5.f });
+		mushroomObject[i]->setAnimateSpeed(float(rand()) / RAND_MAX + 0.5f);
+	}
+
+	// 전사 생성
+	for (int i = 0; i < warriorObject.size(); ++i) {
+		warriorObject[i] = new OBJModelObject;
+		warriorObject[i]->setBuffer(warriorBuffer);
+		warriorObject[i]->setTexture(warriorTexture);
+		warriorObject[i]->setPosition({ (i - 5) * 5.f, 0.f, 25.f });
+		warriorObject[i]->rotate(180.f);
+	}
+
+	// 플레이어 생성
 	pPlayer = new PlayerObject;
-	pPlayer->setBuffer(boxBuffer);
-	pPlayer->setTexture(boxTexture);
+	pPlayer->initModel(playerModel, descriptorSetLayout.ssbo);
 	pPlayer->setPosition({ 1.f, 0.f, 1.f });
-	pPlayer->setLook({ 0.f, 0.f, -1.f });
+	pPlayer->setAnimateSpeed(2.f);
 
 	camera.setPlayer(pPlayer);
-
-	gltfModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/deer.gltf");
-
-	skinModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Binary/CesiumMan.glb");
-	//skinModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF/CesiumMan.gltf");
-	//skinModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Embedded/CesiumMan.gltf");
-	skinModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/mushroom.glb");
-
-	gltfModelObject = new GLTFModelObject;
-	gltfModelObject->setModel(gltfModel);
-	gltfModelObject->setPosition({ 0.f, 1.5f, 0.f });
-	gltfModelObject->setScale(glm::vec3{ 1.f });
-
-	skinModelObject[0] = new GLTFSkinModelObject;
-	skinModelObject[0]->initModel(skinModel[0], descriptorSetLayout.ssbo);
-	skinModelObject[0]->setPosition({ 2.f, 0.f, 0.f });
-	skinModelObject[0]->setScale(glm::vec3{ 2.f });
-	skinModelObject[0]->setAnimateSpeed(1.5f);
-	skinModelObject[1] = new GLTFSkinModelObject;
-	skinModelObject[1]->initModel(skinModel[1], descriptorSetLayout.ssbo);
-	skinModelObject[1]->setPosition({ -2.f, 0.f, 0.f });
-	skinModelObject[1]->setScale(glm::vec3{ 2.f });
 }
 
 Scene::~Scene()
 {
-	delete skinModelObject[0];
-	delete skinModelObject[1];
-	skinModel[0].destroy();
-	skinModel[1].destroy();
-
-	delete gltfModelObject;
-	gltfModel.destroy();
-
 	delete pPlayer;
-	boxTexture.destroy();
-	boxBuffer.destroy();
+	playerModel.destroy();
 
-	delete plainObject;
-	plainTexture.destroy();
-	plainBuffer.destroy();
+	for (auto& object : warriorObject) {
+		delete object;
+	}
+	warriorTexture.destroy();
+	warriorBuffer.destroy();
+
+	for (auto& object : mushroomObject) {
+		delete object;
+	}
+	mushroomModel.destroy();
+
+	delete mapObject;
+	mapTexture.destroy();
+	mapBuffer.destroy();
 
 	vkDestroyDescriptorPool(fDevice.logicalDevice, samplerDescriptorPool, nullptr);
 
@@ -94,32 +99,42 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 
 	uniformBufferObject.updateUniformBuffer(ubo, currentFrame);
 
+	// 모델들 업데이트
+	mapObject->update(elapsedTime, currentFrame);
 
-	plainObject->update(elapsedTime, currentFrame);
+	for (int i = 0; i < mushroomObject.size(); ++i) {
+		mushroomObject[i]->update(elapsedTime, currentFrame);
+	}
+
+	for (auto& object : warriorObject) {
+		object->update(elapsedTime, currentFrame);
+	}
 
 	pPlayer->update(elapsedTime, currentFrame);
-
-	gltfModelObject->update(elapsedTime, currentFrame);
-
-	skinModelObject[0]->update(elapsedTime, currentFrame);
-	skinModelObject[1]->update(elapsedTime, currentFrame);
 }
 
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
+	// non-skinModel
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.model);
-
 	// firstSet은 set의 시작인덱스
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 
-	plainObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
-	pPlayer->draw(commandBuffer, pipelineLayout.model, currentFrame);
-	gltfModelObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
+	mapObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
+	for (auto& object : warriorObject) {
+		object->draw(commandBuffer, pipelineLayout.model, currentFrame);
+	}
 
+	// skinModel
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.skinModel);
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.skinModel, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
-	skinModelObject[0]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
-	skinModelObject[1]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
+
+	for (int i = 0; i < mushroomObject.size(); ++i) {
+		mushroomObject[i]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
+	}
+
+	pPlayer->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
+
 }
 
 void Scene::processKeyboard(int key, int action, int mods)
