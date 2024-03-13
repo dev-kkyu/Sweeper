@@ -12,7 +12,7 @@ void PlayerObject::initialize()
 {
 }
 
-void PlayerObject::update(float elapsedTime)
+void PlayerObject::update(float elapsedTime, uint32_t currentFrame)
 {
 	if (keyState) {
 		glm::vec3 look = getLook();
@@ -28,9 +28,9 @@ void PlayerObject::update(float elapsedTime)
 	}
 }
 
-void PlayerObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
+void PlayerObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
-	GameObject::draw(commandBuffer, pipelineLayout);
+	OBJModelObject::draw(commandBuffer, pipelineLayout, currentFrame);
 }
 
 void PlayerObject::release()

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "PlayerObject.h"
+#include "GLTFModelObject.h"
+#include "GLTFSkinModelObject.h"
 #include "Camera.h"
 
 class Scene
@@ -10,33 +12,39 @@ private:
 	VkSampleCountFlagBits& msaaSamples;
 	VkRenderPass& renderPass;
 
-	VkDescriptorSetLayout uboDescriptorSetLayout;
-	VkDescriptorSetLayout samplerDescriptorSetLayout;
-	VkPipelineLayout pipelineLayout;
-	VkPipeline graphicsPipeline;
+	struct {
+		VkDescriptorSetLayout ubo = VK_NULL_HANDLE;
+		VkDescriptorSetLayout sampler = VK_NULL_HANDLE;
+		VkDescriptorSetLayout ssbo = VK_NULL_HANDLE;
+	} descriptorSetLayout;
 
-	std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT> uniformBuffers;
-	std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> uniformBuffersMemory;
-	std::array<void*, MAX_FRAMES_IN_FLIGHT> uniformBuffersMapped;
+	struct {
+		VkPipelineLayout model = VK_NULL_HANDLE;
+		VkPipelineLayout skinModel = VK_NULL_HANDLE;
+	} pipelineLayout;
 
-	VkDescriptorPool uboDescriptorPool;
-	std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> uboDescriptorSets;
+	struct {
+		VkPipeline model = VK_NULL_HANDLE;
+		VkPipeline skinModel = VK_NULL_HANDLE;
+	} pipeline;
+
+	vkf::BufferObject uniformBufferObject;
 
 	VkDescriptorPool samplerDescriptorPool;
 
-	vkf::Buffer mapBuffer;
-	vkf::Texture mapTexture;
-	GameObject* mapObject;
+	vkf::MeshBuffer plainBuffer;
+	vkf::Texture plainTexture;
+	OBJModelObject* plainObject;
 
-	vkf::Buffer mushroomBuffer;
-	vkf::Texture mushroomTexture;
-	std::array<GameObject*, 100> mushroomObject;
-	std::array<float, 100> rotateAngle;
-
-	vkf::Buffer warriorBuffer;
-	vkf::Texture warriorTexture;
-	std::array<GameObject*, 10> warriorObject;
+	vkf::MeshBuffer boxBuffer;
+	vkf::Texture boxTexture;
 	PlayerObject* pPlayer;
+
+	GLTFModelObject* gltfModelObject;
+	VulkanGLTFModel gltfModel;
+
+	GLTFSkinModelObject* skinModelObject[2];
+	VulkanGLTFSkinModel skinModel[2];
 
 	Camera camera;
 
@@ -57,15 +65,8 @@ public:
 private:
 	void createDescriptorSetLayout();
 	void createGraphicsPipeline();
-	void createUniformBuffers();
-	void createUboDescriptorPool();
-	void createUboDescriptorSets();
 
+	// obj 모델은 직접 buffer와 texture를 넣어주도록 설계. 따라서 texture를 위한 descriptor pool을 만들어준다.
 	void createSamplerDescriptorPool(uint32_t setCount);
 
-};
-
-struct UniformBufferObject {
-	alignas(16) glm::mat4 view;
-	alignas(16) glm::mat4 proj;
 };

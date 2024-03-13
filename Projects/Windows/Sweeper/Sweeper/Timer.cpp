@@ -1,6 +1,7 @@
 ﻿#include "Timer.h"
 #include <sstream>
 #include <thread>
+#include <cmath>
 
 #include <GLFW/glfw3.h>
 
@@ -32,7 +33,7 @@ float Timer::Tick(int fps_value)		// 경과 시간 리턴, 1 Frame에 단 한번
 	last_time = now_time;
 	if (accm_time >= std::chrono::seconds{ 1 }) {			// 초당 한번씩 FPS 표시
 		float over_time = accm_time.count() / 1'000'000'000.f;
-		fps = static_cast<int>(round(frame * (1.f / over_time)));
+		fps = static_cast<int>(std::round(frame * (1.f / over_time)));
 		frame -= fps;
 		accm_time -= std::chrono::seconds{ 1 };
 

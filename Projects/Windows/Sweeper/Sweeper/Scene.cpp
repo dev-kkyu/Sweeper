@@ -9,125 +9,117 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
 
-	createUniformBuffers();
-	createUboDescriptorPool();
-	createUboDescriptorSets();
+	uniformBufferObject.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 
-	createSamplerDescriptorPool(3);
+	createSamplerDescriptorPool(2);
 
-	mapBuffer.loadFromObjFile(fDevice, "models/map.obj");
-	mapTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/map.png");
-	mushroomBuffer.loadFromObjFile(fDevice, "models/mushroom.obj");
-	mushroomTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/mushroom.png");
-	warriorBuffer.loadFromObjFile(fDevice, "models/warrior.obj");
-	warriorTexture.loadFromFile(fDevice, samplerDescriptorPool, samplerDescriptorSetLayout, "textures/warrior.png");
+	plainBuffer.loadFromObjFile(fDevice, "models/tile.obj");
+	plainTexture.loadFromFile(fDevice, "textures/tile.jpg", samplerDescriptorPool, descriptorSetLayout.sampler);
+	boxBuffer.loadFromObjFile(fDevice, "models/box.obj");
+	boxTexture.loadFromFile(fDevice, "textures/wood.jpg", samplerDescriptorPool, descriptorSetLayout.sampler);
 
-
-	mapObject = new GameObject;
-	mapObject->setBuffer(mapBuffer);
-	mapObject->setTexture(mapTexture);
-
-	for (int i = 0; i < mushroomObject.size(); ++i) {
-		mushroomObject[i] = new GameObject;
-		mushroomObject[i]->setBuffer(mushroomBuffer);
-		mushroomObject[i]->setTexture(mushroomTexture);
-		int x = i / 10 - 5;
-		int z = i % 10 - 5;
-		mushroomObject[i]->setPosition({ x * 5.f, 0.f, z * 5.f });
-
-		rotateAngle[i] = float(rand()) / RAND_MAX * 180.f;
-	}
-
-	for (int i = 0; i < warriorObject.size(); ++i) {
-		warriorObject[i] = new GameObject;
-		warriorObject[i]->setBuffer(warriorBuffer);
-		warriorObject[i]->setTexture(warriorTexture);
-		warriorObject[i]->setPosition({ (i - 5) * 5.f, 0.f, 25.f });
-		warriorObject[i]->rotate(180.f);
-	}
+	plainObject = new OBJModelObject;
+	plainObject->setBuffer(plainBuffer);
+	plainObject->setTexture(plainTexture);
 
 	pPlayer = new PlayerObject;
-	pPlayer->setBuffer(warriorBuffer);
-	pPlayer->setTexture(warriorTexture);
+	pPlayer->setBuffer(boxBuffer);
+	pPlayer->setTexture(boxTexture);
 	pPlayer->setPosition({ 1.f, 0.f, 1.f });
+	pPlayer->setLook({ 0.f, 0.f, -1.f });
 
 	camera.setPlayer(pPlayer);
+
+	gltfModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/deer.gltf");
+
+	skinModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Binary/CesiumMan.glb");
+	//skinModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF/CesiumMan.gltf");
+	//skinModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Embedded/CesiumMan.gltf");
+	skinModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/mushroom.glb");
+
+	gltfModelObject = new GLTFModelObject;
+	gltfModelObject->setModel(gltfModel);
+	gltfModelObject->setPosition({ 0.f, 1.5f, 0.f });
+	gltfModelObject->setScale(glm::vec3{ 1.f });
+
+	skinModelObject[0] = new GLTFSkinModelObject;
+	skinModelObject[0]->initModel(skinModel[0], descriptorSetLayout.ssbo);
+	skinModelObject[0]->setPosition({ 2.f, 0.f, 0.f });
+	skinModelObject[0]->setScale(glm::vec3{ 2.f });
+	skinModelObject[0]->setAnimateSpeed(1.5f);
+	skinModelObject[1] = new GLTFSkinModelObject;
+	skinModelObject[1]->initModel(skinModel[1], descriptorSetLayout.ssbo);
+	skinModelObject[1]->setPosition({ -2.f, 0.f, 0.f });
+	skinModelObject[1]->setScale(glm::vec3{ 2.f });
 }
 
 Scene::~Scene()
 {
+	delete skinModelObject[0];
+	delete skinModelObject[1];
+	skinModel[0].destroy();
+	skinModel[1].destroy();
+
+	delete gltfModelObject;
+	gltfModel.destroy();
+
 	delete pPlayer;
-	for (auto& object : warriorObject) {
-		delete object;
-	}
-	warriorTexture.destroy();
-	warriorBuffer.destroy();
+	boxTexture.destroy();
+	boxBuffer.destroy();
 
-	for (auto& object : mushroomObject) {
-		delete object;
-	}
-	mushroomTexture.destroy();
-	mushroomBuffer.destroy();
+	delete plainObject;
+	plainTexture.destroy();
+	plainBuffer.destroy();
 
-	delete mapObject;
-	mapTexture.destroy();
-	mapBuffer.destroy();
+	vkDestroyDescriptorPool(fDevice.logicalDevice, samplerDescriptorPool, nullptr);
 
-	vkDestroyDescriptorPool(fDevice.device, samplerDescriptorPool, nullptr);
+	uniformBufferObject.destroy();
 
-	vkDestroyDescriptorPool(fDevice.device, uboDescriptorPool, nullptr);
-
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		vkDestroyBuffer(fDevice.device, uniformBuffers[i], nullptr);
-		vkFreeMemory(fDevice.device, uniformBuffersMemory[i], nullptr);
-	}
-
-	vkDestroyPipeline(fDevice.device, graphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(fDevice.device, pipelineLayout, nullptr);
-	vkDestroyDescriptorSetLayout(fDevice.device, samplerDescriptorSetLayout, nullptr);
-	vkDestroyDescriptorSetLayout(fDevice.device, uboDescriptorSetLayout, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.model, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.skinModel, nullptr);
+	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout.model, nullptr);
+	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout.skinModel, nullptr);
+	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.ssbo, nullptr);
+	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.sampler, nullptr);
+	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.ubo, nullptr);
 }
 
 void Scene::update(float elapsedTime, uint32_t currentFrame)
 {
 	camera.update(elapsedTime);
 
-	UniformBufferObject ubo{};
+	vkf::UniformBufferObject ubo{};
 	ubo.view = camera.getView();
 	ubo.proj = camera.getProjection();
 
-	memcpy(uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
+	uniformBufferObject.updateUniformBuffer(ubo, currentFrame);
 
 
-	mapObject->update(elapsedTime);
+	plainObject->update(elapsedTime, currentFrame);
 
-	for (int i = 0; i < mushroomObject.size(); ++i) {
-		mushroomObject[i]->rotate(rotateAngle[i] * elapsedTime);
-		mushroomObject[i]->update(elapsedTime);
-	}
+	pPlayer->update(elapsedTime, currentFrame);
 
-	for (auto& object : warriorObject) {
-		object->update(elapsedTime);
-	}
+	gltfModelObject->update(elapsedTime, currentFrame);
 
-	pPlayer->update(elapsedTime);
+	skinModelObject[0]->update(elapsedTime, currentFrame);
+	skinModelObject[1]->update(elapsedTime, currentFrame);
 }
 
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.model);
 
 	// firstSet은 set의 시작인덱스
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &uboDescriptorSets[currentFrame], 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 
-	mapObject->draw(commandBuffer, pipelineLayout);
-	for (auto& object : mushroomObject) {
-		object->draw(commandBuffer, pipelineLayout);
-	}
-	for (auto& object : warriorObject) {
-		object->draw(commandBuffer, pipelineLayout);
-	}
-	pPlayer->draw(commandBuffer, pipelineLayout);
+	plainObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
+	pPlayer->draw(commandBuffer, pipelineLayout.model, currentFrame);
+	gltfModelObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
+
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.skinModel);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.skinModel, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
+	skinModelObject[0]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
+	skinModelObject[1]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)
@@ -215,71 +207,57 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 
 void Scene::processMouseCursor(float xpos, float ypos)
 {
-	if (leftButtonPressed){
+	if (leftButtonPressed) {
 		pPlayer->processMouseCursor(xpos, ypos);
 	}
 }
 
 void Scene::createDescriptorSetLayout()
 {
-	{
-		VkDescriptorSetLayoutBinding uboLayoutBinding{};
-		uboLayoutBinding.binding = 0;
-		uboLayoutBinding.descriptorCount = 1;
-		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		uboLayoutBinding.pImmutableSamplers = nullptr;
-		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	VkDescriptorSetLayoutBinding uboLayoutBinding{};
+	uboLayoutBinding.binding = 0;
+	uboLayoutBinding.descriptorCount = 1;
+	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uboLayoutBinding.pImmutableSamplers = nullptr;
+	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-		VkDescriptorSetLayoutCreateInfo layoutInfo{};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = 1;
-		layoutInfo.pBindings = &uboLayoutBinding;
+	VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+	samplerLayoutBinding.binding = 0;
+	samplerLayoutBinding.descriptorCount = 1;
+	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	samplerLayoutBinding.pImmutableSamplers = nullptr;
+	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-		if (vkCreateDescriptorSetLayout(fDevice.device, &layoutInfo, nullptr, &uboDescriptorSetLayout) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create descriptor set layout!");
-		}
+	VkDescriptorSetLayoutBinding ssboLayoutBinding{};
+	ssboLayoutBinding.binding = 0;
+	ssboLayoutBinding.descriptorCount = 1;
+	ssboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	ssboLayoutBinding.pImmutableSamplers = nullptr;
+	ssboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	VkDescriptorSetLayoutCreateInfo layoutInfo{};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = 1;
+	layoutInfo.pBindings = &uboLayoutBinding;
+
+	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.ubo) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor set layout!");
 	}
 
-	{
-		VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-		samplerLayoutBinding.binding = 0;
-		samplerLayoutBinding.descriptorCount = 1;
-		samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		samplerLayoutBinding.pImmutableSamplers = nullptr;
-		samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	layoutInfo.pBindings = &samplerLayoutBinding;
+	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.sampler) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor set layout!");
+	}
 
-		VkDescriptorSetLayoutCreateInfo layoutInfo{};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = 1;
-		layoutInfo.pBindings = &samplerLayoutBinding;
-
-		if (vkCreateDescriptorSetLayout(fDevice.device, &layoutInfo, nullptr, &samplerDescriptorSetLayout) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create descriptor set layout!");
-		}
+	layoutInfo.pBindings = &ssboLayoutBinding;
+	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.ssbo) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor set layout!");
 	}
 }
 
 void Scene::createGraphicsPipeline()
 {
-	auto vertShaderCode = vkf::readFile("shaders/vert.spv");
-	auto fragShaderCode = vkf::readFile("shaders/frag.spv");
-
-	VkShaderModule vertShaderModule = vkf::createShaderModule(fDevice, vertShaderCode);
-	VkShaderModule fragShaderModule = vkf::createShaderModule(fDevice, fragShaderCode);
-
-	VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-	vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-	vertShaderStageInfo.module = vertShaderModule;
-	vertShaderStageInfo.pName = "main";
-
-	VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-	fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	fragShaderStageInfo.module = fragShaderModule;
-	fragShaderStageInfo.pName = "main";
-
-	VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+	vkf::Shader modelShader{ fDevice, "shaders/model.vert.spv", "shaders/model.frag.spv" };
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -288,8 +266,8 @@ void Scene::createGraphicsPipeline()
 	auto attributeDescriptions = vkf::Vertex::getAttributeDescriptions();
 
 	vertexInputInfo.vertexBindingDescriptionCount = 1;
-	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
 	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
 	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
@@ -350,31 +328,37 @@ void Scene::createGraphicsPipeline()
 	dynamicState.pDynamicStates = dynamicStates.data();
 
 	// 여러 개의 디스크립터 셋을 사용할 때, set의 index를 pSetLayouts의 index와 맞춰줘야 한다.
-	std::vector<VkDescriptorSetLayout> descriptorSetLayout{ 2 };
-	descriptorSetLayout[0] = uboDescriptorSetLayout;
-	descriptorSetLayout[1] = samplerDescriptorSetLayout;
+	std::vector<VkDescriptorSetLayout> setLayout{ 3 };
+	setLayout[0] = descriptorSetLayout.ubo;
+	setLayout[1] = descriptorSetLayout.sampler;
+	setLayout[2] = descriptorSetLayout.ssbo;									// skinModel에서만 사용
 
 	// push constant
 	VkPushConstantRange pushConstantRange{};
 	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 	pushConstantRange.offset = 0;
-	pushConstantRange.size = sizeof(PushConstantData);
+	pushConstantRange.size = sizeof(vkf::PushConstantData);
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayout.size());
-	pipelineLayoutInfo.pSetLayouts = descriptorSetLayout.data();
+	pipelineLayoutInfo.setLayoutCount = 2;										// model에서는 1번 인덱스까지만 사용
+	pipelineLayoutInfo.pSetLayouts = setLayout.data();
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
-	if (vkCreatePipelineLayout(fDevice.device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout.model) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create pipeline layout!");
+	}
+
+	pipelineLayoutInfo.setLayoutCount = 3;										// skinModel에서는 2번 인덱스까지 사용
+	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout.skinModel) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipelineInfo.stageCount = 2;
-	pipelineInfo.pStages = shaderStages;
+	pipelineInfo.stageCount = static_cast<uint32_t>(modelShader.shaderStages.size());
+	pipelineInfo.pStages = modelShader.shaderStages.data();
 	pipelineInfo.pVertexInputState = &vertexInputInfo;
 	pipelineInfo.pInputAssemblyState = &inputAssembly;
 	pipelineInfo.pViewportState = &viewportState;
@@ -383,77 +367,31 @@ void Scene::createGraphicsPipeline()
 	pipelineInfo.pDepthStencilState = &depthStencil;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.layout = pipelineLayout;
+	pipelineInfo.layout = pipelineLayout.model;
 	pipelineInfo.renderPass = renderPass;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(fDevice.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.model) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkDestroyShaderModule(fDevice.device, fragShaderModule, nullptr);
-	vkDestroyShaderModule(fDevice.device, vertShaderModule, nullptr);
-}
+	// skinModel용 pipeline 생성
+	pipelineInfo.layout = pipelineLayout.skinModel;
 
-void Scene::createUniformBuffers()
-{
-	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+	vkf::Shader skinModelShader{ fDevice, "shaders/skinnedmodel.vert.spv", "shaders/skinnedmodel.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(skinModelShader.shaderStages.size());
+	pipelineInfo.pStages = skinModelShader.shaderStages.data();
 
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
+	auto skinBindingDescription = vkf::SkinVertex::getBindingDescription();
+	auto skinAttributeDescriptions = vkf::SkinVertex::getAttributeDescriptions();
+	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.pVertexBindingDescriptions = &skinBindingDescription;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(skinAttributeDescriptions.size());
+	vertexInputInfo.pVertexAttributeDescriptions = skinAttributeDescriptions.data();
 
-		vkMapMemory(fDevice.device, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
-	}
-}
-
-void Scene::createUboDescriptorPool()
-{
-	std::array<VkDescriptorPoolSize, 1> poolSizes{};
-	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
-	VkDescriptorPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
-	if (vkCreateDescriptorPool(fDevice.device, &poolInfo, nullptr, &uboDescriptorPool) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor pool!");
-	}
-}
-
-void Scene::createUboDescriptorSets()
-{
-	std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, uboDescriptorSetLayout);
-	VkDescriptorSetAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = uboDescriptorPool;
-	allocInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size());
-	allocInfo.pSetLayouts = layouts.data();
-
-	if (vkAllocateDescriptorSets(fDevice.device, &allocInfo, uboDescriptorSets.data()) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate descriptor sets!");
-	}
-
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		VkDescriptorBufferInfo bufferInfo{};
-		bufferInfo.buffer = uniformBuffers[i];
-		bufferInfo.offset = 0;
-		bufferInfo.range = sizeof(UniformBufferObject);
-
-		std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
-
-		descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[0].dstSet = uboDescriptorSets[i];
-		descriptorWrites[0].dstBinding = 0;
-		descriptorWrites[0].dstArrayElement = 0;
-		descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		descriptorWrites[0].descriptorCount = 1;
-		descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-		vkUpdateDescriptorSets(fDevice.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.skinModel) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 }
 
@@ -469,7 +407,7 @@ void Scene::createSamplerDescriptorPool(uint32_t setCount)
 	poolInfo.pPoolSizes = poolSizes.data();
 	poolInfo.maxSets = setCount;
 
-	if (vkCreateDescriptorPool(fDevice.device, &poolInfo, nullptr, &samplerDescriptorPool) != VK_SUCCESS) {
+	if (vkCreateDescriptorPool(fDevice.logicalDevice, &poolInfo, nullptr, &samplerDescriptorPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }

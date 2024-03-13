@@ -5,9 +5,9 @@
 #define KEY_LEFT	0x04
 #define KEY_RIGHT	0x08
 
-#include "GameObject.h"
+#include "OBJModelObject.h"
 
-class PlayerObject : public GameObject
+class PlayerObject : public OBJModelObject
 {
 private:
 
@@ -21,8 +21,8 @@ public:
 	virtual ~PlayerObject();
 
 	virtual void initialize() override;
-	virtual void update(float elapsedTime) override;
-	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) override;
+	virtual void update(float elapsedTime, uint32_t currentFrame) override;
+	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void release() override;
 
 	void processKeyInput(unsigned int keyState);

@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{aba6dcb2-3499-4c33-bda2-4debbb53d15a}</ProjectGuid>
+    <ProjectGuid>{c98bfe63-ec48-4bad-bc11-71fd57805678}</ProjectGuid>
     <RootNamespace>Sweeper</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -137,25 +137,37 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="GameFramework.cpp" />
-    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GameObjectBase.cpp" />
+    <ClCompile Include="GLTFModelObject.cpp" />
+    <ClCompile Include="GLTFSkinModelObject.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="OBJModelObject.cpp" />
     <ClCompile Include="PlayerObject.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="VulkanFramework.cpp" />
+    <ClCompile Include="VulkanGLTFModel.cpp" />
+    <ClCompile Include="VulkanGLTFSkinModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="GameFramework.h" />
-    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="GameObjectBase.h" />
+    <ClInclude Include="GLTFModelObject.h" />
+    <ClInclude Include="GLTFSkinModelObject.h" />
+    <ClInclude Include="OBJModelObject.h" />
     <ClInclude Include="PlayerObject.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="VulkanFramework.h" />
+    <ClInclude Include="VulkanGLTFModel.h" />
+    <ClInclude Include="VulkanGLTFSkinModel.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\base_shader.frag" />
-    <None Include="shaders\base_shader.vert" />
+    <None Include="shaders\model.frag" />
+    <None Include="shaders\model.vert" />
+    <None Include="shaders\skinnedmodel.frag" />
+    <None Include="shaders\skinnedmodel.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

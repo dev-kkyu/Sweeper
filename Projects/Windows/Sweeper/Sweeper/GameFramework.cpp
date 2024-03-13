@@ -75,30 +75,30 @@ void GameFramework::initVulkan(GLFWwindow* window)
 
 	pScene = std::make_unique<Scene>(fDevice, msaaSamples, renderPass);
 	gameTimer.SetWindow(window);
-	gameTimer.SetGpuName(physicalDeviceProperties.deviceName);
+	gameTimer.SetGpuName(fDevice.physicalDeviceProperties.deviceName);
 }
 
 void GameFramework::cleanup()
 {
 	// 파괴 전, vkDeviceWaitIdle(device); 을 하여 하던 작업을 기다려준다.
-	vkDeviceWaitIdle(fDevice.device);
+	vkDeviceWaitIdle(fDevice.logicalDevice);
 
 	// 씬 소멸
 	pScene.reset(nullptr);
 
 	cleanupSwapChain();
 
-	vkDestroyRenderPass(fDevice.device, renderPass, nullptr);
+	vkDestroyRenderPass(fDevice.logicalDevice, renderPass, nullptr);
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		vkDestroySemaphore(fDevice.device, renderFinishedSemaphores[i], nullptr);
-		vkDestroySemaphore(fDevice.device, imageAvailableSemaphores[i], nullptr);
-		vkDestroyFence(fDevice.device, inFlightFences[i], nullptr);
+		vkDestroySemaphore(fDevice.logicalDevice, renderFinishedSemaphores[i], nullptr);
+		vkDestroySemaphore(fDevice.logicalDevice, imageAvailableSemaphores[i], nullptr);
+		vkDestroyFence(fDevice.logicalDevice, inFlightFences[i], nullptr);
 	}
 
-	vkDestroyCommandPool(fDevice.device, fDevice.commandPool, nullptr);
+	vkDestroyCommandPool(fDevice.logicalDevice, fDevice.commandPool, nullptr);
 
-	vkDestroyDevice(fDevice.device, nullptr);
+	vkDestroyDevice(fDevice.logicalDevice, nullptr);
 
 	if (enableValidationLayers) {
 		DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
@@ -110,10 +110,10 @@ void GameFramework::cleanup()
 
 void GameFramework::drawFrame()
 {
-	vkWaitForFences(fDevice.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+	vkWaitForFences(fDevice.logicalDevice, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
 	uint32_t imageIndex;
-	VkResult result = vkAcquireNextImageKHR(fDevice.device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(fDevice.logicalDevice, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 		recreateSwapChain();
@@ -126,7 +126,7 @@ void GameFramework::drawFrame()
 	float elapsedTime = gameTimer.Tick(0);
 	pScene->update(elapsedTime, currentFrame);
 
-	vkResetFences(fDevice.device, 1, &inFlightFences[currentFrame]);
+	vkResetFences(fDevice.logicalDevice, 1, &inFlightFences[currentFrame]);
 
 	vkResetCommandBuffer(commandBuffers[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
 
@@ -197,23 +197,23 @@ void GameFramework::processMouseCursor(float xpos, float ypos)
 
 void GameFramework::cleanupSwapChain()
 {
-	vkDestroyImageView(fDevice.device, depthImageView, nullptr);
-	vkDestroyImage(fDevice.device, depthImage, nullptr);
-	vkFreeMemory(fDevice.device, depthImageMemory, nullptr);
+	vkDestroyImageView(fDevice.logicalDevice, depthImageView, nullptr);
+	vkDestroyImage(fDevice.logicalDevice, depthImage, nullptr);
+	vkFreeMemory(fDevice.logicalDevice, depthImageMemory, nullptr);
 
-	vkDestroyImageView(fDevice.device, colorImageView, nullptr);
-	vkDestroyImage(fDevice.device, colorImage, nullptr);
-	vkFreeMemory(fDevice.device, colorImageMemory, nullptr);
+	vkDestroyImageView(fDevice.logicalDevice, colorImageView, nullptr);
+	vkDestroyImage(fDevice.logicalDevice, colorImage, nullptr);
+	vkFreeMemory(fDevice.logicalDevice, colorImageMemory, nullptr);
 
 	for (auto framebuffer : swapChainFramebuffers) {
-		vkDestroyFramebuffer(fDevice.device, framebuffer, nullptr);
+		vkDestroyFramebuffer(fDevice.logicalDevice, framebuffer, nullptr);
 	}
 
 	for (auto imageView : swapChainImageViews) {
-		vkDestroyImageView(fDevice.device, imageView, nullptr);
+		vkDestroyImageView(fDevice.logicalDevice, imageView, nullptr);
 	}
 
-	vkDestroySwapchainKHR(fDevice.device, swapChain, nullptr);
+	vkDestroySwapchainKHR(fDevice.logicalDevice, swapChain, nullptr);
 }
 
 void GameFramework::recreateSwapChain()
@@ -222,7 +222,7 @@ void GameFramework::recreateSwapChain()
 		glfwWaitEvents();
 	}
 
-	vkDeviceWaitIdle(fDevice.device);
+	vkDeviceWaitIdle(fDevice.logicalDevice);
 
 	cleanupSwapChain();
 
@@ -333,13 +333,14 @@ void GameFramework::pickPhysicalDevice()
 	if (!candidates.empty() && candidates.rbegin()->first > 0) {
 		fDevice.physicalDevice = candidates.rbegin()->second;
 		// 물리 디바이스 선택 하자마자 바로 속성 조회하고, massSamples를 선택해 준다.
-		vkGetPhysicalDeviceProperties(fDevice.physicalDevice, &physicalDeviceProperties);
+		vkGetPhysicalDeviceProperties(fDevice.physicalDevice, &fDevice.physicalDeviceProperties);
+		vkGetPhysicalDeviceMemoryProperties(fDevice.physicalDevice, &fDevice.physicalDeviceMemoryProperties);
 
 		msaaSamples = getMaxUsableSampleCount();
 
-		std::cout << "Select device : " << physicalDeviceProperties.deviceName << std::endl;
-		std::cout << "Device type : " << (physicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ? "INTEGRATED" :
-			physicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU ? "DISCRETE" : "Etc.") << std::endl;
+		std::cout << "Select device : " << fDevice.physicalDeviceProperties.deviceName << std::endl;
+		std::cout << "Device type : " << (fDevice.physicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ? "INTEGRATED" :
+			fDevice.physicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU ? "DISCRETE" : "Etc.") << std::endl;
 	}
 	else {
 		throw std::runtime_error("failed to find a suitable GPU!");
@@ -385,12 +386,12 @@ void GameFramework::createLogicalDevice()
 		createInfo.enabledLayerCount = 0;
 	}
 
-	if (vkCreateDevice(fDevice.physicalDevice, &createInfo, nullptr, &fDevice.device) != VK_SUCCESS) {
+	if (vkCreateDevice(fDevice.physicalDevice, &createInfo, nullptr, &fDevice.logicalDevice) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create logical device!");
 	}
 
-	vkGetDeviceQueue(fDevice.device, indices.graphicsFamily.value(), 0, &fDevice.graphicsQueue);
-	vkGetDeviceQueue(fDevice.device, indices.presentFamily.value(), 0, &fDevice.presentQueue);
+	vkGetDeviceQueue(fDevice.logicalDevice, indices.graphicsFamily.value(), 0, &fDevice.graphicsQueue);
+	vkGetDeviceQueue(fDevice.logicalDevice, indices.presentFamily.value(), 0, &fDevice.presentQueue);
 }
 
 void GameFramework::createSwapChain()
@@ -434,13 +435,13 @@ void GameFramework::createSwapChain()
 	createInfo.presentMode = presentMode;
 	createInfo.clipped = VK_TRUE;
 
-	if (vkCreateSwapchainKHR(fDevice.device, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
+	if (vkCreateSwapchainKHR(fDevice.logicalDevice, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create swap chain!");
 	}
 
-	vkGetSwapchainImagesKHR(fDevice.device, swapChain, &imageCount, nullptr);
+	vkGetSwapchainImagesKHR(fDevice.logicalDevice, swapChain, &imageCount, nullptr);
 	swapChainImages.resize(imageCount);
-	vkGetSwapchainImagesKHR(fDevice.device, swapChain, &imageCount, swapChainImages.data());
+	vkGetSwapchainImagesKHR(fDevice.logicalDevice, swapChain, &imageCount, swapChainImages.data());
 
 	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtent = extent;
@@ -524,7 +525,7 @@ void GameFramework::createRenderPass()
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &dependency;
 
-	if (vkCreateRenderPass(fDevice.device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+	if (vkCreateRenderPass(fDevice.logicalDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create render pass!");
 	}
 }
@@ -538,7 +539,7 @@ void GameFramework::createCommandPool()
 	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
-	if (vkCreateCommandPool(fDevice.device, &poolInfo, nullptr, &fDevice.commandPool) != VK_SUCCESS) {
+	if (vkCreateCommandPool(fDevice.logicalDevice, &poolInfo, nullptr, &fDevice.commandPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics command pool!");
 	}
 }
@@ -579,7 +580,7 @@ void GameFramework::createFramebuffers()
 		framebufferInfo.height = swapChainExtent.height;
 		framebufferInfo.layers = 1;
 
-		if (vkCreateFramebuffer(fDevice.device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+		if (vkCreateFramebuffer(fDevice.logicalDevice, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create framebuffer!");
 		}
 	}
@@ -618,7 +619,7 @@ bool GameFramework::hasStencilComponent(VkFormat format)
 
 VkSampleCountFlagBits GameFramework::getMaxUsableSampleCount()
 {
-	VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+	VkSampleCountFlags counts = fDevice.physicalDeviceProperties.limits.framebufferColorSampleCounts & fDevice.physicalDeviceProperties.limits.framebufferDepthSampleCounts;
 	if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
 	if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
 	if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
@@ -637,7 +638,7 @@ void GameFramework::createCommandBuffers()
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
-	if (vkAllocateCommandBuffers(fDevice.device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
+	if (vkAllocateCommandBuffers(fDevice.logicalDevice, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate command buffers!");
 	}
 }
@@ -652,9 +653,9 @@ void GameFramework::createSyncObjects()
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		if (vkCreateSemaphore(fDevice.device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-			vkCreateSemaphore(fDevice.device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
-			vkCreateFence(fDevice.device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
+		if (vkCreateSemaphore(fDevice.logicalDevice, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+			vkCreateSemaphore(fDevice.logicalDevice, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
+			vkCreateFence(fDevice.logicalDevice, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create synchronization objects for a frame!");
 		}
 	}

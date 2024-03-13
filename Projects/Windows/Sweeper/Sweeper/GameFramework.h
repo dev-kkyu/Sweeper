@@ -57,7 +57,6 @@ private:
 	std::unique_ptr<Scene> pScene;
 
 	vkf::Device fDevice;
-	VkPhysicalDeviceProperties physicalDeviceProperties;
 
 	VkInstance instance;
 	VkDebugUtilsMessengerEXT debugMessenger;
