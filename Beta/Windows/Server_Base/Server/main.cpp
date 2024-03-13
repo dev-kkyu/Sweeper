@@ -34,6 +34,8 @@ class Session
 private:
 	asio::ip::tcp::socket socket;
 	int my_id;
+
+	// recv용 변수
 	unsigned char read_buffer[BUFF_SIZE];
 	unsigned char remain_data[BUFF_SIZE];
 	int remain_size;
@@ -49,6 +51,14 @@ public:
 		doRead();		// 수신하기를 시작한다.
 
 		// Todo : 최초 접속시 할 일
+	}
+
+	void sendPacket(void* packet)
+	{
+		int packet_size = reinterpret_cast<unsigned char*>(packet)[0];
+		unsigned char* buff = new unsigned char[packet_size];				// doWrite의 람다 함수에서 해제해 줄 것이다.
+		memcpy(buff, packet, packet_size);
+		doWrite(buff, packet_size);
 	}
 
 private:
@@ -97,30 +107,30 @@ private:
 	void doWrite(unsigned char* packet, std::size_t length)
 	{
 		auto self(shared_from_this());
+		// 함수의 첫번째 인자로 들어가는 buffer는 비동기 작업 동안 메모리가 소멸되지 않도록 메모리를 프로그램이 관리해 줘야 한다.
 		socket.async_write_some(asio::buffer(packet, length),
 			[this, self, packet, length](asio::error_code ec, std::size_t bytes_transferred)
 			{
+				// shared_ptr인 self는 이 콜백이 호출 및 리턴 될 때까지 존재한다. -> this를 참조하고 있기 때문에 필요하다. -> use_count 올려준다.
+				// 람다 함수에서 값으로 캡처를 했기 때문이다. -> 만약 현재 객체를 참조하는 곳이 없어도, 생명 주기가 현재 콜백의 끝까지 연장된다.
 				if (!ec)		// send 완료 시
 				{
 					if (length != bytes_transferred) {
 						std::cout << "Incomplete Send occured on session[" << my_id << "]. This session should be closed.\n";
 					}
-					delete packet;
+					delete[] packet;		// 작업이 완료되었으므로 더이상 필요없고, 놔두면 Leak이다.	// 소멸자가 없는 객체는 delete, delete[] 상관없음
 				}
 			});
 	}
 
-	void sendPacket(void* packet)
-	{
-		int packet_size = reinterpret_cast<unsigned char*>(packet)[0];
-		unsigned char* buff = new unsigned char[packet_size];
-		memcpy(buff, packet, packet_size);
-		doWrite(buff, packet_size);
-	}
-
 	void processPacket(unsigned char* packet)
 	{
-		// Todo : 패킷 처리
+		// Todo : 수신 패킷 처리
+
+		// 테스트를 위한 항상 str이라고 가정한 처리
+		int packet_size = packet[0];
+		std::string str{ reinterpret_cast<char*>(packet + 1), static_cast<size_t>(packet_size - 1) };
+		std::cout << "Recv str: " << str << std::endl;
 	}
 };
 
