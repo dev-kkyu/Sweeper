@@ -4,8 +4,7 @@
 #include <memory>
 #include <functional>
 
-#define SERVER_PORT		7777
-#define BUFF_SIZE		1024
+#include "../../Sweeper_Server/Sweeper_Server/protocol.h"
 
 namespace asio {
 	class io_context;
