@@ -27,6 +27,12 @@ NetworkManager::~NetworkManager()
 	p_io_context.reset();
 }
 
+NetworkManager& NetworkManager::getInstance()
+{
+	static NetworkManager instance;		// C++11 이후 Thread-Safe 하다.
+	return instance;
+}
+
 void NetworkManager::connectServer(std::string ipAddress)
 {
 	asio::ip::tcp::endpoint endpoint(asio::ip::address::from_string(ipAddress), SERVER_PORT);
@@ -34,6 +40,7 @@ void NetworkManager::connectServer(std::string ipAddress)
 	getSocket(p_socket).connect(endpoint, ec);		// connect는 비동기로 할 필요 없어보인다. 어차피 연결 안되면 바로 리턴됨.
 
 	if (!ec) {		// connect 성공시
+		std::cout << "Connect To : " << ipAddress << ":" << SERVER_PORT << " Succeeded." << std::endl;
 		// Todo : ...
 	}
 	else {			// 실패시
@@ -60,16 +67,16 @@ void NetworkManager::sendPacket(void* packet)
 	doWrite(buff, packet_size);
 }
 
-void NetworkManager::setPacketReceivedCallback(std::function<void(unsigned char*)> callback)
-{
-	processPacketFunc = callback;
-}
-
 void NetworkManager::stop()
 {
 	p_io_context->stop();
 	worker_thread.join();
 	getSocket(p_socket).close();
+}
+
+void NetworkManager::setPacketReceivedCallback(std::function<void(unsigned char*)> callback)
+{
+	processPacketFunc = callback;
 }
 
 void NetworkManager::runAsyncWork()

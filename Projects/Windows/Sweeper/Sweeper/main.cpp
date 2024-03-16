@@ -9,7 +9,6 @@ static int g_Height = 900;
 
 static std::string Title = "Sweeper";
 static GameFramework g_GameFramework{ Title, g_Width, g_Height };
-static NetworkManager g_NetworkManager;
 
 // 이벤트 콜백함수
 static void fullScreenToggle(GLFWwindow* window);
@@ -42,9 +41,9 @@ static void vulkanMain()
 	g_GameFramework.initVulkan(window);
 
 	// 네트워크 연결
-	g_NetworkManager.connectServer("127.0.0.1");
-	g_NetworkManager.setPacketReceivedCallback(packetCallback);
-	g_NetworkManager.start();
+	NetworkManager::getInstance().connectServer("127.0.0.1");
+	NetworkManager::getInstance().setPacketReceivedCallback(packetCallback);
+	NetworkManager::getInstance().start();
 
 	// 메인루프
 	while (!glfwWindowShouldClose(window)) {
@@ -55,7 +54,7 @@ static void vulkanMain()
 	}
 
 	// 네트워크 연결 해제
-	g_NetworkManager.stop();
+	NetworkManager::getInstance().stop();
 
 	// vulkan 파괴
 	g_GameFramework.cleanup();
