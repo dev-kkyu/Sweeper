@@ -47,6 +47,9 @@ public:
 	void processMouseButton(int button, int action, int mods, float xpos, float ypos);
 	void processMouseCursor(float xpos, float ypos);
 
+	// 匙飘况农 菩哦 贸府
+	void processPacket(unsigned char* packet);
+
 private:
 	Timer gameTimer;
 

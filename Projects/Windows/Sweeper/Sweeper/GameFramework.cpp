@@ -195,6 +195,12 @@ void GameFramework::processMouseCursor(float xpos, float ypos)
 		pScene->processMouseCursor(xpos, ypos);
 }
 
+void GameFramework::processPacket(unsigned char* packet)
+{
+	// 네트워크 스레드에서 동작되는 곳. 주의하기.
+	// Todo : 패킷 처리
+}
+
 void GameFramework::cleanupSwapChain()
 {
 	vkDestroyImageView(fDevice.logicalDevice, depthImageView, nullptr);

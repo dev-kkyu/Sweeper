@@ -31,6 +31,9 @@
     <Filter Include="소스 파일\Shader">
       <UniqueIdentifier>{49041d60-2bc3-4257-875e-f617b8e397f8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="NetworkManager">
+      <UniqueIdentifier>{6249942e-c6eb-4e83-bea6-abf5617ee0fb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -72,6 +75,9 @@
     <ClCompile Include="GLTFSkinModelObject.cpp">
       <Filter>GameObjectBase\GLTFSkinModelObject</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkManager.cpp">
+      <Filter>NetworkManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObjectBase.h">
@@ -109,6 +115,9 @@
     </ClInclude>
     <ClInclude Include="VulkanGLTFSkinModel.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkManager.h">
+      <Filter>NetworkManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
