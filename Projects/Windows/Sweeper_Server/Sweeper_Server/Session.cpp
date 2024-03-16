@@ -15,6 +15,17 @@ void Session::start()
 {
 	doRead();		// 수신하기를 시작한다.
 
+	// 로그인 패킷 - id를 보내준다.
+	SC_LOGIN_PACKET p;
+	p.size = sizeof(p);
+	p.type = SC_LOGIN;
+	p.player_id = my_id;
+	sendPacket(&p);
+
+	// 나의 접속을 모든 플레이어에게 알린다.
+
+	// 접속된 모든 플레이어를 나에게 알린다.
+
 	// Todo : 최초 접속시 할 일
 }
 
@@ -91,4 +102,14 @@ void Session::processPacket(unsigned char* packet)
 {
 	// Todo : 수신 패킷 처리
 
+	switch (packet[1])
+	{
+	case CS_KEY_EVENT:
+		std::cout << "Key Event 수신, ID: " << my_id << std::endl;
+		break;
+
+	default:
+		std::cout << "Type Error: " << static_cast<int>(packet[1]) << " Type is invalid, player id [" << my_id << "]\n";
+		break;
+	}
 }

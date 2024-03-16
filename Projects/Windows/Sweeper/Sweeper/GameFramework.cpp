@@ -13,6 +13,8 @@
 #include <set>
 #include <map>
 
+#include "NetworkManager.h"
+
 const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
@@ -181,6 +183,57 @@ void GameFramework::processKeyboard(int key, int action, int mods)
 {
 	if (pScene)
 		pScene->processKeyboard(key, action, mods);
+
+	CS_KEY_EVENT_PACKET p;
+	p.size = sizeof(p);
+	p.type = CS_KEY_EVENT;
+	switch (action)
+	{
+	case GLFW_PRESS:
+		p.is_pressed = true;
+		switch (key)
+		{
+		case GLFW_KEY_W:
+			p.key = MY_KEY_EVENT::UP;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_A:
+			p.key = MY_KEY_EVENT::LEFT;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_S:
+			p.key = MY_KEY_EVENT::DOWN;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_D:
+			p.key = MY_KEY_EVENT::RIGHT;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		}
+		break;
+	case GLFW_RELEASE:
+		p.is_pressed = false;
+		switch (key)
+		{
+		case GLFW_KEY_W:
+			p.key = MY_KEY_EVENT::UP;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_A:
+			p.key = MY_KEY_EVENT::LEFT;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_S:
+			p.key = MY_KEY_EVENT::DOWN;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_D:
+			p.key = MY_KEY_EVENT::RIGHT;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		}
+		break;
+	}
 }
 
 void GameFramework::processMouseButton(int button, int action, int mods, float xpos, float ypos)
@@ -198,6 +251,18 @@ void GameFramework::processMouseCursor(float xpos, float ypos)
 void GameFramework::processPacket(unsigned char* packet)
 {
 	// 네트워크 스레드에서 동작되는 곳. 주의하기.
+	switch (packet[1])
+	{
+	case SC_LOGIN: {
+		auto p = reinterpret_cast<SC_LOGIN_PACKET*>(packet);
+		std::cout << "로그인 패킷 수신, ID: " << int(p->player_id) << std::endl;
+	}
+		break;
+	default:
+		break;
+	}
+
+
 	// Todo : 패킷 처리
 }
 
