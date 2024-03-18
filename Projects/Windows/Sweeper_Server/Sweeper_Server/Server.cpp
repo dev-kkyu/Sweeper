@@ -21,10 +21,10 @@ static int getNewClientID()
 Server::Server(asio::io_context& io_context, int port)
 	: acceptor{ io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port) }, socket{ io_context }
 {
-	do_accept();				// 접속을 받기 시작한다.
+	doAccept();				// 접속을 받기 시작한다.
 }
 
-void Server::do_accept()
+void Server::doAccept()
 {
 	acceptor.async_accept(socket,
 		[this](asio::error_code ec)
@@ -38,7 +38,7 @@ void Server::do_accept()
 
 				std::cout << "플레이어 " << p_id << " 접속\n";
 
-				do_accept();	// 다음 접속을 기다린다.
+				doAccept();	// 다음 접속을 기다린다.
 			}
 		});
 }

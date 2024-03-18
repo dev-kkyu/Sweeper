@@ -12,7 +12,7 @@ public:
 	Server(asio::io_context& io_context, int port);
 
 private:
-	void do_accept();
+	void doAccept();
 
 };
 
