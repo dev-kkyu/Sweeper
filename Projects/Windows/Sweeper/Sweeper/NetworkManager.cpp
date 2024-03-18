@@ -1,7 +1,6 @@
 #include "NetworkManager.h"
 
 #include <iostream>
-#include <thread>
 
 #define ASIO_STANDALONE
 #include <asio.hpp>
@@ -12,10 +11,16 @@ static asio::ip::tcp::socket& getSocket(void* p_asio_tcp_socket)
 	return *static_cast<asio::ip::tcp::socket*>(p_asio_tcp_socket);
 }
 
+static asio::steady_timer& getTimer(void* p_asio_steady_timer)
+{
+	return *static_cast<asio::steady_timer*>(p_asio_steady_timer);
+}
+
 NetworkManager::NetworkManager()
 {
 	p_io_context = std::make_shared<asio::io_context>();
 	p_socket = new asio::ip::tcp::socket{ *p_io_context };
+	p_steady_timer = new asio::steady_timer{ *p_io_context };	// 기다림 없이 바로 실행되도록 초기값 설정
 
 	remain_size = 0;
 	my_id = -1;
@@ -23,6 +28,7 @@ NetworkManager::NetworkManager()
 
 NetworkManager::~NetworkManager()
 {
+	delete (&getTimer(p_steady_timer));
 	delete (&getSocket(p_socket));
 	p_io_context.reset();
 }
@@ -51,12 +57,16 @@ void NetworkManager::connectServer(std::string ipAddress)
 
 void NetworkManager::start()
 {
-	doRead();		// 수신하기를 시작한다.
+	drawLoop();			// 클라이언트의 그리기 루프 시작
 
-	// 비동기 작업용 스레드 생성
-	worker_thread = std::thread{ &NetworkManager::runAsyncWork, this };
+	doRead();			// 수신하기를 시작한다.
 
 	// Todo : 최초 접속시 할 일
+}
+
+void NetworkManager::run()
+{
+	p_io_context->run();
 }
 
 void NetworkManager::sendPacket(void* packet)
@@ -69,8 +79,7 @@ void NetworkManager::sendPacket(void* packet)
 
 void NetworkManager::stop()
 {
-	p_io_context->stop();
-	worker_thread.join();
+	p_io_context->stop();			// 모든 작업 중지 (그리기 루프, read, write 포함)
 	getSocket(p_socket).close();
 }
 
@@ -79,9 +88,9 @@ void NetworkManager::setPacketReceivedCallback(std::function<void(unsigned char*
 	processPacketFunc = callback;
 }
 
-void NetworkManager::runAsyncWork()
+void NetworkManager::setDrawLoopFunc(std::function<void()> func)
 {
-	p_io_context->run();
+	drawLoopFunc = func;
 }
 
 void NetworkManager::doRead()
@@ -136,6 +145,22 @@ void NetworkManager::doWrite(unsigned char* packet, std::size_t length)
 					std::cout << "Incomplete Send occured on session[" << my_id << "]. This session should be closed.\n";
 				}
 				delete[] packet;		// 작업이 완료되었으므로 더이상 필요없고, 놔두면 Leak이다.	// 소멸자가 없는 객체는 delete, delete[] 상관없음
+			}
+		});
+}
+
+void NetworkManager::drawLoop()
+{
+	getTimer(p_steady_timer).async_wait(
+		[this](asio::error_code ec)
+		{
+			if (!ec) {
+				drawLoopFunc();			// 클라이언트 드로우
+
+				drawLoop();				// 재호출
+			}
+			else {
+				std::cerr << "Draw Timer Error" << std::endl;
 			}
 		});
 }
