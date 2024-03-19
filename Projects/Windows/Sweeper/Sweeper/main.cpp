@@ -17,10 +17,6 @@ static void keyCallback(GLFWwindow* window, int key, int scancode, int action, i
 static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 static void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
-static void windowCloseCallback(GLFWwindow* window);		// X 버튼 혹은 ALT+F4 키에 반응
-
-// 그리기 루프 함수
-static void drawLoop();								// 비동기 타이머 콜백 내에서 처리될 것이다.
 
 // 네트워크 패킷 처리 콜백함수
 static void packetCallback(unsigned char* packet);
@@ -40,19 +36,29 @@ static void vulkanMain()
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
 	glfwSetScrollCallback(window, scrollCallback);
 	glfwSetCursorPosCallback(window, cursorPosCallback);
-	glfwSetWindowCloseCallback(window, windowCloseCallback);
 
 	// vulkan 생성
 	g_GameFramework.initVulkan(window);
 
 	// 네트워크 연결
 	NetworkManager::getInstance().connectServer("127.0.0.1");
-	NetworkManager::getInstance().setDrawLoopFunc(drawLoop);					// 클라이언트 그리기 루프 돌릴 함수 설정
 	NetworkManager::getInstance().setPacketReceivedCallback(packetCallback);	// Recv된 데이터 처리할 함수 설정
-	NetworkManager::getInstance().start();										// 그리기 루프 함수 시작 및 Recv 시작
+	NetworkManager::getInstance().start();										// Recv 시작
 
 	// 메인루프
-	NetworkManager::getInstance().run();										// 비동기 작업을 모두 호출. drawLoop 및 Recv Send 처리
+	while (!glfwWindowShouldClose(window)) {
+		// window 이벤트 받기
+		glfwPollEvents();
+
+		// frame 그리기
+		g_GameFramework.drawFrame();
+
+		// 비동기 서버의 완료된 작업 실행
+		NetworkManager::getInstance().poll();
+	}
+
+	// 네트워크 연결 해제
+	NetworkManager::getInstance().stop();
 
 	// vulkan 파괴
 	g_GameFramework.cleanup();
@@ -148,8 +154,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			fullScreenToggle(window);						// 전체 화면 전환
 			break;
 		case GLFW_KEY_ESCAPE:
-			//glfwSetWindowShouldClose(window, GLFW_TRUE);	// 창 닫기			// 기존의 GLFW 루프에서만 동작
-			NetworkManager::getInstance().stop();			// 모든 비동기 작업 중지 (그리기 루프 포함)
+			glfwSetWindowShouldClose(window, GLFW_TRUE);	// 창 닫기
 			break;
 		case GLFW_KEY_W:
 			break;
@@ -212,19 +217,6 @@ void cursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 	xpos = xpos / g_Width * 2. - 1.;
 	ypos = static_cast<double>(g_Height - ypos) / g_Height * 2. - 1.;
 	g_GameFramework.processMouseCursor(float(xpos), float(ypos));
-}
-
-void windowCloseCallback(GLFWwindow* window)
-{
-	NetworkManager::getInstance().stop();		// 모든 비동기 작업 중지 (그리기 루프 포함)
-}
-
-void drawLoop()
-{
-	glfwPollEvents();
-
-	// frame 그리기
-	g_GameFramework.drawFrame();
 }
 
 void packetCallback(unsigned char* packet)

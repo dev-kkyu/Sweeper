@@ -15,7 +15,6 @@ class NetworkManager
 private:
 	std::shared_ptr<asio::io_context> p_io_context;
 	void* p_socket;					// asio::ip::tcp::socket 클래스가 원형이다.
-	void* p_steady_timer;
 
 	int my_id;
 
@@ -24,9 +23,8 @@ private:
 	unsigned char remain_data[BUFF_SIZE];
 	int remain_size;
 
-	std::function<void()> drawLoopFunc;							// 드로우 루프 함수
-	std::function<void(unsigned char*)> processPacketFunc;		// 패킷 수신시 패킷 처리할 콜백 함수
-
+	// 패킷 수신시 패킷 처리할 콜백 함수
+	std::function<void(unsigned char*)> processPacketFunc;
 
 private:			// 싱글톤으로 만들기 위해 생성자 외부 노출 X
 	NetworkManager();
@@ -42,19 +40,16 @@ public:
 public:
 	void connectServer(std::string ipAddress);
 	void start();
-	void run();
-	void sendPacket(void* packet);
+	void poll();
 	void stop();
+	void sendPacket(void* packet);
 
 	// read 성공 시, read한 데이터를 처리할 함수 지정
 	void setPacketReceivedCallback(std::function<void(unsigned char*)> callback);
-	// 클라이언트 드로우 함수 설정
-	void setDrawLoopFunc(std::function<void()> func);
 
 private:
 	void doRead();
 	void doWrite(unsigned char* packet, std::size_t length);
-	void drawLoop();
 	void processPacket(unsigned char* packet);
 
 };
