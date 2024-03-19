@@ -50,11 +50,11 @@ static void vulkanMain()
 		// window 이벤트 받기
 		glfwPollEvents();
 
-		// frame 그리기
-		g_GameFramework.drawFrame();
-
 		// 비동기 서버의 완료된 작업 실행
 		NetworkManager::getInstance().poll();
+
+		// frame 그리기
+		g_GameFramework.drawFrame();
 	}
 
 	// 네트워크 연결 해제

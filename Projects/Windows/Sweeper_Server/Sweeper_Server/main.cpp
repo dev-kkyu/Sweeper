@@ -3,6 +3,7 @@
 #include <thread>
 
 #include "Server.h"
+#include "protocol.h"
 
 void workerThread(asio::io_context* context)
 {

@@ -1,26 +1,29 @@
 #include "Session.h"
 
+#include "Room.h"
+
 #include <iostream>
-#include <array>
 
-// 외부 전역 변수
-extern std::array<std::shared_ptr<Session>, MAX_USER> players;		// Server.cpp
-
-Session::Session(asio::ip::tcp::socket socket, int new_id) : socket{ std::move(socket) }, my_id{ new_id }
+Session::Session(asio::ip::tcp::socket socket) : socket{ std::move(socket) }
 {
 	remain_size = 0;
 }
 
-void Session::start()
+void Session::start(Room* parentRoom, int player_id)
 {
+	this->parentRoom = parentRoom;
+	this->player_id = player_id;
+
 	doRead();		// 수신하기를 시작한다.
 
 	// 로그인 패킷 - id를 보내준다.
 	SC_LOGIN_PACKET p;
 	p.size = sizeof(p);
 	p.type = SC_LOGIN;
-	p.player_id = my_id;
+	p.room_id = parentRoom->room_id;
+	p.player_id = this->player_id;
 	sendPacket(&p);
+	std::cout << "플레이어 [" << parentRoom->room_id << ":" << this->player_id << "] 접속\n";
 
 	// 나의 접속을 모든 플레이어에게 알린다.
 
@@ -46,8 +49,11 @@ void Session::doRead()
 			if (ec) {		// 실패했을 때
 				if (ec.value() == asio::error::operation_aborted)
 					return;
-				std::cout << "Receive Error on Session[" << my_id << "]: [" << ec << "]: " << ec.message() << std::endl;
-				players[my_id] = nullptr;													// 나를 제거한다.
+				std::cout << "Receive Error on Session[" << parentRoom->room_id << ":" << player_id << "]: [" << ec << "]: " << ec.message() << std::endl;
+				parentRoom->room_mutex.lock();
+				parentRoom->sessions[player_id] = nullptr;				// 나를 제거한다.
+				parentRoom->room_mutex.unlock();
+
 				return;
 			}
 
@@ -91,7 +97,7 @@ void Session::doWrite(unsigned char* packet, std::size_t length)
 			if (!ec)		// send 완료 시
 			{
 				if (length != bytes_transferred) {
-					std::cout << "Incomplete Send occured on session[" << my_id << "]. This session should be closed.\n";
+					std::cout << "Incomplete Send occured on session[" << parentRoom->room_id << ":" << player_id << "]. This session should be closed.\n";
 				}
 				delete[] packet;		// 작업이 완료되었으므로 더이상 필요없고, 놔두면 Leak이다.	// 소멸자가 없는 객체는 delete, delete[] 상관없음
 			}
@@ -105,11 +111,11 @@ void Session::processPacket(unsigned char* packet)
 	switch (packet[1])
 	{
 	case CS_KEY_EVENT:
-		std::cout << "Key Event 수신, ID: " << my_id << std::endl;
+		std::cout << "Key Event 수신, ID: " << parentRoom->room_id << ":" << player_id << std::endl;
 		break;
 
 	default:
-		std::cout << "Type Error: " << static_cast<int>(packet[1]) << " Type is invalid, player id [" << my_id << "]\n";
+		std::cout << "Type Error: " << static_cast<int>(packet[1]) << " Type is invalid, player id [" << parentRoom->room_id << ":" << player_id << "]\n";
 		break;
 	}
 }

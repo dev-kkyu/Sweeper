@@ -255,7 +255,7 @@ void GameFramework::processPacket(unsigned char* packet)
 	{
 	case SC_LOGIN: {
 		auto p = reinterpret_cast<SC_LOGIN_PACKET*>(packet);
-		std::cout << "로그인 패킷 수신, ID: " << int(p->player_id) << std::endl;
+		std::cout << "로그인 패킷 수신, ROOM:ID->[" << int(p->room_id) << ":" << int(p->player_id) << "]\n";
 	}
 		break;
 	default:

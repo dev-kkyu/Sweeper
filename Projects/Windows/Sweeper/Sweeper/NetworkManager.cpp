@@ -88,6 +88,7 @@ void NetworkManager::doRead()
 				if (ec.value() == asio::error::operation_aborted)
 					return;
 				std::cout << "Receive Error on Session[" << my_id << "]: [" << ec << "]: " << ec.message() << std::endl;
+				std::cout << "네트워크 연결이 종료되었습니다" << std::endl;
 				return;
 			}
 
