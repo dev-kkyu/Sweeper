@@ -18,7 +18,7 @@ void Room::addPlayer(std::shared_ptr<Session> session)
 			room_mutex.unlock();		// 언락
 
 			// 방에 추가 완료되었으니, 시작해준다.
-			sessions[i]->start(this, i);		// 플레이어 방번호와 아이디 지정
+			sessions[i]->start(this, i);		// 플레이어가 속한 방과 플레이어 아이디 지정
 			return;
 		}
 	}
