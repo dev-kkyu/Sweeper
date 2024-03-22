@@ -252,16 +252,11 @@ void GameFramework::processPacket(unsigned char* packet)
 	// 이제 멀티스레드 동시성 고려하지 않아도 된다.
 	switch (packet[1])
 	{
-	case SC_LOGIN: {
-		auto p = reinterpret_cast<SC_LOGIN_PACKET*>(packet);
-		std::cout << "로그인 패킷 수신, ROOM:ID->[" << int(p->room_id) << ":" << int(p->player_id) << "]\n";
-		// Todo : 처리하기
-		break;
-	}
-	case SC_POSITION: {
+	case SC_LOGIN:
+	case SC_ADD_PLAYER:
+	case SC_POSITION:
 		pScene->processPacket(packet);
 		break;
-	}
 	default:
 		break;
 	}

@@ -29,7 +29,7 @@ void Camera::update(float elapsedTime)
 	}
 }
 
-void Camera::setPlayer(PlayerObject* pPlayer)
+void Camera::setPlayer(std::shared_ptr<PlayerObject> pPlayer)
 {
 	this->pPlayer = pPlayer;
 }

@@ -6,7 +6,8 @@
 
 constexpr char SC_LOGIN = 1;
 constexpr char SC_LOGOUT = 2;
-constexpr char SC_POSITION = 6;
+constexpr char SC_ADD_PLAYER = 3;
+constexpr char SC_POSITION = 4;
 
 constexpr char CS_KEY_EVENT = 1;
 
@@ -32,6 +33,13 @@ struct SC_LOGIN_PACKET
 struct SC_LOGOUT_PACKET
 {
 	// Todo :
+};
+
+struct SC_ADD_PLAYER_PACKET
+{
+	unsigned char size;
+	char type;
+	char player_id;
 };
 
 struct SC_POSITION_PACKET

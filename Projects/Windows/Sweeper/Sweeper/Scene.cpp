@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include <iostream>
 #include <stdexcept>
 
 #include <GLFW/glfw3.h>
@@ -49,18 +50,13 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 		warriorObject[i]->rotate(180.f);
 	}
 
-	// 플레이어 생성
-	pPlayer = new PlayerObject;
-	pPlayer->initModel(playerModel, descriptorSetLayout.ssbo);
-	pPlayer->setPosition({ 1.f, 0.f, 1.f });
-	pPlayer->setAnimateSpeed(2.f);
-
-	camera.setPlayer(pPlayer);
+	// 플레이어 생성은 서버에서 로그인 정보 받을 때까지 미뤄준다.
 }
 
 Scene::~Scene()
 {
-	delete pPlayer;
+	// 플레이어는 shared_ptr이므로, 따로 삭제 X
+
 	playerModel.destroy();
 
 	for (auto& object : warriorObject) {
@@ -112,7 +108,10 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 		object->update(elapsedTime, currentFrame);
 	}
 
-	pPlayer->update(elapsedTime, currentFrame);
+	for (auto& player : pPlayers) {
+		if (player)
+			player->update(elapsedTime, currentFrame);
+	}
 }
 
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -135,8 +134,10 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 		mushroomObject[i]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
 	}
 
-	pPlayer->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
-
+	for (auto& player : pPlayers) {
+		if (player)
+			player->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
+	}
 }
 
 void Scene::processMouseButton(int button, int action, int mods, float xpos, float ypos)
@@ -148,7 +149,7 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 		{
 		case GLFW_MOUSE_BUTTON_LEFT:
 			leftButtonPressed = true;
-			pPlayer->setStartMousePos(xpos, ypos);
+			pMyPlayer->setStartMousePos(xpos, ypos);
 			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
 			break;
@@ -182,7 +183,7 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 void Scene::processMouseCursor(float xpos, float ypos)
 {
 	if (leftButtonPressed) {
-		pPlayer->processMouseCursor(xpos, ypos);
+		pMyPlayer->processMouseCursor(xpos, ypos);
 	}
 }
 
@@ -190,9 +191,27 @@ void Scene::processPacket(unsigned char* packet)
 {
 	switch (packet[1])
 	{
+	case SC_LOGIN: {
+		auto p = reinterpret_cast<SC_LOGIN_PACKET*>(packet);
+		std::cout << "로그인 패킷 수신, ROOM:ID->[" << int(p->room_id) << ":" << int(p->player_id) << "]\n";
+		my_id = p->player_id;
+		pMyPlayer = std::make_shared<PlayerObject>();
+		pMyPlayer->initModel(playerModel, descriptorSetLayout.ssbo);
+		pMyPlayer->setAnimateSpeed(2.f);	// Todo : 나중에 모델 바꾸고 조정 필요
+		camera.setPlayer(pMyPlayer);
+		pPlayers[my_id] = pMyPlayer;
+		break;
+	}
+	case SC_ADD_PLAYER: {
+		auto p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
+		pPlayers[p->player_id] = std::make_shared<PlayerObject>();
+		pPlayers[p->player_id]->initModel(playerModel, descriptorSetLayout.ssbo);
+		pPlayers[p->player_id]->setAnimateSpeed(2.f);	// Todo : 나중에 모델 바꾸고 조정 필요
+		break;
+	}
 	case SC_POSITION: {
 		auto p = reinterpret_cast<SC_POSITION_PACKET*>(packet);
-		pPlayer->setPosition(glm::vec3(p->x, p->y, p->z));
+		pPlayers[p->player_id]->setPosition(glm::vec3(p->x, p->y, p->z));
 		break;
 	}
 	}

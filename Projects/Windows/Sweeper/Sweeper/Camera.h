@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -12,7 +14,7 @@ private:
 	glm::mat4 viewTransform{ 1.f };
 	glm::mat4 projectionTransform{ 1.f };
 
-	PlayerObject* pPlayer = nullptr;
+	std::shared_ptr<PlayerObject> pPlayer;
 
 public:
 	Camera();
@@ -20,7 +22,7 @@ public:
 
 	void update(float elapsedTime);
 
-	void setPlayer(PlayerObject* pPlayer);
+	void setPlayer(std::shared_ptr<PlayerObject> pPlayer);
 
 	glm::mat4 getView() const;
 	glm::mat4 getProjection() const;

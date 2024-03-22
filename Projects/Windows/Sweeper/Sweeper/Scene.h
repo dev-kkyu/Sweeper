@@ -49,7 +49,9 @@ private:
 
 	// gltf skin 임시 샘플
 	VulkanGLTFSkinModel playerModel;
-	PlayerObject* pPlayer;
+	std::shared_ptr<PlayerObject> pMyPlayer;			// pPlayers[my_id] 와 같은 객체를 가리키도록 한다.
+	std::array<std::shared_ptr<PlayerObject>, 4> pPlayers;
+	int my_id = -1;
 
 	Camera camera;
 

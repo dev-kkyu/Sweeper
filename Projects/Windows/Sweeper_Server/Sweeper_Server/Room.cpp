@@ -15,10 +15,11 @@ void Room::addSession(std::shared_ptr<Session> session)
 	for (int i = 0; i < 4; ++i) {
 		if (!sessions[i]) {
 			sessions[i] = session;
-			room_mutex.unlock();		// 언락
 
 			// 방에 추가 완료되었으니, 시작해준다.
 			sessions[i]->start(this, i);		// 플레이어가 속한 방과 플레이어 아이디 지정
+
+			room_mutex.unlock();		// 리턴 전 언락
 			return;
 		}
 	}

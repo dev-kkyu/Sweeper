@@ -20,19 +20,42 @@ void Session::start(Room* parentRoom, int player_id)
 	doRead();		// 수신하기를 시작한다.
 
 	// 로그인 패킷 - id를 보내준다.
-	SC_LOGIN_PACKET p;
-	p.size = sizeof(p);
-	p.type = SC_LOGIN;
-	p.room_id = parentRoom->room_id;
-	p.player_id = this->player_id;
-	sendPacket(&p);
-	std::cout << "플레이어 [" << parentRoom->room_id << ":" << this->player_id << "] 접속\n";
-
+	{
+		SC_LOGIN_PACKET p;
+		p.size = sizeof(p);
+		p.type = SC_LOGIN;
+		p.room_id = parentRoom->room_id;
+		p.player_id = this->player_id;
+		sendPacket(&p);
+		std::cout << "플레이어 [" << parentRoom->room_id << ":" << this->player_id << "] 접속\n";
+	}
 	// 나의 접속을 모든 플레이어에게 알린다.
-
+	{
+		SC_ADD_PLAYER_PACKET p;
+		p.size = sizeof(p);
+		p.type = SC_ADD_PLAYER;
+		p.player_id = this->player_id;
+		for (int i = 0; i < parentRoom->sessions.size(); ++i) {		// Room에서 락 걸어주기 때문에 여기서는 X
+			if (i == this->player_id)		// 나는 알릴 필요 없다.
+				continue;
+			if (parentRoom->sessions[i])	// 존재하는 플레이어에게 전송
+				parentRoom->sessions[i]->sendPacket(&p);
+		}
+	}
 	// 접속된 모든 플레이어를 나에게 알린다.
-
-	// Todo : 최초 접속시 할 일
+	{
+		SC_ADD_PLAYER_PACKET p;
+		p.size = sizeof(p);
+		p.type = SC_ADD_PLAYER;
+		for (int i = 0; i < parentRoom->sessions.size(); ++i) {		// Room에서 락 걸어주기 때문에 여기서는 X
+			if (i == this->player_id)		// 나는 알릴 필요 없다.
+				continue;
+			if (parentRoom->sessions[i]) {	// 존재하는 플레이어를 전송
+				p.player_id = i;
+				sendPacket(&p);
+			}
+		}
+	}
 }
 
 void Session::update(float elapsedTime)
