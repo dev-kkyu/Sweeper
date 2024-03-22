@@ -1,12 +1,15 @@
 #include "Session.h"
 
 #include "Room.h"
+#include "PlayerObject.h"
 
 #include <iostream>
 
 Session::Session(asio::ip::tcp::socket socket) : socket{ std::move(socket) }
 {
 	remain_size = 0;
+
+	player = std::make_shared<PlayerObject>();
 }
 
 void Session::start(Room* parentRoom, int player_id)
@@ -30,6 +33,11 @@ void Session::start(Room* parentRoom, int player_id)
 	// 접속된 모든 플레이어를 나에게 알린다.
 
 	// Todo : 최초 접속시 할 일
+}
+
+void Session::update(float elapsedTime)
+{
+	player->update(elapsedTime);
 }
 
 void Session::sendPacket(void* packet)

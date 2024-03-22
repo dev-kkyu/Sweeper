@@ -30,7 +30,8 @@ void Server::doAccept()
 
 				auto ptr = std::make_shared<Session>(std::move(socket));
 
-				room->addPlayer(ptr);
+				// 세션을 방에 추가해준다. 세션은 플레이어를 가짐. Todo : 적절한 방을 찾아서 넣어줘야 한다.
+				room->addSession(ptr);
 
 				doAccept();	// 다음 접속을 기다린다.
 			}
@@ -74,5 +75,5 @@ void Server::doTimer()
 
 void Server::update(float elapsedTime)
 {
-	// Todo: 업데이트 로직 추가
+	room->update(elapsedTime);
 }

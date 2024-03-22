@@ -129,12 +129,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GameObjectBase.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PlayerObject.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="Session.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GameObjectBase.h" />
+    <ClInclude Include="PlayerObject.h" />
     <ClInclude Include="protocol.h" />
     <ClInclude Include="Room.h" />
     <ClInclude Include="Server.h" />

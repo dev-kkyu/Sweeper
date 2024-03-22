@@ -17,8 +17,8 @@ public:
 
 public:
 	Room(int room_id);
-	void addPlayer(std::shared_ptr<Session> session);
-	void update();
+	void addSession(std::shared_ptr<Session> session);
+	void update(float elapsedTime);
 
 };
 

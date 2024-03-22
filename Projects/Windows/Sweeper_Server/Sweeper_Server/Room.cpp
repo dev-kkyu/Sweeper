@@ -9,9 +9,9 @@ Room::Room(int room_id)
 	this->room_id = room_id;
 }
 
-void Room::addPlayer(std::shared_ptr<Session> session)
+void Room::addSession(std::shared_ptr<Session> session)
 {
-	room_mutex.lock();					// 락
+	room_mutex.lock();					// 락, read 하면서 동시 접근 가능성이 있다.
 	for (int i = 0; i < 4; ++i) {
 		if (!sessions[i]) {
 			sessions[i] = session;
@@ -26,6 +26,11 @@ void Room::addPlayer(std::shared_ptr<Session> session)
 	std::cerr << "addPlayer Error!!" << std::endl;
 }
 
-void Room::update()
+void Room::update(float elapsedTime)
 {
+	for (auto& s : sessions) {
+		if (s) {
+			s->update(elapsedTime);
+		}
+	}
 }
