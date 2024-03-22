@@ -25,7 +25,6 @@ public:
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void release() override;
 
-	void processKeyInput(unsigned int keyState);
 	void setStartMousePos(float xpos, float ypos);
 	void processMouseCursor(float xpos, float ypos);
 

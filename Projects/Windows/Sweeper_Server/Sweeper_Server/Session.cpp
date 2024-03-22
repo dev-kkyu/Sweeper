@@ -38,6 +38,20 @@ void Session::start(Room* parentRoom, int player_id)
 void Session::update(float elapsedTime)
 {
 	player->update(elapsedTime);
+
+	// 프레임마다 내 위치를 모두에게 전송한다.
+	SC_POSITION_PACKET p;
+	p.size = sizeof(p);
+	p.type = SC_POSITION;
+	p.player_id = player_id;
+	auto pos = player->getPosition();
+	std::tie(p.x, p.y, p.z) = std::tie(pos.x, pos.y, pos.z);
+
+	// 내 위치를 모두에게 보낸다.	// 룸에서 update 호출 시 락 걸어주기 때문에 여기서는 하지 않는다.
+	for (auto& s : parentRoom->sessions) {
+		if (s)
+			s->sendPacket(&p);
+	}
 }
 
 void Session::sendPacket(void* packet)
@@ -46,6 +60,39 @@ void Session::sendPacket(void* packet)
 	unsigned char* buff = new unsigned char[packet_size];				// doWrite의 람다 함수에서 해제해 줄 것이다.
 	memcpy(buff, packet, packet_size);
 	doWrite(buff, packet_size);
+}
+
+void Session::processPacket(unsigned char* packet)
+{
+	switch (packet[1])
+	{
+	case CS_KEY_EVENT: {
+		CS_KEY_EVENT_PACKET* p = reinterpret_cast<CS_KEY_EVENT_PACKET*>(packet);
+		switch (p->key)
+		{
+		case MY_KEY_EVENT::UP:
+			player->processKeyInput(KEY_UP, p->is_pressed);
+			break;
+		case MY_KEY_EVENT::DOWN:
+			player->processKeyInput(KEY_DOWN, p->is_pressed);
+			break;
+		case MY_KEY_EVENT::LEFT:
+			player->processKeyInput(KEY_LEFT, p->is_pressed);
+			break;
+		case MY_KEY_EVENT::RIGHT:
+			player->processKeyInput(KEY_RIGHT, p->is_pressed);
+			break;
+		case MY_KEY_EVENT::SPACE:
+			player->processKeyInput(KEY_SPACE, p->is_pressed);
+			break;
+		}
+		std::cout << "Key Event 수신, ID: " << parentRoom->room_id << ":" << player_id << std::endl;
+		break;
+	}
+	default:
+		std::cout << "Type Error: " << static_cast<int>(packet[1]) << " Type is invalid, player id [" << parentRoom->room_id << ":" << player_id << "]\n";
+		break;
+	}
 }
 
 void Session::doRead()
@@ -112,18 +159,3 @@ void Session::doWrite(unsigned char* packet, std::size_t length)
 		});
 }
 
-void Session::processPacket(unsigned char* packet)
-{
-	// Todo : 수신 패킷 처리
-
-	switch (packet[1])
-	{
-	case CS_KEY_EVENT:
-		std::cout << "Key Event 수신, ID: " << parentRoom->room_id << ":" << player_id << std::endl;
-		break;
-
-	default:
-		std::cout << "Type Error: " << static_cast<int>(packet[1]) << " Type is invalid, player id [" << parentRoom->room_id << ":" << player_id << "]\n";
-		break;
-	}
-}

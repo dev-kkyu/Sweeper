@@ -32,23 +32,28 @@ void PlayerObject::release()
 {
 }
 
-void PlayerObject::processKeyInput(unsigned int keyState)
+void PlayerObject::processKeyInput(unsigned int key, bool is_pressed)
 {
-	this->keyState = keyState;
+	if (is_pressed) {
+		keyState |= key;
+	}
+	else {
+		keyState &= ~key;
+	}
 }
 
-void PlayerObject::setStartMousePos(float xpos, float ypos)
-{
-	startXpos = xpos;
-	startYpos = ypos;
-}
-
-void PlayerObject::processMouseCursor(float xpos, float ypos)
-{
-	float moveX = xpos - startXpos;
-	float moveY = ypos - startYpos;
-	startXpos = xpos;
-	startYpos = ypos;
-
-	rotate(-moveX * 100.f);
-}
+//void PlayerObject::setStartMousePos(float xpos, float ypos)
+//{
+//	startXpos = xpos;
+//	startYpos = ypos;
+//}
+//
+//void PlayerObject::processMouseCursor(float xpos, float ypos)
+//{
+//	float moveX = xpos - startXpos;
+//	float moveY = ypos - startYpos;
+//	startXpos = xpos;
+//	startYpos = ypos;
+//
+//	rotate(-moveX * 100.f);
+//}

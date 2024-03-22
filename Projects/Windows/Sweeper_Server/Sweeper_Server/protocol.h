@@ -38,6 +38,7 @@ struct SC_POSITION_PACKET
 {
 	unsigned char size;
 	char type;
+	char player_id;
 	float x;
 	float y;
 	float z;

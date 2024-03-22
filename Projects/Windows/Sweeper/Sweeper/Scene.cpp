@@ -3,6 +3,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include "NetworkManager.h"
+
 Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }
 {
@@ -137,49 +139,6 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 
 }
 
-void Scene::processKeyboard(int key, int action, int mods)
-{
-	switch (action)
-	{
-	case GLFW_PRESS:
-		switch (key) {
-		case GLFW_KEY_W:
-			keyState |= KEY_UP;
-			break;
-		case GLFW_KEY_S:
-			keyState |= KEY_DOWN;
-			break;
-		case GLFW_KEY_A:
-			keyState |= KEY_LEFT;
-			break;
-		case GLFW_KEY_D:
-			keyState |= KEY_RIGHT;
-			break;
-		}
-		pPlayer->processKeyInput(keyState);
-		break;
-	case GLFW_RELEASE:
-		switch (key) {
-		case GLFW_KEY_W:
-			keyState &= ~KEY_UP;
-			break;
-		case GLFW_KEY_S:
-			keyState &= ~KEY_DOWN;
-			break;
-		case GLFW_KEY_A:
-			keyState &= ~KEY_LEFT;
-			break;
-		case GLFW_KEY_D:
-			keyState &= ~KEY_RIGHT;
-			break;
-		}
-		pPlayer->processKeyInput(keyState);
-		break;
-	case GLFW_REPEAT:
-		break;
-	}
-}
-
 void Scene::processMouseButton(int button, int action, int mods, float xpos, float ypos)
 {
 	switch (action)
@@ -224,6 +183,18 @@ void Scene::processMouseCursor(float xpos, float ypos)
 {
 	if (leftButtonPressed) {
 		pPlayer->processMouseCursor(xpos, ypos);
+	}
+}
+
+void Scene::processPacket(unsigned char* packet)
+{
+	switch (packet[1])
+	{
+	case SC_POSITION: {
+		auto p = reinterpret_cast<SC_POSITION_PACKET*>(packet);
+		pPlayer->setPosition(glm::vec3(p->x, p->y, p->z));
+		break;
+	}
 	}
 }
 

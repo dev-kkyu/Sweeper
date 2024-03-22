@@ -38,11 +38,6 @@ void PlayerObject::release()
 {
 }
 
-void PlayerObject::processKeyInput(unsigned int keyState)
-{
-	this->keyState = keyState;
-}
-
 void PlayerObject::setStartMousePos(float xpos, float ypos)
 {
 	startXpos = xpos;

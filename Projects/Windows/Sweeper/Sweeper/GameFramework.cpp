@@ -181,8 +181,7 @@ void GameFramework::drawFrame()
 
 void GameFramework::processKeyboard(int key, int action, int mods)
 {
-	if (pScene)
-		pScene->processKeyboard(key, action, mods);
+	// 키 입력을 서버로 전송한다.
 
 	CS_KEY_EVENT_PACKET p;
 	p.size = sizeof(p);
@@ -256,14 +255,16 @@ void GameFramework::processPacket(unsigned char* packet)
 	case SC_LOGIN: {
 		auto p = reinterpret_cast<SC_LOGIN_PACKET*>(packet);
 		std::cout << "로그인 패킷 수신, ROOM:ID->[" << int(p->room_id) << ":" << int(p->player_id) << "]\n";
-	}
+		// Todo : 처리하기
 		break;
+	}
+	case SC_POSITION: {
+		pScene->processPacket(packet);
+		break;
+	}
 	default:
 		break;
 	}
-
-
-	// Todo : 패킷 처리
 }
 
 void GameFramework::cleanupSwapChain()

@@ -28,6 +28,7 @@ void Room::addSession(std::shared_ptr<Session> session)
 
 void Room::update(float elapsedTime)
 {
+	std::lock_guard<std::mutex> l{ room_mutex };		// 플레이어 삽입 / 삭제 주의
 	for (auto& s : sessions) {
 		if (s) {
 			s->update(elapsedTime);
