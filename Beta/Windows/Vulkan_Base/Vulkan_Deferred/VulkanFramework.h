@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #define MAX_FRAMES_IN_FLIGHT 2
 
@@ -24,7 +24,7 @@ namespace vkf
 		VkQueue presentQueue;
 		VkCommandPool commandPool;
 
-		VkPhysicalDeviceProperties physicalDeviceProperties;				// physicalDevice ¼±ÅÃ½Ã ¸Ş¸ğ¸® ¼Ó¼º°ú ÇÔ²² ¾ò¾îÁØ´Ù.
+		VkPhysicalDeviceProperties physicalDeviceProperties;				// physicalDevice ì„ íƒì‹œ ë©”ëª¨ë¦¬ ì†ì„±ê³¼ í•¨ê»˜ ì–»ì–´ì¤€ë‹¤.
 		VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
 	};
 
@@ -125,7 +125,7 @@ namespace vkf
 		std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> descriptorSets{};
 
 	public:
-		void createUniformBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout);		// ubo, ssbo Áß ÇÏ³ª¸¸ »ı¼º ¹× È£ÃâÇÒ °Í
+		void createUniformBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout);		// ubo, ssbo ì¤‘ í•˜ë‚˜ë§Œ ìƒì„± ë° í˜¸ì¶œí•  ê²ƒ
 		void createShaderStorageBufferObjects(vkf::Device& fDevice, VkDeviceSize bufferSize, VkDescriptorSetLayout descriptorSetLayout);
 		void destroy();
 

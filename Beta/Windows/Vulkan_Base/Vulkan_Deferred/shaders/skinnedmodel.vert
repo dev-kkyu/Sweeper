@@ -1,4 +1,4 @@
-#version 450
+ï»¿#version 450
 
 layout (location = 0) in vec3 inPos;
 layout (location = 1) in vec3 inNormal;
@@ -32,7 +32,7 @@ void main()
 	outColor = inColor;
 	outUV = inUV;
 
-	// ÇöÀç vertex pos ÀÇ °¡ÁßÄ¡¿Í joint ÀÎµ¦½º·ÎºÎÅÍ ½ºÅ°´× Ã³¸®µÈ Çà·ÄÀ» °è»êÇÑ´Ù.
+	// í˜„ì¬ vertex pos ì˜ ê°€ì¤‘ì¹˜ì™€ joint ì¸ë±ìŠ¤ë¡œë¶€í„° ìŠ¤í‚¤ë‹ ì²˜ë¦¬ëœ í–‰ë ¬ì„ ê³„ì‚°í•œë‹¤.
 	mat4 skinMat = 
 		inJointWeights.x * jointMatrices[int(inJointIndices.x)] +
 		inJointWeights.y * jointMatrices[int(inJointIndices.y)] +

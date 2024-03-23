@@ -1,4 +1,4 @@
-#include "Scene.h"
+ï»¿#include "Scene.h"
 #include <stdexcept>
 
 #include <GLFW/glfw3.h>
@@ -11,24 +11,24 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 
 	uniformBufferObject.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 
-	createSamplerDescriptorPool(2);		// obj¿¡ »ç¿ëÇÒ ÅØ½ºÃ³ º°µµ·Î ºÒ·¯¿Ã°Í
+	createSamplerDescriptorPool(2);		// objì— ì‚¬ìš©í•  í…ìŠ¤ì²˜ ë³„ë„ë¡œ ë¶ˆëŸ¬ì˜¬ê²ƒ
 
-	// obj¿Í ÅØ½ºÃ³ ·Îµå
+	// objì™€ í…ìŠ¤ì²˜ ë¡œë“œ
 	mapBuffer.loadFromObjFile(fDevice, "models/map.obj");
 	mapTexture.loadFromFile(fDevice, "textures/map.png", samplerDescriptorPool, descriptorSetLayout.sampler);
 	warriorBuffer.loadFromObjFile(fDevice, "models/warrior.obj");
 	warriorTexture.loadFromFile(fDevice, "textures/warrior.png", samplerDescriptorPool, descriptorSetLayout.sampler);
 
-	// gltf skin¸ğµ¨ ·Îµå
+	// gltf skinëª¨ë¸ ë¡œë“œ
 	mushroomModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/mushroom.glb");
 	playerModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Binary/CesiumMan.glb");
 
-	// ¸Ê »ı¼º
+	// ë§µ ìƒì„±
 	mapObject = new OBJModelObject;
 	mapObject->setBuffer(mapBuffer);
 	mapObject->setTexture(mapTexture);
 
-	// ¹ö¼¸ »ı¼º
+	// ë²„ì„¯ ìƒì„±
 	for (int i = 0; i < mushroomObject.size(); ++i) {
 		mushroomObject[i] = new GLTFSkinModelObject;
 		mushroomObject[i]->initModel(mushroomModel, descriptorSetLayout.ssbo);
@@ -38,7 +38,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 		mushroomObject[i]->setAnimateSpeed(float(rand()) / RAND_MAX + 0.5f);
 	}
 
-	// Àü»ç »ı¼º
+	// ì „ì‚¬ ìƒì„±
 	for (int i = 0; i < warriorObject.size(); ++i) {
 		warriorObject[i] = new OBJModelObject;
 		warriorObject[i]->setBuffer(warriorBuffer);
@@ -47,7 +47,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 		warriorObject[i]->rotate(180.f);
 	}
 
-	// ÇÃ·¹ÀÌ¾î »ı¼º
+	// í”Œë ˆì´ì–´ ìƒì„±
 	pPlayer = new PlayerObject;
 	pPlayer->initModel(playerModel, descriptorSetLayout.ssbo);
 	pPlayer->setPosition({ 1.f, 0.f, 1.f });
@@ -99,7 +99,7 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 
 	uniformBufferObject.updateUniformBuffer(ubo, currentFrame);
 
-	// ¸ğµ¨µé ¾÷µ¥ÀÌÆ®
+	// ëª¨ë¸ë“¤ ì—…ë°ì´íŠ¸
 	mapObject->update(elapsedTime, currentFrame);
 
 	for (int i = 0; i < mushroomObject.size(); ++i) {
@@ -117,7 +117,7 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
 	// non-skinModel
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.model);
-	// firstSetÀº setÀÇ ½ÃÀÛÀÎµ¦½º
+	// firstSetì€ setì˜ ì‹œì‘ì¸ë±ìŠ¤
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 
 	mapObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
@@ -342,11 +342,11 @@ void Scene::createGraphicsPipeline()
 	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 	dynamicState.pDynamicStates = dynamicStates.data();
 
-	// ¿©·¯ °³ÀÇ µğ½ºÅ©¸³ÅÍ ¼ÂÀ» »ç¿ëÇÒ ¶§, setÀÇ index¸¦ pSetLayoutsÀÇ index¿Í ¸ÂÃçÁà¾ß ÇÑ´Ù.
+	// ì—¬ëŸ¬ ê°œì˜ ë””ìŠ¤í¬ë¦½í„° ì…‹ì„ ì‚¬ìš©í•  ë•Œ, setì˜ indexë¥¼ pSetLayoutsì˜ indexì™€ ë§ì¶°ì¤˜ì•¼ í•œë‹¤.
 	std::vector<VkDescriptorSetLayout> setLayout{ 3 };
 	setLayout[0] = descriptorSetLayout.ubo;
 	setLayout[1] = descriptorSetLayout.sampler;
-	setLayout[2] = descriptorSetLayout.ssbo;									// skinModel¿¡¼­¸¸ »ç¿ë
+	setLayout[2] = descriptorSetLayout.ssbo;									// skinModelì—ì„œë§Œ ì‚¬ìš©
 
 	// push constant
 	VkPushConstantRange pushConstantRange{};
@@ -356,7 +356,7 @@ void Scene::createGraphicsPipeline()
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 2;										// model¿¡¼­´Â 1¹ø ÀÎµ¦½º±îÁö¸¸ »ç¿ë
+	pipelineLayoutInfo.setLayoutCount = 2;										// modelì—ì„œëŠ” 1ë²ˆ ì¸ë±ìŠ¤ê¹Œì§€ë§Œ ì‚¬ìš©
 	pipelineLayoutInfo.pSetLayouts = setLayout.data();
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
@@ -365,7 +365,7 @@ void Scene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
-	pipelineLayoutInfo.setLayoutCount = 3;										// skinModel¿¡¼­´Â 2¹ø ÀÎµ¦½º±îÁö »ç¿ë
+	pipelineLayoutInfo.setLayoutCount = 3;										// skinModelì—ì„œëŠ” 2ë²ˆ ì¸ë±ìŠ¤ê¹Œì§€ ì‚¬ìš©
 	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout.skinModel) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
@@ -391,7 +391,7 @@ void Scene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	// skinModel¿ë pipeline »ı¼º
+	// skinModelìš© pipeline ìƒì„±
 	pipelineInfo.layout = pipelineLayout.skinModel;
 
 	vkf::Shader skinModelShader{ fDevice, "shaders/skinnedmodel.vert.spv", "shaders/skinnedmodel.frag.spv" };
@@ -412,7 +412,7 @@ void Scene::createGraphicsPipeline()
 
 void Scene::createSamplerDescriptorPool(uint32_t setCount)
 {
-	std::array<VkDescriptorPoolSize, 1> poolSizes{};
+	std::array<VkDescriptorPoolSize, 2> poolSizes{};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	poolSizes[0].descriptorCount = setCount;
 
@@ -426,4 +426,3 @@ void Scene::createSamplerDescriptorPool(uint32_t setCount)
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }
-

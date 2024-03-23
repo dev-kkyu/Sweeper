@@ -1,4 +1,4 @@
-#include "GLTFSkinModelObject.h"
+ï»¿#include "GLTFSkinModelObject.h"
 
 #include <iostream>
 
@@ -141,7 +141,7 @@ void GLTFSkinModelObject::loadSkins(VkDescriptorSetLayout ssboDescriptorSetLayou
 			skins[i].inverseBindMatrices.resize(accessor.count);
 			memcpy(skins[i].inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
 
-			// ÀÌ ½ºÅ²¿¡ ´ëÇÑ ¿ª ¹ÙÀÎµå Çà·ÄÀ» ´ãÀ» °ø°£À» Shader Storage Buffer Object¿¡ »ı¼º ¹× ÀúÀå
+			// ì´ ìŠ¤í‚¨ì— ëŒ€í•œ ì—­ ë°”ì¸ë“œ í–‰ë ¬ì„ ë‹´ì„ ê³µê°„ì„ Shader Storage Buffer Objectì— ìƒì„± ë° ì €ì¥
 			skins[i].ssbo.createShaderStorageBufferObjects(*model->fDevice, sizeof(glm::mat4) * skins[i].inverseBindMatrices.size(), ssboDescriptorSetLayout);
 			for (uint32_t k = 0; k < MAX_FRAMES_IN_FLIGHT; ++k) {
 				skins[i].ssbo.copyTo(skins[i].inverseBindMatrices.data(), sizeof(glm::mat4) * skins[i].inverseBindMatrices.size(), k);
@@ -278,7 +278,7 @@ void GLTFSkinModelObject::loadNode(const tinygltf::Node& inputNode, std::shared_
 		}
 	}
 
-	// ¸ğµ¨¿¡¼­´Â vertex, index buffer ¸¸µé¾î Áá°í, ³ëµå¸¶´ÙÀÇ index¿Í offsetÀ» ±¸ÇØÁØ´Ù. -> Primitive
+	// ëª¨ë¸ì—ì„œëŠ” vertex, index buffer ë§Œë“¤ì–´ ì¤¬ê³ , ë…¸ë“œë§ˆë‹¤ì˜ indexì™€ offsetì„ êµ¬í•´ì¤€ë‹¤. -> Primitive
 	if (inputNode.mesh > -1)
 	{
 		const tinygltf::Mesh mesh = input.meshes[inputNode.mesh];
@@ -326,7 +326,7 @@ glm::mat4 GLTFSkinModelObject::getNodeMatrix(std::shared_ptr<Node> node)
 	return nodeMatrix;
 }
 
-// ÇöÀç ¾Ö´Ï¸ŞÀÌ¼Ç ÇÁ·¹ÀÓ¿¡¼­ joint Çà·ÄÀ» ¾÷µ¥ÀÌÆ®ÇÏ°í GPU¿¡ Àü´Ş
+// í˜„ì¬ ì• ë‹ˆë©”ì´ì…˜ í”„ë ˆì„ì—ì„œ joint í–‰ë ¬ì„ ì—…ë°ì´íŠ¸í•˜ê³  GPUì— ì „ë‹¬
 void GLTFSkinModelObject::updateJoints(std::shared_ptr<Node> node, uint32_t currentFrame)
 {
 	if (node->skin > -1)
@@ -426,11 +426,11 @@ void GLTFSkinModelObject::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayo
 			nodeMatrix = currentParent->matrix * nodeMatrix;
 			currentParent = currentParent->parent;
 		}
-		// ¿ùµå ÁÂÇ¥°è·Î ÀÌµ¿
+		// ì›”ë“œ ì¢Œí‘œê³„ë¡œ ì´ë™
 		nodeMatrix = worldMatrix * nodeMatrix;
 		// Pass the final matrix to the vertex shader using push constants
 		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &nodeMatrix);
-		// ÇöÀç ³ëµåÀÇ skin data¿¡ ÇØ´çÇÏ´Â ssbo¸¦ 2¹ø¿¡ ¹ÙÀÎµå ÇÑ´Ù.
+		// í˜„ì¬ ë…¸ë“œì˜ skin dataì— í•´ë‹¹í•˜ëŠ” ssboë¥¼ 2ë²ˆì— ë°”ì¸ë“œ í•œë‹¤.
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &skins[node->skin].ssbo.descriptorSets[currentFrame], 0, nullptr);
 		for (Primitive& primitive : node->mesh.primitives)
 		{
@@ -438,7 +438,7 @@ void GLTFSkinModelObject::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayo
 			{
 				// Get the texture index for this primitive
 				TextureID texture = model->textures[model->materials[primitive.materialIndex].baseColorTextureIndex];
-				// ÇöÀç ÇÁ¸®¹ÌÆ¼ºê ÅØ½ºÃ³ÀÇ µğ½ºÅ©¸³ÅÍ ¼ÂÀ» 1¹ø¿¡ ¹ÙÀÎµå ÇÑ´Ù.
+				// í˜„ì¬ í”„ë¦¬ë¯¸í‹°ë¸Œ í…ìŠ¤ì²˜ì˜ ë””ìŠ¤í¬ë¦½í„° ì…‹ì„ 1ë²ˆì— ë°”ì¸ë“œ í•œë‹¤.
 				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &model->images[texture.imageIndex].texture.samplerDescriptorSet, 0, nullptr);
 				vkCmdDrawIndexed(commandBuffer, primitive.indexCount, 1, primitive.firstIndex, 0, 0);
 			}

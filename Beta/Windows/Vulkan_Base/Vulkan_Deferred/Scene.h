@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "OBJModelObject.h"
 #include "PlayerObject.h"
@@ -33,21 +33,21 @@ private:
 
 	VkDescriptorPool samplerDescriptorPool;
 
-	// obj ¸Ê
+	// obj ë§µ
 	vkf::MeshBuffer mapBuffer;
 	vkf::Texture mapTexture;
 	OBJModelObject* mapObject;
 
-	// obj Àü»ç
+	// obj ì „ì‚¬
 	vkf::MeshBuffer warriorBuffer;
 	vkf::Texture warriorTexture;
 	std::array<OBJModelObject*, 10> warriorObject;
 
-	// gltf skin ¹ö¼¸
+	// gltf skin ë²„ì„¯
 	VulkanGLTFSkinModel mushroomModel;
 	std::array<GLTFSkinModelObject*, 100> mushroomObject;
 
-	// gltf skin ÀÓ½Ã »ùÇÃ
+	// gltf skin ì„ì‹œ ìƒ˜í”Œ
 	VulkanGLTFSkinModel playerModel;
 	PlayerObject* pPlayer;
 
@@ -71,7 +71,7 @@ private:
 	void createDescriptorSetLayout();
 	void createGraphicsPipeline();
 
-	// obj ¸ğµ¨Àº Á÷Á¢ buffer¿Í texture¸¦ ³Ö¾îÁÖµµ·Ï ¼³°è. µû¶ó¼­ texture¸¦ À§ÇÑ descriptor poolÀ» ¸¸µé¾îÁØ´Ù.
+	// obj ëª¨ë¸ì€ ì§ì ‘ bufferì™€ textureë¥¼ ë„£ì–´ì£¼ë„ë¡ ì„¤ê³„. ë”°ë¼ì„œ textureë¥¼ ìœ„í•œ descriptor poolì„ ë§Œë“¤ì–´ì¤€ë‹¤.
 	void createSamplerDescriptorPool(uint32_t setCount);
 
 };
