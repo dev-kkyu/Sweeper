@@ -207,6 +207,7 @@ void Scene::processPacket(unsigned char* packet)
 	case SC_LOGOUT: {
 		auto p = reinterpret_cast<SC_LOGOUT_PACKET*>(packet);
 		std::cout << "로그아웃 패킷 수신 ID:[" << int(p->player_id) << "]\n";
+		vkDeviceWaitIdle(fDevice.logicalDevice);	// Vulkan 호출하는 오브젝트 삭제 전에는 무조건 해줘야 한다.
 		pPlayers[p->player_id] = nullptr;
 		break;
 	}
