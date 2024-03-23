@@ -130,6 +130,18 @@ void Session::doRead()
 				std::cout << "Receive Error on Session[" << parentRoom->room_id << ":" << player_id << "]: [" << ec << "]: " << ec.message() << std::endl;
 				parentRoom->room_mutex.lock();
 				parentRoom->sessions[player_id] = nullptr;				// 나를 제거한다.
+				// 남은 모든 플레이어에게 나의 로그아웃 전송
+				{
+					SC_LOGOUT_PACKET p;
+					p.size = sizeof(p);
+					p.type = SC_LOGOUT;
+					p.player_id = player_id;
+					for (int i = 0; i < parentRoom->sessions.size(); ++i) {
+						if (parentRoom->sessions[i]) {					// 존재하는 플레이어에게 전송
+							parentRoom->sessions[i]->sendPacket(&p);
+						}
+					}
+				}
 				parentRoom->room_mutex.unlock();
 
 				return;

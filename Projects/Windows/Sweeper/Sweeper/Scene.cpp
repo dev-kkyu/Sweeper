@@ -202,6 +202,12 @@ void Scene::processPacket(unsigned char* packet)
 		pPlayers[my_id] = pMyPlayer;
 		break;
 	}
+	case SC_LOGOUT: {
+		auto p = reinterpret_cast<SC_LOGOUT_PACKET*>(packet);
+		std::cout << "로그아웃 패킷 수신 ID:[" << int(p->player_id) << "]\n";
+		pPlayers[p->player_id] = nullptr;
+		break;
+	}
 	case SC_ADD_PLAYER: {
 		auto p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
 		pPlayers[p->player_id] = std::make_shared<PlayerObject>();

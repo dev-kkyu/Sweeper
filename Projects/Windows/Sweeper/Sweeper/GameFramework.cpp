@@ -253,6 +253,7 @@ void GameFramework::processPacket(unsigned char* packet)
 	switch (packet[1])
 	{
 	case SC_LOGIN:
+	case SC_LOGOUT:
 	case SC_ADD_PLAYER:
 	case SC_POSITION:
 		pScene->processPacket(packet);

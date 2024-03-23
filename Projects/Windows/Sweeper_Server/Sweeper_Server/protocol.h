@@ -32,7 +32,9 @@ struct SC_LOGIN_PACKET
 
 struct SC_LOGOUT_PACKET
 {
-	// Todo :
+	unsigned char size;
+	char type;
+	char player_id;
 };
 
 struct SC_ADD_PLAYER_PACKET
