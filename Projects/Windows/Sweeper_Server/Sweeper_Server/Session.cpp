@@ -62,6 +62,7 @@ void Session::update(float elapsedTime)
 {
 	player->update(elapsedTime);
 
+	// Todo : 최적화 필요 - 위치가 안바꼈을때는 전송하지 않아야 한다.
 	// 프레임마다 내 위치를 모두에게 전송한다.
 	SC_POSITION_PACKET p;
 	p.size = sizeof(p);
@@ -110,6 +111,28 @@ void Session::processPacket(unsigned char* packet)
 			break;
 		}
 		std::cout << "Key Event 수신, ID: " << parentRoom->room_id << ":" << player_id << std::endl;
+		break;
+	}
+	case CS_MOVE_MOUSE: {
+		{
+			CS_MOVE_MOUSE_PACKET* p = reinterpret_cast<CS_MOVE_MOUSE_PACKET*>(packet);
+			player->processMoveMouse(p->move_x, p->move_y);		// 마우스에 따라 회전시켜 준다.
+		}
+		{
+			auto look = player->getLook();
+			SC_PLAYER_LOOK_PACKET p;
+			p.size = sizeof(p);
+			p.type = SC_PLAYER_LOOK;
+			p.player_id = player_id;
+			p.dir_x = look.x;
+			p.dir_z = look.z;
+			parentRoom->room_mutex.lock();
+			for (auto& s : parentRoom->sessions) {			// 모든 플레이어에게 변경된 플레이어 Look을 보내준다.
+				if (s)
+					s->sendPacket(&p);
+			}
+			parentRoom->room_mutex.unlock();
+		}
 		break;
 	}
 	default:

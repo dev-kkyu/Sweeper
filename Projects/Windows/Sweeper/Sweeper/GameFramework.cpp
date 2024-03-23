@@ -256,9 +256,11 @@ void GameFramework::processPacket(unsigned char* packet)
 	case SC_LOGOUT:
 	case SC_ADD_PLAYER:
 	case SC_POSITION:
+	case SC_PLAYER_LOOK:
 		pScene->processPacket(packet);
 		break;
 	default:
+		std::cout << "Type Error: " << static_cast<int>(packet[1]) << " Type is invalid\n";
 		break;
 	}
 }

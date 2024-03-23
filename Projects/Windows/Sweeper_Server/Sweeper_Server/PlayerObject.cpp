@@ -42,18 +42,7 @@ void PlayerObject::processKeyInput(unsigned int key, bool is_pressed)
 	}
 }
 
-//void PlayerObject::setStartMousePos(float xpos, float ypos)
-//{
-//	startXpos = xpos;
-//	startYpos = ypos;
-//}
-//
-//void PlayerObject::processMouseCursor(float xpos, float ypos)
-//{
-//	float moveX = xpos - startXpos;
-//	float moveY = ypos - startYpos;
-//	startXpos = xpos;
-//	startYpos = ypos;
-//
-//	rotate(-moveX * 100.f);
-//}
+void PlayerObject::processMoveMouse(float move_x, float move_y)
+{
+	rotate(-move_x * 100.f);
+}

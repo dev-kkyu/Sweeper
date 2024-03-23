@@ -149,7 +149,8 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 		{
 		case GLFW_MOUSE_BUTTON_LEFT:
 			leftButtonPressed = true;
-			pMyPlayer->setStartMousePos(xpos, ypos);
+			if (pMyPlayer)
+				pMyPlayer->setStartMousePos(xpos, ypos);
 			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
 			break;
@@ -183,7 +184,8 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 void Scene::processMouseCursor(float xpos, float ypos)
 {
 	if (leftButtonPressed) {
-		pMyPlayer->processMouseCursor(xpos, ypos);
+		if (pMyPlayer)
+			pMyPlayer->processMouseCursor(xpos, ypos);
 	}
 }
 
@@ -210,6 +212,7 @@ void Scene::processPacket(unsigned char* packet)
 	}
 	case SC_ADD_PLAYER: {
 		auto p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
+		std::cout << "플레이어 추가 패킷 수신 ID:[" << int(p->player_id) << "]\n";
 		pPlayers[p->player_id] = std::make_shared<PlayerObject>();
 		pPlayers[p->player_id]->initModel(playerModel, descriptorSetLayout.ssbo);
 		pPlayers[p->player_id]->setAnimateSpeed(2.f);	// Todo : 나중에 모델 바꾸고 조정 필요
@@ -218,6 +221,11 @@ void Scene::processPacket(unsigned char* packet)
 	case SC_POSITION: {
 		auto p = reinterpret_cast<SC_POSITION_PACKET*>(packet);
 		pPlayers[p->player_id]->setPosition(glm::vec3(p->x, p->y, p->z));
+		break;
+	}
+	case SC_PLAYER_LOOK: {
+		auto p = reinterpret_cast<SC_PLAYER_LOOK_PACKET*>(packet);
+		pPlayers[p->player_id]->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
 		break;
 	}
 	}

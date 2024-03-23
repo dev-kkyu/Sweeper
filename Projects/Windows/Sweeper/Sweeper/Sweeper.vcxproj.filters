@@ -25,14 +25,14 @@
     <Filter Include="GameObjectBase\OBJModelObject">
       <UniqueIdentifier>{8bc615de-f7e0-4a13-81de-507fad9bedcb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameObjectBase\OBJModelObject\PlayerObject">
-      <UniqueIdentifier>{88c3c3cc-0a89-428e-bb44-e38f6d3e0c07}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\Shader">
       <UniqueIdentifier>{49041d60-2bc3-4257-875e-f617b8e397f8}</UniqueIdentifier>
     </Filter>
     <Filter Include="NetworkManager">
       <UniqueIdentifier>{6249942e-c6eb-4e83-bea6-abf5617ee0fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\GLTFSkinModelObject\PlayerObject">
+      <UniqueIdentifier>{88c3c3cc-0a89-428e-bb44-e38f6d3e0c07}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -67,7 +67,7 @@
       <Filter>GameObjectBase\OBJModelObject</Filter>
     </ClCompile>
     <ClCompile Include="PlayerObject.cpp">
-      <Filter>GameObjectBase\OBJModelObject\PlayerObject</Filter>
+      <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject</Filter>
     </ClCompile>
     <ClCompile Include="GLTFModelObject.cpp">
       <Filter>GameObjectBase\GLTFModelObject</Filter>
@@ -87,7 +87,7 @@
       <Filter>GameObjectBase\OBJModelObject</Filter>
     </ClInclude>
     <ClInclude Include="PlayerObject.h">
-      <Filter>GameObjectBase\OBJModelObject\PlayerObject</Filter>
+      <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject</Filter>
     </ClInclude>
     <ClInclude Include="GLTFModelObject.h">
       <Filter>GameObjectBase\GLTFModelObject</Filter>

@@ -10,9 +10,7 @@
 class PlayerObject : public GLTFSkinModelObject
 {
 private:
-
-	unsigned int keyState = 0;
-
+	// 플레이어가 회전하기 위한 마우스 클릭 발생 시 시작 위치
 	float startXpos = 0.f;
 	float startYpos = 0.f;
 

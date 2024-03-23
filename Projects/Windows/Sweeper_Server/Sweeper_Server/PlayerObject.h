@@ -12,10 +12,8 @@ class PlayerObject : public GameObjectBase
 {
 private:
 
+	// 키가 눌려진 상태를 종합한다.
 	unsigned int keyState = 0;
-
-	float startXpos = 0.f;
-	float startYpos = 0.f;
 
 public:
 	PlayerObject();
@@ -26,8 +24,7 @@ public:
 	virtual void release() override;
 
 	void processKeyInput(unsigned int key, bool is_pressed);
-	//void setStartMousePos(float xpos, float ypos);			// 일단 안써서 빼뒀다
-	//void processMouseCursor(float xpos, float ypos);
+	void processMoveMouse(float move_x, float move_y);
 
 };
 

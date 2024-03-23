@@ -1,5 +1,7 @@
 #include "PlayerObject.h"
 
+#include "NetworkManager.h"		// 마우스 회전 전송을 위함
+
 PlayerObject::PlayerObject()
 {
 }
@@ -14,18 +16,8 @@ void PlayerObject::initialize()
 
 void PlayerObject::update(float elapsedTime, uint32_t currentFrame)
 {
-	if (keyState) {
-		glm::vec3 look = getLook();
-		glm::vec3 right = getRight();
+	// 키 입력에 따른 움직임은 서버에서 처리
 
-		glm::vec3 direction{ 0.f };
-		if (keyState & KEY_UP) direction += 1.f * look;
-		if (keyState & KEY_DOWN) direction -= 1.f * look;
-		if (keyState & KEY_LEFT) direction += 1.f * right;
-		if (keyState & KEY_RIGHT) direction -= 1.f * right;
-
-		move(direction, elapsedTime * 4.f);
-	}
 	GLTFSkinModelObject::update(elapsedTime, currentFrame);
 }
 
@@ -51,5 +43,12 @@ void PlayerObject::processMouseCursor(float xpos, float ypos)
 	startXpos = xpos;
 	startYpos = ypos;
 
-	rotate(-moveX * 100.f);
+	// 서버에서 회전한 뒤, 클라에서 바꿔준다.
+
+	CS_MOVE_MOUSE_PACKET p;
+	p.size = sizeof(p);
+	p.type = CS_MOVE_MOUSE;
+	p.move_x = moveX;
+	p.move_y = moveY;
+	NetworkManager::getInstance().sendPacket(&p);
 }
