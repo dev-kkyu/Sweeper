@@ -78,9 +78,19 @@ private:
 	VkDeviceMemory colorImageMemory;
 	VkImageView colorImageView;
 
+	VkImage positionImage;
+	VkDeviceMemory positionImageMemory;
+	VkImageView positionImageView;
+
+	VkImage normalImage;
+	VkDeviceMemory normalImageMemory;
+	VkImageView normalImageView;
+
 	VkImage depthImage;
 	VkDeviceMemory depthImageMemory;
 	VkImageView depthImageView;
+
+	VkSampler colorSampler;
 
 	std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> commandBuffers;
 
@@ -104,6 +114,8 @@ private:
 	void createImageViews();
 	void createRenderPass();
 	void createCommandPool();
+	void createPositionResources();
+	void createNormalResources();
 	void createColorResources();
 	void createDepthResources();
 	void createFramebuffers();

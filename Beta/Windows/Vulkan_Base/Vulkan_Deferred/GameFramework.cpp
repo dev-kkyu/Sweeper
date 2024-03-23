@@ -67,6 +67,8 @@ void GameFramework::initVulkan(GLFWwindow* window)
 	createImageViews();
 	createRenderPass();
 	createCommandPool();
+	createPositionResources();
+	createNormalResources();
 	createColorResources();
 	createDepthResources();
 	createFramebuffers();
@@ -488,46 +490,77 @@ void GameFramework::createRenderPass()
 	colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-	VkAttachmentReference colorAttachmentRef{};
-	colorAttachmentRef.attachment = 0;
-	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	VkAttachmentDescription positionAttachment{};
+	positionAttachment.format = swapChainImageFormat;
+	positionAttachment.samples = msaaSamples;
+	positionAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	positionAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	positionAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	positionAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	positionAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	positionAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentDescription normalAttachment{};
+	normalAttachment.format = swapChainImageFormat;
+	normalAttachment.samples = msaaSamples;
+	normalAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	normalAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	normalAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	normalAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	normalAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	normalAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	std::vector<VkAttachmentReference> colorAttachmentRef;
+	colorAttachmentRef.push_back({ 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+	colorAttachmentRef.push_back({ 1, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+	colorAttachmentRef.push_back({ 2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
 
 	VkAttachmentReference depthAttachmentRef{};
-	depthAttachmentRef.attachment = 1;
+	depthAttachmentRef.attachment = 3;
 	depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentReference colorAttachmentResolveRef{};
-	colorAttachmentResolveRef.attachment = 2;
+	colorAttachmentResolveRef.attachment = 4;
 	colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 	VkSubpassDescription subpass{};
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &colorAttachmentRef;
+	subpass.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentRef.size());
+	subpass.pColorAttachments = colorAttachmentRef.data();
 	subpass.pDepthStencilAttachment = &depthAttachmentRef;
 	subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
-	VkSubpassDependency dependency{};
-	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependency.dstSubpass = 0;
-	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	dependency.srcAccessMask = 0;
-	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	std::array<VkSubpassDependency, 2> dependencies;
+	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[0].dstSubpass = 0;
+	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+	dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-	std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
+	dependencies[1].srcSubpass = 0;
+	dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+	dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+	std::array<VkAttachmentDescription, 5> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve, positionAttachment, normalAttachment };
 	VkRenderPassCreateInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 	renderPassInfo.pAttachments = attachments.data();
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
-	renderPassInfo.dependencyCount = 1;
-	renderPassInfo.pDependencies = &dependency;
+	renderPassInfo.dependencyCount = 2;
+	renderPassInfo.pDependencies = dependencies.data();
 
 	if (vkCreateRenderPass(fDevice.logicalDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create render pass!");
 	}
+
 }
 
 void GameFramework::createCommandPool()
@@ -542,6 +575,22 @@ void GameFramework::createCommandPool()
 	if (vkCreateCommandPool(fDevice.logicalDevice, &poolInfo, nullptr, &fDevice.commandPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics command pool!");
 	}
+}
+
+void GameFramework::createPositionResources()
+{
+	VkFormat positionFormat = swapChainImageFormat;
+
+	vkf::createImage(fDevice, swapChainExtent.width, swapChainExtent.height, 1, msaaSamples, positionFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, positionImage, positionImageMemory);
+	positionImageView = vkf::createImageView(fDevice, positionImage, positionFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+}
+
+void GameFramework::createNormalResources()
+{
+	VkFormat normalFormat = swapChainImageFormat;
+
+	vkf::createImage(fDevice, swapChainExtent.width, swapChainExtent.height, 1, msaaSamples, normalFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, normalImage, normalImageMemory);
+	normalImageView = vkf::createImageView(fDevice, normalImage, normalFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
 }
 
 void GameFramework::createColorResources()
@@ -565,8 +614,10 @@ void GameFramework::createFramebuffers()
 	swapChainFramebuffers.resize(swapChainImageViews.size());
 
 	for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-		std::array<VkImageView, 3> attachments = {
+		std::array<VkImageView, 5> attachments = {
 			colorImageView,
+			positionImageView,
+			normalImageView,
 			depthImageView,
 			swapChainImageViews[i]
 		};
@@ -582,6 +633,24 @@ void GameFramework::createFramebuffers()
 
 		if (vkCreateFramebuffer(fDevice.logicalDevice, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create framebuffer!");
+		}
+
+		VkSamplerCreateInfo sampler;
+		sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		sampler.maxAnisotropy = 1.0f;
+		sampler.magFilter = VK_FILTER_NEAREST;
+		sampler.minFilter = VK_FILTER_NEAREST;
+		sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		sampler.addressModeV = sampler.addressModeU;
+		sampler.addressModeW = sampler.addressModeU;
+		sampler.mipLodBias = 0.0f;
+		sampler.maxAnisotropy = 1.0f;
+		sampler.minLod = 0.0f;
+		sampler.maxLod = 1.0f;
+		sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+		if (vkCreateSampler(fDevice.logicalDevice, &sampler, nullptr, &colorSampler)) {
+			throw std::runtime_error("failed to create sampler!");
 		}
 	}
 }
