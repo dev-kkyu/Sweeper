@@ -24,7 +24,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 
 	// gltf skin모델 로드
 	mushroomModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/mushroom.glb");
-	playerModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Binary/CesiumMan.glb");
+	playerModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/Monk/idle.glb");
 
 	// 맵 생성
 	mapObject = new OBJModelObject;
@@ -34,7 +34,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	// 버섯 생성
 	for (int i = 0; i < mushroomObject.size(); ++i) {
 		mushroomObject[i] = new GLTFSkinModelObject;
-		mushroomObject[i]->initModel(mushroomModel, descriptorSetLayout.ssbo);
+		mushroomObject[i]->addModel(mushroomModel, descriptorSetLayout.ssbo);
 		int x = i / 10 - 5;
 		int z = i % 10 - 5;
 		mushroomObject[i]->setPosition({ x * 5.f, 0.f, z * 5.f });
@@ -200,8 +200,8 @@ void Scene::processPacket(unsigned char* packet)
 		std::cout << "로그인 패킷 수신, ROOM:ID->[" << int(p->room_id) << ":" << int(p->player_id) << "]\n";
 		my_id = p->player_id;
 		pMyPlayer = std::make_shared<PlayerObject>();
-		pMyPlayer->initModel(playerModel, descriptorSetLayout.ssbo);
-		pMyPlayer->setAnimateSpeed(2.f);	// Todo : 나중에 모델 바꾸고 조정 필요
+		pMyPlayer->addModel(playerModel, descriptorSetLayout.ssbo);
+		pMyPlayer->setAnimateSpeed(1.f);	// Todo : 필요시 적절히 조절할 것
 		camera.setPlayer(pMyPlayer);
 		pPlayers[my_id] = pMyPlayer;
 		break;
@@ -217,7 +217,7 @@ void Scene::processPacket(unsigned char* packet)
 		auto p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
 		std::cout << "플레이어 추가 패킷 수신 ID:[" << int(p->player_id) << "]\n";
 		pPlayers[p->player_id] = std::make_shared<PlayerObject>();
-		pPlayers[p->player_id]->initModel(playerModel, descriptorSetLayout.ssbo);
+		pPlayers[p->player_id]->addModel(playerModel, descriptorSetLayout.ssbo);
 		pPlayers[p->player_id]->setAnimateSpeed(2.f);	// Todo : 나중에 모델 바꾸고 조정 필요
 		break;
 	}

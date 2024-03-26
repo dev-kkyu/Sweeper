@@ -28,32 +28,37 @@ void GLTFSkinModelObject::initialize()
 
 void GLTFSkinModelObject::update(float elapsedTime, uint32_t currentFrame)
 {
-	updateAnimation(elapsedTime * animateSpeed, currentFrame);
+	clipModels[clipIndex].update(elapsedTime, currentFrame, animateSpeed);
 }
 
 void GLTFSkinModelObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
-	model->bindBuffers(commandBuffer);
-
-	// Render all nodes at top-level
-	for (auto& node : nodes)
-	{
-		drawNode(commandBuffer, pipelineLayout, currentFrame, node, modelTransform);
-	}
+	clipModels[clipIndex].draw(commandBuffer, pipelineLayout, currentFrame, modelTransform);
 }
 
 void GLTFSkinModelObject::release()
 {
-	for (auto& skin : skins) {
-		skin.ssbo.destroy();
-	}
 }
 
-void GLTFSkinModelObject::initModel(VulkanGLTFSkinModel& model, VkDescriptorSetLayout ssboDescriptorSetLayout)
+void GLTFSkinModelObject::addModel(VulkanGLTFSkinModel& model, VkDescriptorSetLayout ssboDescriptorSetLayout)
 {
-	this->model = &model;
+	clipModels.emplace_back(model, ssboDescriptorSetLayout);
+}
 
-	const tinygltf::Model& glTFInput = *(this->model->glTFInput);
+void GLTFSkinModelObject::selectClip(int index)
+{
+	clipIndex = index;
+}
+
+void GLTFSkinModelObject::setAnimateSpeed(float speed)
+{
+	animateSpeed = speed;
+}
+
+ClipSkinModel::ClipSkinModel(VulkanGLTFSkinModel& model, VkDescriptorSetLayout ssboDescriptorSetLayout)
+	: model{ model }
+{
+	const tinygltf::Model& glTFInput = *(model.glTFInput);
 	const tinygltf::Scene& scene = glTFInput.scenes[0];
 	uint32_t indexBufferCount = 0;
 	for (size_t i = 0; i < scene.nodes.size(); i++)
@@ -71,12 +76,30 @@ void GLTFSkinModelObject::initModel(VulkanGLTFSkinModel& model, VkDescriptorSetL
 	}
 }
 
-void GLTFSkinModelObject::setAnimateSpeed(float speed)
+void ClipSkinModel::update(float elapsedTime, uint32_t currentFrame, float animateSpeed)
 {
-	animateSpeed = speed;
+	updateAnimation(elapsedTime * animateSpeed, currentFrame);
 }
 
-std::shared_ptr<Node> GLTFSkinModelObject::findNode(std::shared_ptr<Node> parent, uint32_t index)
+void ClipSkinModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame, const glm::mat4& worldMatrix)
+{
+	model.bindBuffers(commandBuffer);
+
+	// Render all nodes at top-level
+	for (auto& node : nodes)
+	{
+		drawNode(commandBuffer, pipelineLayout, currentFrame, node, worldMatrix);
+	}
+}
+
+ClipSkinModel::~ClipSkinModel()
+{
+	for (auto& skin : skins) {
+		skin.ssbo.destroy();
+	}
+}
+
+std::shared_ptr<Node> ClipSkinModel::findNode(std::shared_ptr<Node> parent, uint32_t index)
 {
 	std::shared_ptr<Node> nodeFound = nullptr;
 	if (parent->index == index)
@@ -94,7 +117,7 @@ std::shared_ptr<Node> GLTFSkinModelObject::findNode(std::shared_ptr<Node> parent
 	return nodeFound;
 }
 
-std::shared_ptr<Node> GLTFSkinModelObject::nodeFromIndex(uint32_t index)
+std::shared_ptr<Node> ClipSkinModel::nodeFromIndex(uint32_t index)
 {
 	std::shared_ptr<Node> nodeFound = nullptr;
 	for (auto& node : nodes)
@@ -108,9 +131,9 @@ std::shared_ptr<Node> GLTFSkinModelObject::nodeFromIndex(uint32_t index)
 	return nodeFound;
 }
 
-void GLTFSkinModelObject::loadSkins(VkDescriptorSetLayout ssboDescriptorSetLayout)
+void ClipSkinModel::loadSkins(VkDescriptorSetLayout ssboDescriptorSetLayout)
 {
-	tinygltf::Model& input = *(model->glTFInput);
+	tinygltf::Model& input = *(model.glTFInput);
 
 	skins.resize(input.skins.size());
 
@@ -142,7 +165,7 @@ void GLTFSkinModelObject::loadSkins(VkDescriptorSetLayout ssboDescriptorSetLayou
 			memcpy(skins[i].inverseBindMatrices.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(glm::mat4));
 
 			// 이 스킨에 대한 역 바인드 행렬을 담을 공간을 Shader Storage Buffer Object에 생성 및 저장
-			skins[i].ssbo.createShaderStorageBufferObjects(*model->fDevice, sizeof(glm::mat4) * skins[i].inverseBindMatrices.size(), ssboDescriptorSetLayout);
+			skins[i].ssbo.createShaderStorageBufferObjects(*model.fDevice, sizeof(glm::mat4) * skins[i].inverseBindMatrices.size(), ssboDescriptorSetLayout);
 			for (uint32_t k = 0; k < MAX_FRAMES_IN_FLIGHT; ++k) {
 				skins[i].ssbo.copyTo(skins[i].inverseBindMatrices.data(), sizeof(glm::mat4) * skins[i].inverseBindMatrices.size(), k);
 			}
@@ -150,9 +173,9 @@ void GLTFSkinModelObject::loadSkins(VkDescriptorSetLayout ssboDescriptorSetLayou
 	}
 }
 
-void GLTFSkinModelObject::loadAnimations()
+void ClipSkinModel::loadAnimations()
 {
-	tinygltf::Model& input = *(model->glTFInput);
+	tinygltf::Model& input = *(model.glTFInput);
 
 	animations.resize(input.animations.size());
 
@@ -239,9 +262,9 @@ void GLTFSkinModelObject::loadAnimations()
 	}
 }
 
-void GLTFSkinModelObject::loadNode(const tinygltf::Node& inputNode, std::shared_ptr<Node> parent, uint32_t nodeIndex, uint32_t& indexBufferCount)
+void ClipSkinModel::loadNode(const tinygltf::Node& inputNode, std::shared_ptr<Node> parent, uint32_t nodeIndex, uint32_t& indexBufferCount)
 {
-	const tinygltf::Model& input = *(model->glTFInput);
+	const tinygltf::Model& input = *(model.glTFInput);
 
 	std::shared_ptr<Node> node = std::make_shared<Node>();
 	node->parent = parent;
@@ -314,7 +337,7 @@ void GLTFSkinModelObject::loadNode(const tinygltf::Node& inputNode, std::shared_
 	}
 }
 
-glm::mat4 GLTFSkinModelObject::getNodeMatrix(std::shared_ptr<Node> node)
+glm::mat4 ClipSkinModel::getNodeMatrix(std::shared_ptr<Node> node)
 {
 	glm::mat4				nodeMatrix = node->getLocalMatrix();
 	std::shared_ptr<Node>	currentParent = node->parent;
@@ -327,7 +350,7 @@ glm::mat4 GLTFSkinModelObject::getNodeMatrix(std::shared_ptr<Node> node)
 }
 
 // 현재 애니메이션 프레임에서 joint 행렬을 업데이트하고 GPU에 전달
-void GLTFSkinModelObject::updateJoints(std::shared_ptr<Node> node, uint32_t currentFrame)
+void ClipSkinModel::updateJoints(std::shared_ptr<Node> node, uint32_t currentFrame)
 {
 	if (node->skin > -1)
 	{
@@ -351,7 +374,7 @@ void GLTFSkinModelObject::updateJoints(std::shared_ptr<Node> node, uint32_t curr
 	}
 }
 
-void GLTFSkinModelObject::updateAnimation(float elapsedTime, uint32_t currentFrame)
+void ClipSkinModel::updateAnimation(float elapsedTime, uint32_t currentFrame)
 {
 	if (activeAnimation > static_cast<uint32_t>(animations.size()) - 1)
 	{
@@ -413,7 +436,7 @@ void GLTFSkinModelObject::updateAnimation(float elapsedTime, uint32_t currentFra
 	}
 }
 
-void GLTFSkinModelObject::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame, std::shared_ptr<Node> node, const glm::mat4& worldMatrix)
+void ClipSkinModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame, std::shared_ptr<Node> node, const glm::mat4& worldMatrix)
 {
 	if (node->mesh.primitives.size() > 0)
 	{
@@ -437,9 +460,9 @@ void GLTFSkinModelObject::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayo
 			if (primitive.indexCount > 0)
 			{
 				// Get the texture index for this primitive
-				TextureID texture = model->textures[model->materials[primitive.materialIndex].baseColorTextureIndex];
+				TextureID texture = model.textures[model.materials[primitive.materialIndex].baseColorTextureIndex];
 				// 현재 프리미티브 텍스처의 디스크립터 셋을 1번에 바인드 한다.
-				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &model->images[texture.imageIndex].texture.samplerDescriptorSet, 0, nullptr);
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &model.images[texture.imageIndex].texture.samplerDescriptorSet, 0, nullptr);
 				vkCmdDrawIndexed(commandBuffer, primitive.indexCount, 1, primitive.firstIndex, 0, 0);
 			}
 		}
