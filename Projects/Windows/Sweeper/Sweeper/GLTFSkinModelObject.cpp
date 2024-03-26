@@ -38,6 +38,8 @@ void GLTFSkinModelObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout p
 
 void GLTFSkinModelObject::release()
 {
+	for (auto& m : clipModels)
+		m.release();
 }
 
 void GLTFSkinModelObject::addModel(VulkanGLTFSkinModel& model, VkDescriptorSetLayout ssboDescriptorSetLayout)
@@ -76,6 +78,13 @@ ClipSkinModel::ClipSkinModel(VulkanGLTFSkinModel& model, VkDescriptorSetLayout s
 	}
 }
 
+void ClipSkinModel::release()
+{
+	for (auto& skin : skins) {
+		skin.ssbo.destroy();
+	}
+}
+
 void ClipSkinModel::update(float elapsedTime, uint32_t currentFrame, float animateSpeed)
 {
 	updateAnimation(elapsedTime * animateSpeed, currentFrame);
@@ -89,13 +98,6 @@ void ClipSkinModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelin
 	for (auto& node : nodes)
 	{
 		drawNode(commandBuffer, pipelineLayout, currentFrame, node, worldMatrix);
-	}
-}
-
-ClipSkinModel::~ClipSkinModel()
-{
-	for (auto& skin : skins) {
-		skin.ssbo.destroy();
 	}
 }
 

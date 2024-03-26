@@ -44,7 +44,7 @@ private:
 
 public:
 	ClipSkinModel(VulkanGLTFSkinModel& model, VkDescriptorSetLayout ssboDescriptorSetLayout);
-	~ClipSkinModel();
+	void release();
 
 	void update(float elapsedTime, uint32_t currentFrame, float animateSpeed);
 	void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame, const glm::mat4& worldMatrix);

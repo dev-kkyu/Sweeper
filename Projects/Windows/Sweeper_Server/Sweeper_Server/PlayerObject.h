@@ -30,7 +30,7 @@ public:
 	virtual void update(float elapsedTime) override;
 	virtual void release() override;
 
-	void processKeyInput(unsigned int key, bool is_pressed);
+	bool processKeyInput(unsigned int key, bool is_pressed);
 	void processMoveMouse(float move_x, float move_y);
 
 };

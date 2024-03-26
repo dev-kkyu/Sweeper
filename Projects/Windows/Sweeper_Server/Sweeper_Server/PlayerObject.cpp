@@ -61,7 +61,7 @@ void PlayerObject::release()
 {
 }
 
-void PlayerObject::processKeyInput(unsigned int key, bool is_pressed)
+bool PlayerObject::processKeyInput(unsigned int key, bool is_pressed)
 {
 	if (is_pressed) {
 		keyState |= key;
@@ -69,6 +69,7 @@ void PlayerObject::processKeyInput(unsigned int key, bool is_pressed)
 	else {
 		keyState &= ~key;
 	}
+	return static_cast<bool>(keyState & ~KEY_SPACE);		// 스페이스를 제외한 상태 받아오기
 }
 
 void PlayerObject::processMoveMouse(float move_x, float move_y)

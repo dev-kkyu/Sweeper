@@ -24,7 +24,8 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 
 	// gltf skin모델 로드
 	mushroomModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/mushroom.glb");
-	playerModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/Monk/idle.glb");
+	playerIdleModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/Monk/idle.glb");
+	playerRunModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/Monk/run.glb");
 
 	// 맵 생성
 	mapObject = new OBJModelObject;
@@ -57,7 +58,8 @@ Scene::~Scene()
 {
 	// 플레이어는 shared_ptr이므로, 따로 삭제 X
 
-	playerModel.destroy();
+	playerRunModel.destroy();
+	playerIdleModel.destroy();
 
 	for (auto& object : warriorObject) {
 		delete object;
@@ -200,7 +202,8 @@ void Scene::processPacket(unsigned char* packet)
 		std::cout << "로그인 패킷 수신, ROOM:ID->[" << int(p->room_id) << ":" << int(p->player_id) << "]\n";
 		my_id = p->player_id;
 		pMyPlayer = std::make_shared<PlayerObject>();
-		pMyPlayer->addModel(playerModel, descriptorSetLayout.ssbo);
+		pMyPlayer->addModel(playerIdleModel, descriptorSetLayout.ssbo);
+		pMyPlayer->addModel(playerRunModel, descriptorSetLayout.ssbo);
 		pMyPlayer->setAnimateSpeed(1.f);	// Todo : 필요시 적절히 조절할 것
 		camera.setPlayer(pMyPlayer);
 		pPlayers[my_id] = pMyPlayer;
@@ -217,8 +220,9 @@ void Scene::processPacket(unsigned char* packet)
 		auto p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
 		std::cout << "플레이어 추가 패킷 수신 ID:[" << int(p->player_id) << "]\n";
 		pPlayers[p->player_id] = std::make_shared<PlayerObject>();
-		pPlayers[p->player_id]->addModel(playerModel, descriptorSetLayout.ssbo);
-		pPlayers[p->player_id]->setAnimateSpeed(2.f);	// Todo : 나중에 모델 바꾸고 조정 필요
+		pPlayers[p->player_id]->addModel(playerIdleModel, descriptorSetLayout.ssbo);
+		pPlayers[p->player_id]->addModel(playerRunModel, descriptorSetLayout.ssbo);
+		pPlayers[p->player_id]->setAnimateSpeed(1.f);	// Todo : 필요시 적절히 조절할 것
 		break;
 	}
 	case SC_POSITION: {
@@ -229,6 +233,15 @@ void Scene::processPacket(unsigned char* packet)
 	case SC_PLAYER_LOOK: {
 		auto p = reinterpret_cast<SC_PLAYER_LOOK_PACKET*>(packet);
 		pPlayers[p->player_id]->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
+		break;
+	}
+	case SC_PLAYER_STATE: {
+		auto p = reinterpret_cast<SC_PLAYER_STATE_PACKET*>(packet);
+		if (p->state == PLAYER_STATE::IDLE)
+			pPlayers[p->player_id]->selectClip(0);
+		else if (p->state == PLAYER_STATE::RUN)
+			pPlayers[p->player_id]->selectClip(1);
+		std::cout << int(p->player_id) << "의 상태가 " << ((p->state == PLAYER_STATE::RUN) ? "RUN" : "IDLE") << "로 변경" << std::endl;
 		break;
 	}
 	}

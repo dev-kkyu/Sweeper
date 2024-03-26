@@ -265,6 +265,7 @@ void GameFramework::processPacket(unsigned char* packet)
 	case SC_ADD_PLAYER:
 	case SC_POSITION:
 	case SC_PLAYER_LOOK:
+	case SC_PLAYER_STATE:
 		pScene->processPacket(packet);
 		break;
 	default:
