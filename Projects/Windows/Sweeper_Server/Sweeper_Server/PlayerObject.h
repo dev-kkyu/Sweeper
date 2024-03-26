@@ -15,6 +15,13 @@ private:
 	// 키가 눌려진 상태를 종합한다.
 	unsigned int keyState = 0;
 
+	// 점프 관련 변수
+	bool runJump = false;
+	// 값은 생성자에서 넣어준다.
+	float gravity;			// 중력 가속도 (m/s^2)
+	float jumpSpeed;		// 점프 시작 속도 (m/s)	-> 루트(2 * g * h) -> h == 최대높이
+	float velocity;			// 현재 수직 속도
+
 public:
 	PlayerObject();
 	virtual ~PlayerObject();
