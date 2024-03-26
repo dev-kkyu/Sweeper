@@ -22,7 +22,8 @@ private:
 	float startXpos = 0.f;
 	float startYpos = 0.f;
 
-	float move_eye_y = 0.5f;
+	// 카메라 위아래의 회전 각도
+	float pitchAngle = 10.f;
 
 public:
 	Camera();
