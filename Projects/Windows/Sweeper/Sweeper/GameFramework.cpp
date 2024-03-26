@@ -208,6 +208,10 @@ void GameFramework::processKeyboard(int key, int action, int mods)
 			p.key = MY_KEY_EVENT::RIGHT;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
+		case GLFW_KEY_SPACE:
+			p.key = MY_KEY_EVENT::SPACE;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
 		}
 		break;
 	case GLFW_RELEASE:
@@ -228,6 +232,10 @@ void GameFramework::processKeyboard(int key, int action, int mods)
 			break;
 		case GLFW_KEY_D:
 			p.key = MY_KEY_EVENT::RIGHT;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_SPACE:
+			p.key = MY_KEY_EVENT::SPACE;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		}
