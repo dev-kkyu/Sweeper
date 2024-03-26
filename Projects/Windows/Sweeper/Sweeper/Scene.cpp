@@ -151,6 +151,7 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 			leftButtonPressed = true;
 			if (pMyPlayer)
 				pMyPlayer->setStartMousePos(xpos, ypos);
+			camera.setStartMousePos(xpos, ypos);
 			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
 			break;
@@ -186,6 +187,7 @@ void Scene::processMouseCursor(float xpos, float ypos)
 	if (leftButtonPressed) {
 		if (pMyPlayer)
 			pMyPlayer->processMouseCursor(xpos, ypos);
+		camera.processMouseCursor(xpos, ypos);
 	}
 }
 
