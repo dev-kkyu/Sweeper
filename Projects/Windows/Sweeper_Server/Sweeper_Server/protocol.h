@@ -9,6 +9,7 @@ constexpr char SC_LOGOUT = 2;
 constexpr char SC_ADD_PLAYER = 3;
 constexpr char SC_POSITION = 4;
 constexpr char SC_PLAYER_LOOK = 5;
+constexpr char SC_PLAYER_STATE = 6;
 
 constexpr char CS_KEY_EVENT = 1;
 constexpr char CS_MOVE_MOUSE = 2;
@@ -20,6 +21,12 @@ enum class MY_KEY_EVENT : char
 	LEFT = 2,
 	RIGHT = 3,
 	SPACE = 4
+};
+
+enum class PLAYER_STATE : char
+{
+	IDLE = 0,
+	RUN = 1
 };
 
 #pragma pack(push, 1)
@@ -63,6 +70,14 @@ struct SC_PLAYER_LOOK_PACKET
 	char player_id;
 	float dir_x;
 	float dir_z;
+};
+
+struct SC_PLAYER_STATE_PACKET
+{
+	unsigned char size;
+	char type;
+	char player_id;
+	PLAYER_STATE state;
 };
 
 struct CS_KEY_EVENT_PACKET

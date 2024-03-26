@@ -91,26 +91,44 @@ void Session::processPacket(unsigned char* packet)
 	switch (packet[1])
 	{
 	case CS_KEY_EVENT: {
+		bool nowState{};
+
 		CS_KEY_EVENT_PACKET* p = reinterpret_cast<CS_KEY_EVENT_PACKET*>(packet);
 		switch (p->key)
 		{
 		case MY_KEY_EVENT::UP:
-			player->processKeyInput(KEY_UP, p->is_pressed);
+			nowState = player->processKeyInput(KEY_UP, p->is_pressed);
 			break;
 		case MY_KEY_EVENT::DOWN:
-			player->processKeyInput(KEY_DOWN, p->is_pressed);
+			nowState = player->processKeyInput(KEY_DOWN, p->is_pressed);
 			break;
 		case MY_KEY_EVENT::LEFT:
-			player->processKeyInput(KEY_LEFT, p->is_pressed);
+			nowState = player->processKeyInput(KEY_LEFT, p->is_pressed);
 			break;
 		case MY_KEY_EVENT::RIGHT:
-			player->processKeyInput(KEY_RIGHT, p->is_pressed);
+			nowState = player->processKeyInput(KEY_RIGHT, p->is_pressed);
 			break;
 		case MY_KEY_EVENT::SPACE:
-			player->processKeyInput(KEY_SPACE, p->is_pressed);
+			nowState = player->processKeyInput(KEY_SPACE, p->is_pressed);
 			break;
 		}
 		std::cout << "Key Event 수신, ID: " << parentRoom->room_id << ":" << player_id << std::endl;
+
+		if (isRun not_eq nowState) {						// 상태가 변경되면 (IDLE <-> RUN)
+			isRun = nowState;
+
+			SC_PLAYER_STATE_PACKET p;
+			p.size = sizeof(p);
+			p.type = SC_PLAYER_STATE;
+			p.player_id = player_id;
+			p.state = isRun ? PLAYER_STATE::RUN : PLAYER_STATE::IDLE;
+			parentRoom->room_mutex.lock();
+			for (auto& s : parentRoom->sessions) {			// 모든 플레이어에게 변경된 플레이어 State를 보내준다.
+				if (s)
+					s->sendPacket(&p);
+			}
+			parentRoom->room_mutex.unlock();
+		}
 		break;
 	}
 	case CS_MOVE_MOUSE: {

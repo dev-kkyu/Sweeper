@@ -21,6 +21,8 @@ private:
 
 	std::shared_ptr<PlayerObject> player;
 
+	bool isRun = false;
+
 	// recv¿ë º¯¼ö
 	unsigned char read_buffer[BUFF_SIZE];
 	unsigned char remain_data[BUFF_SIZE];
