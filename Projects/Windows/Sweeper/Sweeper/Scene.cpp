@@ -22,6 +22,9 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	warriorBuffer.loadFromObjFile(fDevice, "models/warrior.obj");
 	warriorTexture.loadFromFile(fDevice, "textures/warrior.png", samplerDescriptorPool, descriptorSetLayout.sampler);
 
+	// gltf 모델 로드
+	wispModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/wisp.glb");
+
 	// gltf skin모델 로드
 	mushroomModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/mushroom.glb");
 	playerIdleModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/Monk/idle.glb");
@@ -31,6 +34,14 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	mapObject = new OBJModelObject;
 	mapObject->setBuffer(mapBuffer);
 	mapObject->setTexture(mapTexture);
+
+	// 도깨비불 생성
+	for (int i = 0; i < wispObject.size(); ++i) {
+		wispObject[i] = new GLTFModelObject;
+		wispObject[i]->setModel(wispModel);
+		wispObject[i]->setPosition({ (i - 5) * 5.f - 2.5f, 0.f, 30.f });
+		wispObject[i]->rotate(180.f);
+	}
 
 	// 버섯 생성
 	for (int i = 0; i < mushroomObject.size(); ++i) {
@@ -60,6 +71,10 @@ Scene::~Scene()
 
 	playerRunModel.destroy();
 	playerIdleModel.destroy();
+
+	for (auto& object : wispObject) {
+		delete object;
+	}
 
 	for (auto& object : warriorObject) {
 		delete object;
@@ -110,6 +125,10 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 		object->update(elapsedTime, currentFrame);
 	}
 
+	for (auto& object : wispObject) {
+		object->update(elapsedTime, currentFrame);
+	}
+
 	for (auto& player : pPlayers) {
 		if (player)
 			player->update(elapsedTime, currentFrame);
@@ -125,6 +144,9 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 
 	mapObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
 	for (auto& object : warriorObject) {
+		object->draw(commandBuffer, pipelineLayout.model, currentFrame);
+	}
+	for (auto& object : wispObject) {				// 원래는 alpha 있는 것 따로 마지막에 그려야 한다.
 		object->draw(commandBuffer, pipelineLayout.model, currentFrame);
 	}
 
@@ -340,7 +362,16 @@ void Scene::createGraphicsPipeline()
 
 	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	colorBlendAttachment.blendEnable = VK_FALSE;
+	colorBlendAttachment.blendEnable = VK_TRUE; // 블렌딩 활성화
+
+	// 알파 블렌딩 설정
+	colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;				// 소스 알파
+	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;		// 대상 알파
+	colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;								// 블렌딩 연산
+
+	colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;						// 소스 알파 값 유지
+	colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;					// 대상 알파에 영향을 주지 않음
+	colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;								// 알파 블렌딩 연산
 
 	VkPipelineColorBlendStateCreateInfo colorBlending{};
 	colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;

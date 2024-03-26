@@ -2,7 +2,7 @@
 
 #include "OBJModelObject.h"
 #include "PlayerObject.h"
-//#include "GLTFModelObject.h"
+#include "GLTFModelObject.h"
 //#include "GLTFSkinModelObject.h"	// included PlayerObject
 #include "Camera.h"
 
@@ -42,6 +42,10 @@ private:
 	vkf::MeshBuffer warriorBuffer;
 	vkf::Texture warriorTexture;
 	std::array<OBJModelObject*, 10> warriorObject;
+
+	// gltf ÀÏ¹Ý µµ±úºñºÒ
+	VulkanGLTFModel wispModel;
+	std::array<GLTFModelObject*, 10> wispObject;
 
 	// gltf skin ¹ö¼¸
 	VulkanGLTFSkinModel mushroomModel;
