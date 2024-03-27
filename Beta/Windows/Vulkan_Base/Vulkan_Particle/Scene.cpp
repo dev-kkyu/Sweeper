@@ -136,8 +136,9 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 	VkDeviceSize offsets[] = { 0 };
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &particleVertexBuffer, offsets);
-	auto model = pPlayer->getModelTransform();
-	vkCmdPushConstants(commandBuffer, pipelineLayout.model, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &model);
+	glm::mat3 model3 = pPlayer->getModelTransform();	// 카메라의 position 정보를 지워준다.
+	glm::mat4 model4 = glm::mat4(model3) * glm::translate(glm::mat4(1.f), glm::vec3(0.f, 2.f, 0.f));
+	vkCmdPushConstants(commandBuffer, pipelineLayout.model, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &model4);
 	// set = 1에 샘플러 바인드
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 1, 1, &particleTexture.samplerDescriptorSet, 0, nullptr);
 	vkCmdDraw(commandBuffer, 6, 1, 0, 0);
