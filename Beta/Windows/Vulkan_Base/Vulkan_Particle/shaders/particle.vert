@@ -9,12 +9,12 @@ layout(push_constant) uniform PushConstants {           // 플레이어의 modelTrans
 	mat4 model;
 } push;
 
-layout(location = 0) in vec3 inPosition;
+layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec2 inTexCoord;
 
 layout(location = 0) out vec2 fragTexCoord;
 
 void main() {
-    gl_Position = ubo.proj * ubo.view * push.model * vec4(inPosition, 1.0);
+    gl_Position = ubo.proj * ubo.view * mat4(mat3(push.model)) * vec4(inPosition, 0.f, 1.f);
     fragTexCoord = inTexCoord;
 }

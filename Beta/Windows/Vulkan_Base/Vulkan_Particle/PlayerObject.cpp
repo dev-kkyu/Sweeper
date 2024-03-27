@@ -57,3 +57,8 @@ void PlayerObject::processMouseCursor(float xpos, float ypos)
 
 	rotate(-moveX * 100.f);
 }
+
+glm::mat4 PlayerObject::getModelTransform() const
+{
+	return modelTransform;
+}

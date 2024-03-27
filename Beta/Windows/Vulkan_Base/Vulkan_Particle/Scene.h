@@ -52,6 +52,11 @@ private:
 	unsigned int keyState;
 	bool leftButtonPressed = false;
 
+	// particleData
+	VkBuffer particleVertexBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory particleVertexBufferMemory = VK_NULL_HANDLE;
+	vkf::Texture particleTexture;
+
 public:
 	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass);
 	~Scene();
@@ -75,7 +80,7 @@ private:
 };
 
 struct ParticleData {
-	glm::vec3 pos;
+	glm::vec2 pos;
 	glm::vec2 texCoord;
 
 	static VkVertexInputBindingDescription getBindingDescription();

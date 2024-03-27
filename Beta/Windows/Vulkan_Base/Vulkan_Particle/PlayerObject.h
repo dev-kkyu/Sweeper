@@ -29,5 +29,7 @@ public:
 	void setStartMousePos(float xpos, float ypos);
 	void processMouseCursor(float xpos, float ypos);
 
+	glm::mat4 getModelTransform() const;
+
 };
 

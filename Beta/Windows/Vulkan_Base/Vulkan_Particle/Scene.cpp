@@ -11,7 +11,11 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 
 	uniformBufferObject.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 
-	createSamplerDescriptorPool(2);
+	createSamplerDescriptorPool(3);
+
+	// particle 생성
+	createParticle();
+	particleTexture.loadFromFile(fDevice, "textures/particle.png", samplerDescriptorPool, descriptorSetLayout.sampler);
 
 	plainBuffer.loadFromObjFile(fDevice, "models/tile.obj");
 	plainTexture.loadFromFile(fDevice, "textures/tile.jpg", samplerDescriptorPool, descriptorSetLayout.sampler);
@@ -71,6 +75,11 @@ Scene::~Scene()
 	plainTexture.destroy();
 	plainBuffer.destroy();
 
+	// destroy particle
+	vkDestroyBuffer(fDevice.logicalDevice, particleVertexBuffer, nullptr);
+	vkFreeMemory(fDevice.logicalDevice, particleVertexBufferMemory, nullptr);
+	particleTexture.destroy();
+
 	vkDestroyDescriptorPool(fDevice.logicalDevice, samplerDescriptorPool, nullptr);
 
 	uniformBufferObject.destroy();
@@ -121,6 +130,17 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.skinModel, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 	skinModelObject[0]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
 	skinModelObject[1]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
+
+	// particle 그리기
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.particle);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
+	VkDeviceSize offsets[] = { 0 };
+	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &particleVertexBuffer, offsets);
+	auto model = pPlayer->getModelTransform();
+	vkCmdPushConstants(commandBuffer, pipelineLayout.model, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &model);
+	// set = 1에 샘플러 바인드
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 1, 1, &particleTexture.samplerDescriptorSet, 0, nullptr);
+	vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)
@@ -442,23 +462,38 @@ void Scene::createSamplerDescriptorPool(uint32_t setCount)
 
 void Scene::createParticle()
 {
-	//VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+	std::vector<ParticleData> vertices;
 
-	//VkBuffer stagingBuffer;
-	//VkDeviceMemory stagingBufferMemory;
-	//vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+	int particleCount = 1;		// 개수 수정 필요
+	int verticesCount = particleCount * 6;
+	vertices.reserve(verticesCount);
 
-	//void* data;
-	//vkMapMemory(fDevice.logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-	//memcpy(data, vertices.data(), (size_t)bufferSize);
-	//vkUnmapMemory(fDevice.logicalDevice, stagingBufferMemory);
+	// 카메라가 보는 방향의 반대로 향해야 하므로, 반시계가 아닌 시계방향으로 그려준다.
+	float size = 2.f;
+	vertices.push_back(ParticleData{ size * glm::vec2{-1.f, 1.f }, glm::vec2{0.f, 0.f} });
+	vertices.push_back(ParticleData{ size * glm::vec2{1.f, 1.f }, glm::vec2{1.f, 0.f} });
+	vertices.push_back(ParticleData{ size * glm::vec2{1.f, -1.f }, glm::vec2{1.f, 1.f} });
+	vertices.push_back(ParticleData{ size * glm::vec2{1.f, -1.f }, glm::vec2{1.f, 1.f} });
+	vertices.push_back(ParticleData{ size * glm::vec2{-1.f, -1.f }, glm::vec2{0.f, 1.f} });
+	vertices.push_back(ParticleData{ size * glm::vec2{-1.f, 1.f }, glm::vec2{0.f, 0.f} });
 
-	//vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
-	//vkf::copyBuffer(fDevice, stagingBuffer, vertexBuffer, bufferSize);
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
-	//vkDestroyBuffer(fDevice.logicalDevice, stagingBuffer, nullptr);
-	//vkFreeMemory(fDevice.logicalDevice, stagingBufferMemory, nullptr);
+	void* data;
+	vkMapMemory(fDevice.logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, vertices.data(), (size_t)bufferSize);
+	vkUnmapMemory(fDevice.logicalDevice, stagingBufferMemory);
+
+	vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, particleVertexBuffer, particleVertexBufferMemory);
+
+	vkf::copyBuffer(fDevice, stagingBuffer, particleVertexBuffer, bufferSize);
+
+	vkDestroyBuffer(fDevice.logicalDevice, stagingBuffer, nullptr);
+	vkFreeMemory(fDevice.logicalDevice, stagingBufferMemory, nullptr);
 }
 
 VkVertexInputBindingDescription ParticleData::getBindingDescription()
@@ -477,7 +512,7 @@ std::array<VkVertexInputAttributeDescription, 2> ParticleData::getAttributeDescr
 
 	attributeDescriptions[0].binding = 0;
 	attributeDescriptions[0].location = 0;
-	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
 	attributeDescriptions[0].offset = offsetof(ParticleData, pos);
 
 	attributeDescriptions[1].binding = 0;
