@@ -14,7 +14,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	createSamplerDescriptorPool(3);
 
 	// particle 생성
-	createParticle();
+	createParticle(100);
 	particleTexture.loadFromFile(fDevice, "textures/particle.png", samplerDescriptorPool, descriptorSetLayout.sampler);
 
 	plainBuffer.loadFromObjFile(fDevice, "models/tile.obj");
@@ -137,11 +137,11 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	VkDeviceSize offsets[] = { 0 };
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &particleVertexBuffer, offsets);
 	glm::mat3 model3 = pPlayer->getModelTransform();	// 카메라의 position 정보를 지워준다.
-	glm::mat4 model4 = glm::mat4(model3) * glm::translate(glm::mat4(1.f), glm::vec3(0.f, 2.f, 0.f));
+	glm::mat4 model4 = glm::translate(glm::mat4(1.f), glm::vec3(-2.f, 2.f, 0.f)) * glm::mat4(model3);	// 임시로 위치를 설정해준다.
 	vkCmdPushConstants(commandBuffer, pipelineLayout.model, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &model4);
 	// set = 1에 샘플러 바인드
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 1, 1, &particleTexture.samplerDescriptorSet, 0, nullptr);
-	vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+	vkCmdDraw(commandBuffer, particleVertexCount, 1, 0, 0);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)
@@ -461,22 +461,26 @@ void Scene::createSamplerDescriptorPool(uint32_t setCount)
 	}
 }
 
-void Scene::createParticle()
+void Scene::createParticle(int particleCount)
 {
 	std::vector<ParticleData> vertices;
 
-	int particleCount = 1;		// 개수 수정 필요
 	int verticesCount = particleCount * 6;
 	vertices.reserve(verticesCount);
 
 	// 카메라가 보는 방향의 반대로 향해야 하므로, 반시계가 아닌 시계방향으로 그려준다.
-	float size = 2.f;
-	vertices.push_back(ParticleData{ size * glm::vec2{-1.f, 1.f }, glm::vec2{0.f, 0.f} });
-	vertices.push_back(ParticleData{ size * glm::vec2{1.f, 1.f }, glm::vec2{1.f, 0.f} });
-	vertices.push_back(ParticleData{ size * glm::vec2{1.f, -1.f }, glm::vec2{1.f, 1.f} });
-	vertices.push_back(ParticleData{ size * glm::vec2{1.f, -1.f }, glm::vec2{1.f, 1.f} });
-	vertices.push_back(ParticleData{ size * glm::vec2{-1.f, -1.f }, glm::vec2{0.f, 1.f} });
-	vertices.push_back(ParticleData{ size * glm::vec2{-1.f, 1.f }, glm::vec2{0.f, 0.f} });
+	float size = 0.1f;
+	for (int i = 0; i < particleCount; ++i) {
+		float randX = rand() / float(RAND_MAX) * 2.f - 1.f;
+		float randY = rand() / float(RAND_MAX) * 2.f - 1.f;
+		vertices.push_back(ParticleData{ glm::vec2(randX, randY) + size * glm::vec2{-1.f, 1.f }, glm::vec2{0.f, 0.f} });
+		vertices.push_back(ParticleData{ glm::vec2(randX, randY) + size * glm::vec2{1.f ,1.f }, glm::vec2{1.f, 0.f} });
+		vertices.push_back(ParticleData{ glm::vec2(randX, randY) + size * glm::vec2{1.f ,-1.f }, glm::vec2{1.f, 1.f} });
+		vertices.push_back(ParticleData{ glm::vec2(randX, randY) + size * glm::vec2{1.f ,-1.f }, glm::vec2{1.f, 1.f} });
+		vertices.push_back(ParticleData{ glm::vec2(randX, randY) + size * glm::vec2{-1.f, -1.f }, glm::vec2{0.f, 1.f} });
+		vertices.push_back(ParticleData{ glm::vec2(randX, randY) + size * glm::vec2{-1.f, 1.f }, glm::vec2{0.f, 0.f} });
+	}
+	particleVertexCount = vertices.size();		// 버텍스 개수 지정
 
 	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 

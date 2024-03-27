@@ -55,6 +55,7 @@ private:
 	// particleData
 	VkBuffer particleVertexBuffer = VK_NULL_HANDLE;
 	VkDeviceMemory particleVertexBufferMemory = VK_NULL_HANDLE;
+	uint32_t particleVertexCount;
 	vkf::Texture particleTexture;
 
 public:
@@ -75,7 +76,7 @@ private:
 	// obj 모델은 직접 buffer와 texture를 넣어주도록 설계. 따라서 texture를 위한 descriptor pool을 만들어준다.
 	void createSamplerDescriptorPool(uint32_t setCount);
 
-	void createParticle();
+	void createParticle(int particleCount);
 
 };
 
