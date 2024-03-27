@@ -14,7 +14,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	createSamplerDescriptorPool(3);
 
 	// particle 생성
-	createParticle(100);
+	createParticle(1000);
 	particleTexture.loadFromFile(fDevice, "textures/particle.png", samplerDescriptorPool, descriptorSetLayout.sampler);
 
 	plainBuffer.loadFromObjFile(fDevice, "models/tile.obj");
@@ -470,15 +470,17 @@ void Scene::createParticle(int particleCount)
 
 	// 카메라가 보는 방향의 반대로 향해야 하므로, 반시계가 아닌 시계방향으로 그려준다.
 	float size = 0.1f;
+	float zVal = 0.01f;
 	for (int i = 0; i < particleCount; ++i) {
-		float randX = rand() / float(RAND_MAX) * 2.f - 1.f;
-		float randY = rand() / float(RAND_MAX) * 2.f - 1.f;
-		vertices.push_back(ParticleData{ glm::vec2(randX, randY) + size * glm::vec2{-1.f, 1.f }, glm::vec2{0.f, 0.f} });
-		vertices.push_back(ParticleData{ glm::vec2(randX, randY) + size * glm::vec2{1.f ,1.f }, glm::vec2{1.f, 0.f} });
-		vertices.push_back(ParticleData{ glm::vec2(randX, randY) + size * glm::vec2{1.f ,-1.f }, glm::vec2{1.f, 1.f} });
-		vertices.push_back(ParticleData{ glm::vec2(randX, randY) + size * glm::vec2{1.f ,-1.f }, glm::vec2{1.f, 1.f} });
-		vertices.push_back(ParticleData{ glm::vec2(randX, randY) + size * glm::vec2{-1.f, -1.f }, glm::vec2{0.f, 1.f} });
-		vertices.push_back(ParticleData{ glm::vec2(randX, randY) + size * glm::vec2{-1.f, 1.f }, glm::vec2{0.f, 0.f} });
+		float randX = rand() / float(RAND_MAX) * 1.5f - 0.75f;		// 랜덤으로 위치 설정해준다.
+		float randY = rand() / float(RAND_MAX) * 1.5f - 0.75f;
+		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{-1.f, 1.f, 0.f}, glm::vec2{0.f, 0.f} });
+		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{1.f ,1.f , 0.f}, glm::vec2{1.f, 0.f} });
+		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{1.f ,-1.f, 0.f}, glm::vec2{1.f, 1.f} });
+		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{1.f ,-1.f, 0.f}, glm::vec2{1.f, 1.f} });
+		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{-1.f, -1.f, 0.f}, glm::vec2{0.f, 1.f} });
+		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{-1.f, 1.f, 0.f}, glm::vec2{0.f, 0.f} });
+		zVal -= 0.00005f;		// z-fighting, z-sorting 해결
 	}
 	particleVertexCount = vertices.size();		// 버텍스 개수 지정
 
@@ -517,7 +519,7 @@ std::array<VkVertexInputAttributeDescription, 2> ParticleData::getAttributeDescr
 
 	attributeDescriptions[0].binding = 0;
 	attributeDescriptions[0].location = 0;
-	attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
 	attributeDescriptions[0].offset = offsetof(ParticleData, pos);
 
 	attributeDescriptions[1].binding = 0;
