@@ -16,6 +16,9 @@
     <Filter Include="GameObjectBase">
       <UniqueIdentifier>{2e82a6cc-0c25-4c3d-b04f-6635f1a24ce3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Shader">
+      <UniqueIdentifier>{0ac55032-1fa0-4d4e-b61a-7757d1e32253}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -95,5 +98,25 @@
     <ClInclude Include="GameObjectBase.h">
       <Filter>GameObjectBase</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\model.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\skinnedmodel.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\skinnedmodel.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\model.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\particle.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\particle.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

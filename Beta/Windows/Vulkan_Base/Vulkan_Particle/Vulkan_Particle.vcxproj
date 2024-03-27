@@ -163,6 +163,14 @@
     <ClInclude Include="VulkanGLTFModel.h" />
     <ClInclude Include="VulkanGLTFSkinModel.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\model.frag" />
+    <None Include="shaders\model.vert" />
+    <None Include="shaders\particle.frag" />
+    <None Include="shaders\particle.vert" />
+    <None Include="shaders\skinnedmodel.frag" />
+    <None Include="shaders\skinnedmodel.vert" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

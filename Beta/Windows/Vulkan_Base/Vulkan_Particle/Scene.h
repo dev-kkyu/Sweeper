@@ -26,6 +26,7 @@ private:
 	struct {
 		VkPipeline model = VK_NULL_HANDLE;
 		VkPipeline skinModel = VK_NULL_HANDLE;
+		VkPipeline particle = VK_NULL_HANDLE;
 	} pipeline;
 
 	vkf::BufferObject uniformBufferObject;
@@ -69,4 +70,14 @@ private:
 	// obj 모델은 직접 buffer와 texture를 넣어주도록 설계. 따라서 texture를 위한 descriptor pool을 만들어준다.
 	void createSamplerDescriptorPool(uint32_t setCount);
 
+	void createParticle();
+
+};
+
+struct ParticleData {
+	glm::vec3 pos;
+	glm::vec2 texCoord;
+
+	static VkVertexInputBindingDescription getBindingDescription();
+	static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions();
 };

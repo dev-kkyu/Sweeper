@@ -75,6 +75,7 @@ Scene::~Scene()
 
 	uniformBufferObject.destroy();
 
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.particle, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.model, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.skinModel, nullptr);
 	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout.model, nullptr);
@@ -402,6 +403,24 @@ void Scene::createGraphicsPipeline()
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.skinModel) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
+
+	// particle용 pipeline 생성
+	pipelineInfo.layout = pipelineLayout.model;		// 모델과 레이아웃은 동일 (set 0 -> ubo, set 1 -> sampler)
+
+	vkf::Shader particleShader{ fDevice, "shaders/particle.vert.spv", "shaders/particle.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(particleShader.shaderStages.size());
+	pipelineInfo.pStages = particleShader.shaderStages.data();
+
+	auto particleBindingDescription = ParticleData::getBindingDescription();
+	auto particleAttributeDescriptions = ParticleData::getAttributeDescriptions();
+	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.pVertexBindingDescriptions = &particleBindingDescription;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(particleAttributeDescriptions.size());
+	vertexInputInfo.pVertexAttributeDescriptions = particleAttributeDescriptions.data();
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.particle) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
 }
 
 void Scene::createSamplerDescriptorPool(uint32_t setCount)
@@ -421,3 +440,50 @@ void Scene::createSamplerDescriptorPool(uint32_t setCount)
 	}
 }
 
+void Scene::createParticle()
+{
+	//VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+
+	//VkBuffer stagingBuffer;
+	//VkDeviceMemory stagingBufferMemory;
+	//vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	//void* data;
+	//vkMapMemory(fDevice.logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+	//memcpy(data, vertices.data(), (size_t)bufferSize);
+	//vkUnmapMemory(fDevice.logicalDevice, stagingBufferMemory);
+
+	//vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+
+	//vkf::copyBuffer(fDevice, stagingBuffer, vertexBuffer, bufferSize);
+
+	//vkDestroyBuffer(fDevice.logicalDevice, stagingBuffer, nullptr);
+	//vkFreeMemory(fDevice.logicalDevice, stagingBufferMemory, nullptr);
+}
+
+VkVertexInputBindingDescription ParticleData::getBindingDescription()
+{
+	VkVertexInputBindingDescription bindingDescription{};
+	bindingDescription.binding = 0;
+	bindingDescription.stride = sizeof(ParticleData);
+	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+	return bindingDescription;
+}
+
+std::array<VkVertexInputAttributeDescription, 2> ParticleData::getAttributeDescriptions()
+{
+	std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+
+	attributeDescriptions[0].binding = 0;
+	attributeDescriptions[0].location = 0;
+	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributeDescriptions[0].offset = offsetof(ParticleData, pos);
+
+	attributeDescriptions[1].binding = 0;
+	attributeDescriptions[1].location = 1;
+	attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
+	attributeDescriptions[1].offset = offsetof(ParticleData, texCoord);
+
+	return attributeDescriptions;
+}
