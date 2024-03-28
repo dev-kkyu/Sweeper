@@ -14,6 +14,7 @@ layout(location = 1) in vec3 inColor;
 layout(location = 2) in vec2 inTexCoord;
 layout(location = 3) in vec2 emitDir;
 layout(location = 4) in float emitTime;
+layout(location = 5) in float lifeTime;
 
 layout(location = 0) out vec2 fragTexCoord;
 layout(location = 1) out vec4 outColor;
@@ -29,7 +30,9 @@ void main() {
         newColor.a = 0.f;
     }
     else {
-        newPosition.xy = t * emitDir.xy * 2.f;
+        float newTime = fract(t / lifeTime) * lifeTime;
+
+        newPosition.xy = newTime * emitDir.xy * 2.f;
     }
 
     // 카메라의 반대로 회전시킨 후, 그릴 위치로 이동해 준다.
