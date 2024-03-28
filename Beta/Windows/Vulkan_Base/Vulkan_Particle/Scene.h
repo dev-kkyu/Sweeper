@@ -57,6 +57,7 @@ private:
 	VkDeviceMemory particleVertexBufferMemory = VK_NULL_HANDLE;
 	uint32_t particleVertexCount;
 	vkf::Texture particleTexture;
+	float e_time = 0.f;
 
 public:
 	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass);
@@ -83,7 +84,12 @@ private:
 struct ParticleData {
 	glm::vec3 pos;
 	glm::vec2 texCoord;
+	glm::vec2 emitDir;
+	float emitTime;
+
+	ParticleData(glm::vec3 pos, glm::vec2 texCoord, glm::vec2 emitDir, float emitTime)
+		: pos{ pos }, texCoord{ texCoord }, emitDir{ emitDir }, emitTime{ emitTime } {}
 
 	static VkVertexInputBindingDescription getBindingDescription();
-	static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions();
+	static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions();
 };

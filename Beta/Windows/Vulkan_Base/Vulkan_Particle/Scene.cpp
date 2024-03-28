@@ -113,6 +113,9 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 
 	skinModelObject[0]->update(elapsedTime, currentFrame);
 	skinModelObject[1]->update(elapsedTime, currentFrame);
+
+	// particle
+	e_time += elapsedTime;
 }
 
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -137,6 +140,7 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	VkDeviceSize offsets[] = { 0 };
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &particleVertexBuffer, offsets);
 	glm::mat4 posMatrix = glm::translate(glm::mat4(1.f), glm::vec3(-2.f, 2.f, 0.f));		// 단위행렬에 파티클의 위치만 지정해 준다.
+	posMatrix[0][0] = e_time;	// 0 0에 시간 포함에서 넘겨주기
 	vkCmdPushConstants(commandBuffer, pipelineLayout.model, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &posMatrix);
 	// set = 1에 샘플러 바인드
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 1, 1, &particleTexture.samplerDescriptorSet, 0, nullptr);
@@ -470,14 +474,17 @@ void Scene::createParticle(int particleCount)
 	float size = 0.1f;
 	float zVal = -0.01f;
 	for (int i = 0; i < particleCount; ++i) {
-		float randX = rand() / float(RAND_MAX) * 1.5f - 0.75f;		// 랜덤으로 위치 설정해준다.
-		float randY = rand() / float(RAND_MAX) * 1.5f - 0.75f;
-		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{1.f ,1.f , 0.f}, glm::vec2{1.f, 0.f} });
-		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{-1.f, 1.f, 0.f}, glm::vec2{0.f, 0.f} });
-		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{-1.f, -1.f, 0.f}, glm::vec2{0.f, 1.f} });
-		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{-1.f, -1.f, 0.f}, glm::vec2{0.f, 1.f} });
-		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{1.f ,-1.f, 0.f}, glm::vec2{1.f, 1.f} });
-		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{1.f ,1.f , 0.f}, glm::vec2{1.f, 0.f} });
+		//float randX = rand() / float(RAND_MAX) * 1.5f - 0.75f;		// 랜덤으로 위치 설정해준다.
+		//float randY = rand() / float(RAND_MAX) * 1.5f - 0.75f;
+		glm::vec2 dir{ rand() / float(RAND_MAX) * 2.f - 1.f , rand() / float(RAND_MAX) * 2.f }; // -1 ~ 1
+		float emitTime = rand() / float(RAND_MAX) * 10.f;
+		// pos, uv, dir
+		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{1.f , 1.f , 0.f}, glm::vec2{1.f, 0.f}, dir, emitTime });
+		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{-1.f, 1.f , 0.f}, glm::vec2{0.f, 0.f}, dir, emitTime });
+		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{-1.f, -1.f, 0.f}, glm::vec2{0.f, 1.f}, dir, emitTime });
+		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{-1.f, -1.f, 0.f}, glm::vec2{0.f, 1.f}, dir, emitTime });
+		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{1.f , -1.f, 0.f}, glm::vec2{1.f, 1.f}, dir, emitTime });
+		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{1.f , 1.f , 0.f}, glm::vec2{1.f, 0.f}, dir, emitTime });
 		zVal += 0.00005f;		// z-fighting, z-sorting 해결
 	}
 	particleVertexCount = vertices.size();		// 버텍스 개수 지정
@@ -511,9 +518,9 @@ VkVertexInputBindingDescription ParticleData::getBindingDescription()
 	return bindingDescription;
 }
 
-std::array<VkVertexInputAttributeDescription, 2> ParticleData::getAttributeDescriptions()
+std::array<VkVertexInputAttributeDescription, 4> ParticleData::getAttributeDescriptions()
 {
-	std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+	std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
 
 	attributeDescriptions[0].binding = 0;
 	attributeDescriptions[0].location = 0;
@@ -524,6 +531,16 @@ std::array<VkVertexInputAttributeDescription, 2> ParticleData::getAttributeDescr
 	attributeDescriptions[1].location = 1;
 	attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
 	attributeDescriptions[1].offset = offsetof(ParticleData, texCoord);
+
+	attributeDescriptions[2].binding = 0;
+	attributeDescriptions[2].location = 2;
+	attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+	attributeDescriptions[2].offset = offsetof(ParticleData, emitDir);
+
+	attributeDescriptions[3].binding = 0;
+	attributeDescriptions[3].location = 3;
+	attributeDescriptions[3].format = VK_FORMAT_R32_SFLOAT;
+	attributeDescriptions[3].offset = offsetof(ParticleData, emitTime);
 
 	return attributeDescriptions;
 }
