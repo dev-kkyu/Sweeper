@@ -136,9 +136,8 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 	VkDeviceSize offsets[] = { 0 };
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &particleVertexBuffer, offsets);
-	glm::mat3 model3 = pPlayer->getModelTransform();	// 카메라의 position 정보를 지워준다.
-	glm::mat4 model4 = glm::translate(glm::mat4(1.f), glm::vec3(-2.f, 2.f, 0.f)) * glm::mat4(model3);	// 임시로 위치를 설정해준다.
-	vkCmdPushConstants(commandBuffer, pipelineLayout.model, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &model4);
+	glm::mat4 posMatrix = glm::translate(glm::mat4(1.f), glm::vec3(-2.f, 2.f, 0.f));		// 단위행렬에 파티클의 위치만 지정해 준다.
+	vkCmdPushConstants(commandBuffer, pipelineLayout.model, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &posMatrix);
 	// set = 1에 샘플러 바인드
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 1, 1, &particleTexture.samplerDescriptorSet, 0, nullptr);
 	vkCmdDraw(commandBuffer, particleVertexCount, 1, 0, 0);
@@ -468,19 +467,18 @@ void Scene::createParticle(int particleCount)
 	int verticesCount = particleCount * 6;
 	vertices.reserve(verticesCount);
 
-	// 카메라가 보는 방향의 반대로 향해야 하므로, 반시계가 아닌 시계방향으로 그려준다.
 	float size = 0.1f;
-	float zVal = 0.01f;
+	float zVal = -0.01f;
 	for (int i = 0; i < particleCount; ++i) {
 		float randX = rand() / float(RAND_MAX) * 1.5f - 0.75f;		// 랜덤으로 위치 설정해준다.
 		float randY = rand() / float(RAND_MAX) * 1.5f - 0.75f;
-		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{-1.f, 1.f, 0.f}, glm::vec2{0.f, 0.f} });
 		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{1.f ,1.f , 0.f}, glm::vec2{1.f, 0.f} });
-		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{1.f ,-1.f, 0.f}, glm::vec2{1.f, 1.f} });
-		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{1.f ,-1.f, 0.f}, glm::vec2{1.f, 1.f} });
-		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{-1.f, -1.f, 0.f}, glm::vec2{0.f, 1.f} });
 		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{-1.f, 1.f, 0.f}, glm::vec2{0.f, 0.f} });
-		zVal -= 0.00005f;		// z-fighting, z-sorting 해결
+		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{-1.f, -1.f, 0.f}, glm::vec2{0.f, 1.f} });
+		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{-1.f, -1.f, 0.f}, glm::vec2{0.f, 1.f} });
+		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{1.f ,-1.f, 0.f}, glm::vec2{1.f, 1.f} });
+		vertices.push_back(ParticleData{ glm::vec3{randX, randY, zVal} + size * glm::vec3{1.f ,1.f , 0.f}, glm::vec2{1.f, 0.f} });
+		zVal += 0.00005f;		// z-fighting, z-sorting 해결
 	}
 	particleVertexCount = vertices.size();		// 버텍스 개수 지정
 
