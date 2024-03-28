@@ -83,13 +83,14 @@ private:
 
 struct ParticleData {
 	glm::vec3 pos;
+	glm::vec3 color;
 	glm::vec2 texCoord;
 	glm::vec2 emitDir;
 	float emitTime;
 
-	ParticleData(glm::vec3 pos, glm::vec2 texCoord, glm::vec2 emitDir, float emitTime)
-		: pos{ pos }, texCoord{ texCoord }, emitDir{ emitDir }, emitTime{ emitTime } {}
+	ParticleData(glm::vec3 pos, glm::vec3 color, glm::vec2 texCoord, glm::vec2 emitDir, float emitTime)
+		: pos{ pos }, color{ color }, texCoord{ texCoord }, emitDir{ emitDir }, emitTime{ emitTime } {}
 
 	static VkVertexInputBindingDescription getBindingDescription();
-	static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions();
+	static std::array<VkVertexInputAttributeDescription, 5> getAttributeDescriptions();
 };

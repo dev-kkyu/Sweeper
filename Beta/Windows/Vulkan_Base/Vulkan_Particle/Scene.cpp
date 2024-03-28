@@ -477,14 +477,15 @@ void Scene::createParticle(int particleCount)
 		//float randX = rand() / float(RAND_MAX) * 1.5f - 0.75f;		// 랜덤으로 위치 설정해준다.
 		//float randY = rand() / float(RAND_MAX) * 1.5f - 0.75f;
 		glm::vec2 dir{ rand() / float(RAND_MAX) * 2.f - 1.f , rand() / float(RAND_MAX) * 2.f }; // -1 ~ 1
+		glm::vec3 color{ rand() / float(RAND_MAX), rand() / float(RAND_MAX) , rand() / float(RAND_MAX) };
 		float emitTime = rand() / float(RAND_MAX) * 10.f;
-		// pos, uv, dir
-		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{1.f , 1.f , 0.f}, glm::vec2{1.f, 0.f}, dir, emitTime });
-		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{-1.f, 1.f , 0.f}, glm::vec2{0.f, 0.f}, dir, emitTime });
-		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{-1.f, -1.f, 0.f}, glm::vec2{0.f, 1.f}, dir, emitTime });
-		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{-1.f, -1.f, 0.f}, glm::vec2{0.f, 1.f}, dir, emitTime });
-		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{1.f , -1.f, 0.f}, glm::vec2{1.f, 1.f}, dir, emitTime });
-		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{1.f , 1.f , 0.f}, glm::vec2{1.f, 0.f}, dir, emitTime });
+		// pos, color, uv, dir, time
+		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{1.f , 1.f , 0.f}, color, glm::vec2{1.f, 0.f}, dir, emitTime });
+		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{-1.f, 1.f , 0.f}, color, glm::vec2{0.f, 0.f}, dir, emitTime });
+		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{-1.f, -1.f, 0.f}, color, glm::vec2{0.f, 1.f}, dir, emitTime });
+		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{-1.f, -1.f, 0.f}, color, glm::vec2{0.f, 1.f}, dir, emitTime });
+		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{1.f , -1.f, 0.f}, color, glm::vec2{1.f, 1.f}, dir, emitTime });
+		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{1.f , 1.f , 0.f}, color, glm::vec2{1.f, 0.f}, dir, emitTime });
 		zVal += 0.00005f;		// z-fighting, z-sorting 해결
 	}
 	particleVertexCount = vertices.size();		// 버텍스 개수 지정
@@ -518,9 +519,9 @@ VkVertexInputBindingDescription ParticleData::getBindingDescription()
 	return bindingDescription;
 }
 
-std::array<VkVertexInputAttributeDescription, 4> ParticleData::getAttributeDescriptions()
+std::array<VkVertexInputAttributeDescription, 5> ParticleData::getAttributeDescriptions()
 {
-	std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
+	std::array<VkVertexInputAttributeDescription, 5> attributeDescriptions{};
 
 	attributeDescriptions[0].binding = 0;
 	attributeDescriptions[0].location = 0;
@@ -529,18 +530,23 @@ std::array<VkVertexInputAttributeDescription, 4> ParticleData::getAttributeDescr
 
 	attributeDescriptions[1].binding = 0;
 	attributeDescriptions[1].location = 1;
-	attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-	attributeDescriptions[1].offset = offsetof(ParticleData, texCoord);
+	attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributeDescriptions[1].offset = offsetof(ParticleData, color);
 
 	attributeDescriptions[2].binding = 0;
 	attributeDescriptions[2].location = 2;
 	attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-	attributeDescriptions[2].offset = offsetof(ParticleData, emitDir);
+	attributeDescriptions[2].offset = offsetof(ParticleData, texCoord);
 
 	attributeDescriptions[3].binding = 0;
 	attributeDescriptions[3].location = 3;
-	attributeDescriptions[3].format = VK_FORMAT_R32_SFLOAT;
-	attributeDescriptions[3].offset = offsetof(ParticleData, emitTime);
+	attributeDescriptions[3].format = VK_FORMAT_R32G32_SFLOAT;
+	attributeDescriptions[3].offset = offsetof(ParticleData, emitDir);
+
+	attributeDescriptions[4].binding = 0;
+	attributeDescriptions[4].location = 4;
+	attributeDescriptions[4].format = VK_FORMAT_R32_SFLOAT;
+	attributeDescriptions[4].offset = offsetof(ParticleData, emitTime);
 
 	return attributeDescriptions;
 }
