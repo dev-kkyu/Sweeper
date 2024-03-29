@@ -200,6 +200,7 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 		case GLFW_MOUSE_BUTTON_LEFT:
 			leftButtonPressed = true;
 			pPlayer->setStartMousePos(xpos, ypos);
+			camera.setStartMousePos(xpos, ypos);
 			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
 			break;
@@ -234,6 +235,7 @@ void Scene::processMouseCursor(float xpos, float ypos)
 {
 	if (leftButtonPressed) {
 		pPlayer->processMouseCursor(xpos, ypos);
+		camera.processMouseCursor(xpos, ypos);
 	}
 }
 
@@ -473,6 +475,7 @@ void Scene::createParticle(int particleCount)
 
 	float size = 0.1f;
 	float zVal = -0.01f;
+	const float moveZVal = (glm::abs(zVal) * 2.f) / particleCount;	// -0.01 ~ 0.01 사이에 위치하도록 설정
 	for (int i = 0; i < particleCount; ++i) {
 		//float randX = rand() / float(RAND_MAX) * 1.5f - 0.75f;		// 랜덤으로 위치 설정해준다.
 		//float randY = rand() / float(RAND_MAX) * 1.5f - 0.75f;
@@ -487,7 +490,7 @@ void Scene::createParticle(int particleCount)
 		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{-1.f, -1.f, 0.f}, color, glm::vec2{0.f, 1.f}, dir, emitTime, lifeTime });
 		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{1.f , -1.f, 0.f}, color, glm::vec2{1.f, 1.f}, dir, emitTime, lifeTime });
 		vertices.push_back(ParticleData{ glm::vec3{0.f, 0.f, zVal} + size * glm::vec3{1.f , 1.f , 0.f}, color, glm::vec2{1.f, 0.f}, dir, emitTime, lifeTime });
-		zVal += 0.00005f;		// z-fighting, z-sorting 해결
+		zVal += moveZVal;		// z-fighting, z-sorting 해결
 	}
 	particleVertexCount = vertices.size();		// 버텍스 개수 지정
 
