@@ -268,6 +268,9 @@ void GameFramework::processPacket(unsigned char* packet)
 	case SC_PLAYER_STATE:
 		pScene->processPacket(packet);
 		break;
+	case SC_LOGIN_FAIL:
+		std::cout << "Login Failed : 방이 가득 찼습니다." << std::endl;
+		break;
 	default:
 		std::cout << "Type Error: " << static_cast<int>(packet[1]) << " Type is invalid\n";
 		break;

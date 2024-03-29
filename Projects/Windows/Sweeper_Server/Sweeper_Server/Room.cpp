@@ -24,7 +24,14 @@ void Room::addSession(std::shared_ptr<Session> session)
 		}
 	}
 	room_mutex.unlock();				// 여기서도 언락
+	// 방이 꽉 찼을 때 이곳이 실행된다.
 	std::cerr << "addPlayer Error!!" << std::endl;
+	{
+		SC_LOGIN_FAIL_PACKET p;
+		p.size = sizeof(p);
+		p.type = SC_LOGIN_FAIL;
+		session->sendPacket(&p);	// session은 곧 소멸
+	}
 }
 
 void Room::update(float elapsedTime)

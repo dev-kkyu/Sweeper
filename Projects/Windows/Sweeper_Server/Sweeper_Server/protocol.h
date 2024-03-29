@@ -6,10 +6,11 @@
 
 constexpr char SC_LOGIN = 1;
 constexpr char SC_LOGOUT = 2;
-constexpr char SC_ADD_PLAYER = 3;
-constexpr char SC_POSITION = 4;
-constexpr char SC_PLAYER_LOOK = 5;
-constexpr char SC_PLAYER_STATE = 6;
+constexpr char SC_LOGIN_FAIL = 3;
+constexpr char SC_ADD_PLAYER = 4;
+constexpr char SC_POSITION = 5;
+constexpr char SC_PLAYER_LOOK = 6;
+constexpr char SC_PLAYER_STATE = 7;
 
 constexpr char CS_KEY_EVENT = 1;
 constexpr char CS_MOVE_MOUSE = 2;
@@ -44,6 +45,12 @@ struct SC_LOGOUT_PACKET
 	unsigned char size;
 	char type;
 	char player_id;
+};
+
+struct SC_LOGIN_FAIL_PACKET			// 일단은 Fail 사유가 방 가득찬 것 하나뿐, 추후 필요시 확장
+{
+	unsigned char size;
+	char type;
 };
 
 struct SC_ADD_PLAYER_PACKET
