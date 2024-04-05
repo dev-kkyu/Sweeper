@@ -51,9 +51,8 @@ private:
 	VulkanGLTFSkinModel mushroomModel;
 	std::array<GLTFSkinModelObject*, 100> mushroomObject;
 
-	// gltf skin 임시 샘플
-	VulkanGLTFSkinModel playerIdleModel;
-	VulkanGLTFSkinModel playerRunModel;
+	// gltf skin 캐릭터 에셋
+	std::array<VulkanGLTFSkinModel, 4> playerModel;		// 캐릭터 종류는 총 4개이다.
 	std::shared_ptr<PlayerObject> pMyPlayer;			// pPlayers[my_id] 와 같은 객체를 가리키도록 한다.
 	std::array<std::shared_ptr<PlayerObject>, 4> pPlayers;
 	int my_id = -1;

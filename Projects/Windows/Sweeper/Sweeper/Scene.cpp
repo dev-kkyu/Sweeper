@@ -27,8 +27,9 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 
 	// gltf skin모델 로드
 	mushroomModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/mushroom.glb");
-	playerIdleModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/Monk/idle.glb");
-	playerRunModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/Monk/run.glb");
+	// 플레이어 모델 로드 (skin model)	// 일단은 두개만 로드한다.
+	playerModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/Dragoon.glb");
+	playerModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/Nana.glb");
 
 	// 맵 생성
 	mapObject = new OBJModelObject;
@@ -69,8 +70,9 @@ Scene::~Scene()
 {
 	// 플레이어는 shared_ptr이므로, 따로 삭제 X
 
-	playerRunModel.destroy();
-	playerIdleModel.destroy();
+	for (auto& model : playerModel) {
+		model.destroy();
+	}
 
 	for (auto& object : wispObject) {
 		delete object;
@@ -224,9 +226,9 @@ void Scene::processPacket(unsigned char* packet)
 		std::cout << "로그인 패킷 수신, ROOM:ID->[" << int(p->room_id) << ":" << int(p->player_id) << "]\n";
 		my_id = p->player_id;
 		pMyPlayer = std::make_shared<PlayerObject>();
-		pMyPlayer->initModel(playerIdleModel, descriptorSetLayout.ssbo);
-		pMyPlayer->initModel(playerRunModel, descriptorSetLayout.ssbo);
-		pMyPlayer->setAnimateSpeed(1.f);	// Todo : 필요시 적절히 조절할 것
+		pMyPlayer->initModel(playerModel[0], descriptorSetLayout.ssbo);
+		pMyPlayer->setScale(glm::vec3(1.5f));
+		//pMyPlayer->setAnimateSpeed(1.f);	// Todo : 필요시 적절히 조절할 것
 		camera.setPlayer(pMyPlayer);
 		pPlayers[my_id] = pMyPlayer;
 		break;
@@ -242,9 +244,8 @@ void Scene::processPacket(unsigned char* packet)
 		auto p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
 		std::cout << "플레이어 추가 패킷 수신 ID:[" << int(p->player_id) << "]\n";
 		pPlayers[p->player_id] = std::make_shared<PlayerObject>();
-		pPlayers[p->player_id]->initModel(playerIdleModel, descriptorSetLayout.ssbo);
-		pPlayers[p->player_id]->initModel(playerRunModel, descriptorSetLayout.ssbo);
-		pPlayers[p->player_id]->setAnimateSpeed(1.f);	// Todo : 필요시 적절히 조절할 것
+		pPlayers[p->player_id]->initModel(playerModel[1], descriptorSetLayout.ssbo);	// 일단 나 제외 1번모델로
+		pPlayers[p->player_id]->setScale(glm::vec3(1.5f));
 		break;
 	}
 	case SC_POSITION: {
@@ -262,7 +263,7 @@ void Scene::processPacket(unsigned char* packet)
 		if (p->state == PLAYER_STATE::IDLE)
 			pPlayers[p->player_id]->setAnimationClip(0);
 		else if (p->state == PLAYER_STATE::RUN)
-			pPlayers[p->player_id]->setAnimationClip(0);
+			pPlayers[p->player_id]->setAnimationClip(24);
 		std::cout << int(p->player_id) << "의 상태가 " << ((p->state == PLAYER_STATE::RUN) ? "RUN" : "IDLE") << "로 변경" << std::endl;
 		break;
 	}
