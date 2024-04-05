@@ -3,13 +3,20 @@
 #include "GameObjectBase.h"
 #include "VulkanGLTFSkinModel.h"
 
-class ClipSkinModel;
 class GLTFSkinModelObject : public GameObjectBase
 {
-protected:
-	std::vector<ClipSkinModel> clipModels;
+	using Node = VulkanGLTFSkinModel::Node;
+	using Skin = VulkanGLTFSkinModel::Skin;
+	using Animation = VulkanGLTFSkinModel::Animation;
 
-	uint32_t clipIndex = 0;
+protected:
+	VulkanGLTFSkinModel* model = nullptr;
+
+	std::vector<std::shared_ptr<Node>>	nodes;
+	std::vector<Skin>					skins;
+	std::vector<Animation>				animations;
+
+	uint32_t activeAnimation = 0;
 
 	float animateSpeed = 1.f;
 
@@ -22,32 +29,12 @@ public:
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void release() override;
 
-	void addModel(VulkanGLTFSkinModel& model, VkDescriptorSetLayout ssboDescriptorSetLayout);
-	void selectClip(int index);
+	void initModel(VulkanGLTFSkinModel& model, VkDescriptorSetLayout ssboDescriptorSetLayout);
+
 	void setAnimateSpeed(float speed);
-};
 
-class ClipSkinModel
-{
-private:
-	using Node = VulkanGLTFSkinModel::Node;
-	using Skin = VulkanGLTFSkinModel::Skin;
-	using Animation = VulkanGLTFSkinModel::Animation;
-
-	VulkanGLTFSkinModel& model;
-
-	std::vector<std::shared_ptr<Node>>	nodes;
-	std::vector<Skin>					skins;
-	std::vector<Animation>				animations;
-
-	uint32_t activeAnimation = 0;
-
-public:
-	ClipSkinModel(VulkanGLTFSkinModel& model, VkDescriptorSetLayout ssboDescriptorSetLayout);
-	void release();
-
-	void update(float elapsedTime, uint32_t currentFrame, float animateSpeed);
-	void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame, const glm::mat4& worldMatrix);
+	void changeAnimationClip();
+	void setAnimationClip(uint32_t animationIndex);		// animation load 완료 후 호출해야 함.
 
 private:
 	std::shared_ptr<Node>	findNode(std::shared_ptr<Node> parent, uint32_t index);

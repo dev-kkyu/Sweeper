@@ -46,7 +46,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	// 버섯 생성
 	for (int i = 0; i < mushroomObject.size(); ++i) {
 		mushroomObject[i] = new GLTFSkinModelObject;
-		mushroomObject[i]->addModel(mushroomModel, descriptorSetLayout.ssbo);
+		mushroomObject[i]->initModel(mushroomModel, descriptorSetLayout.ssbo);
 		int x = i / 10 - 5;
 		int z = i % 10 - 5;
 		mushroomObject[i]->setPosition({ x * 5.f, 0.f, z * 5.f });
@@ -224,8 +224,8 @@ void Scene::processPacket(unsigned char* packet)
 		std::cout << "로그인 패킷 수신, ROOM:ID->[" << int(p->room_id) << ":" << int(p->player_id) << "]\n";
 		my_id = p->player_id;
 		pMyPlayer = std::make_shared<PlayerObject>();
-		pMyPlayer->addModel(playerIdleModel, descriptorSetLayout.ssbo);
-		pMyPlayer->addModel(playerRunModel, descriptorSetLayout.ssbo);
+		pMyPlayer->initModel(playerIdleModel, descriptorSetLayout.ssbo);
+		pMyPlayer->initModel(playerRunModel, descriptorSetLayout.ssbo);
 		pMyPlayer->setAnimateSpeed(1.f);	// Todo : 필요시 적절히 조절할 것
 		camera.setPlayer(pMyPlayer);
 		pPlayers[my_id] = pMyPlayer;
@@ -242,8 +242,8 @@ void Scene::processPacket(unsigned char* packet)
 		auto p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
 		std::cout << "플레이어 추가 패킷 수신 ID:[" << int(p->player_id) << "]\n";
 		pPlayers[p->player_id] = std::make_shared<PlayerObject>();
-		pPlayers[p->player_id]->addModel(playerIdleModel, descriptorSetLayout.ssbo);
-		pPlayers[p->player_id]->addModel(playerRunModel, descriptorSetLayout.ssbo);
+		pPlayers[p->player_id]->initModel(playerIdleModel, descriptorSetLayout.ssbo);
+		pPlayers[p->player_id]->initModel(playerRunModel, descriptorSetLayout.ssbo);
 		pPlayers[p->player_id]->setAnimateSpeed(1.f);	// Todo : 필요시 적절히 조절할 것
 		break;
 	}
@@ -260,9 +260,9 @@ void Scene::processPacket(unsigned char* packet)
 	case SC_PLAYER_STATE: {
 		auto p = reinterpret_cast<SC_PLAYER_STATE_PACKET*>(packet);
 		if (p->state == PLAYER_STATE::IDLE)
-			pPlayers[p->player_id]->selectClip(0);
+			pPlayers[p->player_id]->setAnimationClip(0);
 		else if (p->state == PLAYER_STATE::RUN)
-			pPlayers[p->player_id]->selectClip(1);
+			pPlayers[p->player_id]->setAnimationClip(0);
 		std::cout << int(p->player_id) << "의 상태가 " << ((p->state == PLAYER_STATE::RUN) ? "RUN" : "IDLE") << "로 변경" << std::endl;
 		break;
 	}
