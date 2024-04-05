@@ -33,6 +33,9 @@ public:
 
 	void setAnimateSpeed(float speed);
 
+	void changeAnimationClip();
+	void setAnimationClip(uint32_t animationIndex);		// animation load 완료 후 호출해야 함.
+
 private:
 	std::shared_ptr<Node>	findNode(std::shared_ptr<Node> parent, uint32_t index);
 	std::shared_ptr<Node>	nodeFromIndex(uint32_t index);

@@ -76,6 +76,18 @@ void GLTFSkinModelObject::setAnimateSpeed(float speed)
 	animateSpeed = speed;
 }
 
+void GLTFSkinModelObject::changeAnimationClip()
+{
+	activeAnimation = (activeAnimation + 1) % animations.size();
+	animations[activeAnimation].currentTime = 0.f;
+}
+
+void GLTFSkinModelObject::setAnimationClip(uint32_t animationIndex)
+{
+	activeAnimation = animationIndex;
+	animations[activeAnimation].currentTime = 0.f;
+}
+
 std::shared_ptr<Node> GLTFSkinModelObject::findNode(std::shared_ptr<Node> parent, uint32_t index)
 {
 	std::shared_ptr<Node> nodeFound = nullptr;
