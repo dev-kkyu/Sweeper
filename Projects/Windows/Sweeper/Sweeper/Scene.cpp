@@ -170,6 +170,70 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	}
 }
 
+void Scene::processKeyboard(int key, int action, int mods)
+{
+	// 키 입력을 서버로 전송한다.
+
+	CS_KEY_EVENT_PACKET p;
+	p.size = sizeof(p);
+	p.type = CS_KEY_EVENT;
+	switch (action)
+	{
+	case GLFW_PRESS:
+		p.is_pressed = true;
+		switch (key)
+		{
+		case GLFW_KEY_W:
+			p.key = MY_KEY_EVENT::UP;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_A:
+			p.key = MY_KEY_EVENT::LEFT;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_S:
+			p.key = MY_KEY_EVENT::DOWN;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_D:
+			p.key = MY_KEY_EVENT::RIGHT;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_SPACE:
+			p.key = MY_KEY_EVENT::SPACE;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		}
+		break;
+	case GLFW_RELEASE:
+		p.is_pressed = false;
+		switch (key)
+		{
+		case GLFW_KEY_W:
+			p.key = MY_KEY_EVENT::UP;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_A:
+			p.key = MY_KEY_EVENT::LEFT;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_S:
+			p.key = MY_KEY_EVENT::DOWN;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_D:
+			p.key = MY_KEY_EVENT::RIGHT;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_SPACE:
+			p.key = MY_KEY_EVENT::SPACE;
+			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		}
+		break;
+	}
+}
+
 void Scene::processMouseButton(int button, int action, int mods, float xpos, float ypos)
 {
 	switch (action)
