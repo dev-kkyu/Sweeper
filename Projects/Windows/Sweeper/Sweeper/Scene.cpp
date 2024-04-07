@@ -6,6 +6,10 @@
 
 #include "NetworkManager.h"
 
+#define CLIP_IDLE			19
+#define CLIP_RUN			24
+#define CLIP_ATTACK_KNIFE	10
+
 Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }
 {
@@ -176,8 +180,8 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 		case GLFW_MOUSE_BUTTON_LEFT:
 			leftButtonPressed = true;
 			if (pMyPlayer)
-				pMyPlayer->setStartMousePos(xpos, ypos);
-			camera.setStartMousePos(xpos, ypos);
+				pMyPlayer->setStartMousePos(xpos, ypos);	// 좌우 회전용 (추후 카메라로 넘길 예정)
+			camera.setStartMousePos(xpos, ypos);			// 위아래 회전용 (위아래 회전은 플레이어 방향에 영향을 주지 않는다)
 			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
 			break;
@@ -228,7 +232,7 @@ void Scene::processPacket(unsigned char* packet)
 		pMyPlayer = std::make_shared<PlayerObject>();
 		pMyPlayer->initModel(playerModel[0], descriptorSetLayout.ssbo);
 		pMyPlayer->setScale(glm::vec3(1.5f));
-		pMyPlayer->setAnimationClip(19);	// Idle
+		pMyPlayer->setAnimationClip(CLIP_IDLE);	// Idle
 		//pMyPlayer->setAnimateSpeed(1.f);	// Todo : 필요시 적절히 조절할 것
 		camera.setPlayer(pMyPlayer);
 		pPlayers[my_id] = pMyPlayer;
@@ -247,7 +251,7 @@ void Scene::processPacket(unsigned char* packet)
 		pPlayers[p->player_id] = std::make_shared<PlayerObject>();
 		pPlayers[p->player_id]->initModel(playerModel[1], descriptorSetLayout.ssbo);	// 일단 나 제외 1번모델로
 		pPlayers[p->player_id]->setScale(glm::vec3(1.5f));
-		pPlayers[p->player_id]->setAnimationClip(19);
+		pPlayers[p->player_id]->setAnimationClip(CLIP_IDLE);
 		break;
 	}
 	case SC_POSITION: {
@@ -263,9 +267,9 @@ void Scene::processPacket(unsigned char* packet)
 	case SC_PLAYER_STATE: {
 		auto p = reinterpret_cast<SC_PLAYER_STATE_PACKET*>(packet);
 		if (p->state == PLAYER_STATE::IDLE)
-			pPlayers[p->player_id]->setAnimationClip(19);
+			pPlayers[p->player_id]->setAnimationClip(CLIP_IDLE);
 		else if (p->state == PLAYER_STATE::RUN)
-			pPlayers[p->player_id]->setAnimationClip(24);
+			pPlayers[p->player_id]->setAnimationClip(CLIP_RUN);
 		std::cout << int(p->player_id) << "의 상태가 " << ((p->state == PLAYER_STATE::RUN) ? "RUN" : "IDLE") << "로 변경" << std::endl;
 		break;
 	}
