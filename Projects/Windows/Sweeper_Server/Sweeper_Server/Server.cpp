@@ -7,7 +7,8 @@
 #include <cmath>
 
 Server::Server(asio::io_context& io_context, int port)
-	: acceptor{ io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port) }, socket{ io_context }
+	: io_context{ io_context }
+	, acceptor{ io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port) }, socket{ io_context }
 	, timer{ io_context, std::chrono::steady_clock::now() }		// 만료 시간을 현재로 해준다.
 	, last_time{ std::chrono::steady_clock::now() }
 {
@@ -28,7 +29,7 @@ void Server::doAccept()
 		{
 			if (!ec) {		// 정상적으로 접속을 받아 작업을 완료했을 때
 
-				auto ptr = std::make_shared<Session>(std::move(socket));
+				auto ptr = std::make_shared<Session>(io_context, std::move(socket));
 
 				// 세션을 방에 추가해준다. 세션은 플레이어를 가짐. Todo : 적절한 방을 찾아서 넣어줘야 한다.
 				room->addSession(ptr);

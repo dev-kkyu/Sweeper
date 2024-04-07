@@ -247,8 +247,15 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 				pMyPlayer->setStartMousePos(xpos, ypos);	// 좌우 회전용 (추후 카메라로 넘길 예정)
 			camera.setStartMousePos(xpos, ypos);			// 위아래 회전용 (위아래 회전은 플레이어 방향에 영향을 주지 않는다)
 			break;
-		case GLFW_MOUSE_BUTTON_RIGHT:
+		case GLFW_MOUSE_BUTTON_RIGHT: {
+			CS_KEY_EVENT_PACKET p;
+			p.size = sizeof(p);
+			p.type = CS_KEY_EVENT;
+			p.is_pressed = true;
+			p.key = MY_KEY_EVENT::MOUSE_RIGHT;
+			NetworkManager::getInstance().sendPacket(&p);
 			break;
+		}
 		case GLFW_MOUSE_BUTTON_MIDDLE:
 			break;
 		case GLFW_MOUSE_BUTTON_4:
@@ -263,8 +270,15 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 		case GLFW_MOUSE_BUTTON_LEFT:
 			leftButtonPressed = false;
 			break;
-		case GLFW_MOUSE_BUTTON_RIGHT:
+		case GLFW_MOUSE_BUTTON_RIGHT: {
+			CS_KEY_EVENT_PACKET p;
+			p.size = sizeof(p);
+			p.type = CS_KEY_EVENT;
+			p.is_pressed = false;
+			p.key = MY_KEY_EVENT::MOUSE_RIGHT;
+			NetworkManager::getInstance().sendPacket(&p);
 			break;
+		}
 		case GLFW_MOUSE_BUTTON_MIDDLE:
 			break;
 		case GLFW_MOUSE_BUTTON_4:
@@ -338,7 +352,11 @@ void Scene::processPacket(unsigned char* packet)
 			pPlayers[p->player_id]->setAnimationClip(CLIP_IDLE);
 		else if (p->state == PLAYER_STATE::RUN)
 			pPlayers[p->player_id]->setAnimationClip(CLIP_RUN);
-		std::cout << int(p->player_id) << "의 상태가 " << ((p->state == PLAYER_STATE::RUN) ? "RUN" : "IDLE") << "로 변경" << std::endl;
+		else if (p->state == PLAYER_STATE::ATTACK)
+			pPlayers[p->player_id]->setAnimationClip(CLIP_ATTACK_KNIFE);
+		else
+			std::cout << int(p->player_id) << ": STATE 에러" << std::endl;
+		std::cout << int(p->player_id) << "의 상태가 " << ((p->state == PLAYER_STATE::RUN) ? "RUN" : (p->state == PLAYER_STATE::IDLE) ? "IDLE" : "ATTACK") << "로 변경" << std::endl;
 		break;
 	}
 	}

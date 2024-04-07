@@ -10,6 +10,7 @@ class Room;
 class Server
 {
 private:
+	asio::io_context& io_context;
 	asio::ip::tcp::acceptor acceptor;
 	asio::ip::tcp::socket socket;
 

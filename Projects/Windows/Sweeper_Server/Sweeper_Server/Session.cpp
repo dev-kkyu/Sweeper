@@ -5,7 +5,8 @@
 
 #include <iostream>
 
-Session::Session(asio::ip::tcp::socket socket) : socket{ std::move(socket) }
+Session::Session(asio::io_context& io_context, asio::ip::tcp::socket socket)
+	: io_context{ io_context }, socket{ std::move(socket) }
 {
 	remain_size = 0;
 
@@ -109,31 +110,84 @@ void Session::processPacket(unsigned char* packet)
 	switch (packet[1])
 	{
 	case CS_KEY_EVENT: {
-		bool nowState{};
-
 		CS_KEY_EVENT_PACKET* p = reinterpret_cast<CS_KEY_EVENT_PACKET*>(packet);
 		switch (p->key)
 		{
 		case MY_KEY_EVENT::UP:
-			nowState = player->processKeyInput(KEY_UP, p->is_pressed);
+			player->processKeyInput(KEY_UP, p->is_pressed);
 			break;
 		case MY_KEY_EVENT::DOWN:
-			nowState = player->processKeyInput(KEY_DOWN, p->is_pressed);
+			player->processKeyInput(KEY_DOWN, p->is_pressed);
 			break;
 		case MY_KEY_EVENT::LEFT:
-			nowState = player->processKeyInput(KEY_LEFT, p->is_pressed);
+			player->processKeyInput(KEY_LEFT, p->is_pressed);
 			break;
 		case MY_KEY_EVENT::RIGHT:
-			nowState = player->processKeyInput(KEY_RIGHT, p->is_pressed);
+			player->processKeyInput(KEY_RIGHT, p->is_pressed);
 			break;
 		case MY_KEY_EVENT::SPACE:
-			nowState = player->processKeyInput(KEY_SPACE, p->is_pressed);
+			player->processKeyInput(KEY_SPACE, p->is_pressed);
+			break;
+		case MY_KEY_EVENT::MOUSE_RIGHT:
+			player->processKeyInput(KEY_MOUSE_RIGHT, p->is_pressed);
 			break;
 		}
 		std::cout << "Key Event 수신, ID: " << parentRoom->room_id << ":" << player_id << std::endl;
 
-		if (isRun not_eq nowState) {						// 상태가 변경되면 (IDLE <-> RUN)
-			isRun = nowState;
+		if (player->getFixedState())	// 어떠한 상태에 빠져 있으면, 이벤트를 처리하지 않는다
+			break;
+
+		unsigned int nowState = player->getKeyState();
+		nowState &= ~KEY_SPACE;		// 스페이스(점프)는 상태변화에 영향을 주지 않는다
+
+		// 마우스 버튼이 입력됐다면
+		if (nowState & KEY_MOUSE_RIGHT) {		// 한 번 클릭에 한 번 동작된다
+			SC_PLAYER_STATE_PACKET p;
+			p.size = sizeof(p);
+			p.type = SC_PLAYER_STATE;
+			p.player_id = player_id;
+			p.state = PLAYER_STATE::ATTACK;
+			parentRoom->room_mutex.lock();
+			for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 변경된 플레이어 State를 보내준다.
+				if (s)
+					s->sendPacket(&p);
+			}
+			parentRoom->room_mutex.unlock();
+			{
+				// 1초 뒤에 State를 돌려주도록 예약한다.
+				auto timer = std::make_shared<asio::steady_timer>(io_context
+					, std::chrono::steady_clock::now() + std::chrono::milliseconds(700));
+				auto self = shared_from_this();
+				timer->async_wait(
+					[timer, self, this](asio::error_code ec) {	// 캡처에 shared_ptr 넣음으로써 살려준다.
+						SC_PLAYER_STATE_PACKET p;
+						p.size = sizeof(p);
+						p.type = SC_PLAYER_STATE;
+						p.player_id = player_id;
+						if (player->getKeyState() & ~KEY_SPACE & ~KEY_MOUSE_RIGHT) {
+							p.state = PLAYER_STATE::RUN;
+							isRun = true;
+						}
+						else {
+							p.state = PLAYER_STATE::IDLE;
+							isRun = false;
+						}
+						parentRoom->room_mutex.lock();
+						for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 변경된 플레이어 State를 보내준다.
+							if (s)
+								s->sendPacket(&p);
+						}
+						parentRoom->room_mutex.unlock();
+						player->setFixedState(false);
+					});
+			}
+
+			player->setFixedState(true);	// 콜백함수가 실행 될 때까지, 더이상 이벤트를 처리하지 않는다
+			break;
+		}
+
+		if (isRun not_eq static_cast<bool>(nowState)) {						// 상태가 변경되면 (IDLE <-> RUN)
+			isRun = static_cast<bool>(nowState);
 
 			SC_PLAYER_STATE_PACKET p;
 			p.size = sizeof(p);

@@ -21,13 +21,15 @@ enum class MY_KEY_EVENT : char
 	DOWN = 1,
 	LEFT = 2,
 	RIGHT = 3,
-	SPACE = 4
+	SPACE = 4,
+	MOUSE_RIGHT = 5
 };
 
 enum class PLAYER_STATE : char
 {
 	IDLE = 0,
-	RUN = 1
+	RUN = 1,
+	ATTACK = 2
 };
 
 #pragma pack(push, 1)

@@ -20,7 +20,7 @@ void PlayerObject::update(float elapsedTime)
 	if (!keyState and !runJump)		// 업데이트 할 것이 없으면 리턴한다.
 		return;
 
-	if (keyState) {
+	if ((not isFixedState and keyState) or (runJump and keyState)) {
 		glm::vec3 look = getLook();
 		glm::vec3 right = getRight();
 
@@ -61,7 +61,22 @@ void PlayerObject::release()
 {
 }
 
-bool PlayerObject::processKeyInput(unsigned int key, bool is_pressed)
+unsigned int PlayerObject::getKeyState() const
+{
+	return keyState;
+}
+
+bool PlayerObject::getFixedState() const
+{
+	return isFixedState;
+}
+
+void PlayerObject::setFixedState(bool state)
+{
+	isFixedState = state;
+}
+
+void PlayerObject::processKeyInput(unsigned int key, bool is_pressed)
 {
 	if (is_pressed) {
 		keyState |= key;
@@ -69,7 +84,6 @@ bool PlayerObject::processKeyInput(unsigned int key, bool is_pressed)
 	else {
 		keyState &= ~key;
 	}
-	return static_cast<bool>(keyState & ~KEY_SPACE);		// 스페이스를 제외한 상태 받아오기
 }
 
 void PlayerObject::processMoveMouse(float move_x, float move_y)
