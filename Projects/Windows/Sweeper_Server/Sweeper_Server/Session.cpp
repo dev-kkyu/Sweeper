@@ -26,6 +26,12 @@ void Session::start(Room* parentRoom, int player_id)
 		p.type = SC_LOGIN;
 		p.room_id = parentRoom->room_id;
 		p.player_id = this->player_id;
+		auto pos = player->getPosition();
+		auto dir = player->getLook();
+		p.pos_x = pos.x;
+		p.pos_z = pos.z;
+		p.dir_x = dir.x;
+		p.dir_z = dir.z;
 		sendPacket(&p);
 		std::cout << "플레이어 [" << parentRoom->room_id << ":" << this->player_id << "] 접속\n";
 	}
@@ -35,6 +41,12 @@ void Session::start(Room* parentRoom, int player_id)
 		p.size = sizeof(p);
 		p.type = SC_ADD_PLAYER;
 		p.player_id = this->player_id;
+		auto pos = player->getPosition();
+		auto dir = player->getLook();
+		p.pos_x = pos.x;
+		p.pos_z = pos.z;
+		p.dir_x = dir.x;
+		p.dir_z = dir.z;
 		for (int i = 0; i < parentRoom->sessions.size(); ++i) {		// Room에서 락 걸어주기 때문에 여기서는 X
 			if (i == this->player_id)		// 나는 알릴 필요 없다.
 				continue;
@@ -52,6 +64,12 @@ void Session::start(Room* parentRoom, int player_id)
 				continue;
 			if (parentRoom->sessions[i]) {	// 존재하는 플레이어를 전송
 				p.player_id = i;
+				auto pos = parentRoom->sessions[i]->player->getPosition();
+				auto dir = parentRoom->sessions[i]->player->getLook();
+				p.pos_x = pos.x;
+				p.pos_z = pos.z;
+				p.dir_x = dir.x;
+				p.dir_z = dir.z;
 				sendPacket(&p);
 			}
 		}

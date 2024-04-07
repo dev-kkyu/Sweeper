@@ -234,6 +234,8 @@ void Scene::processPacket(unsigned char* packet)
 		pMyPlayer->setScale(glm::vec3(1.5f));
 		pMyPlayer->setAnimationClip(CLIP_IDLE);	// Idle
 		//pMyPlayer->setAnimateSpeed(1.f);	// Todo : 필요시 적절히 조절할 것
+		pMyPlayer->setPosition(glm::vec3(p->pos_x, 0.f, p->pos_z));
+		pMyPlayer->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
 		camera.setPlayer(pMyPlayer);
 		pPlayers[my_id] = pMyPlayer;
 		break;
@@ -252,6 +254,8 @@ void Scene::processPacket(unsigned char* packet)
 		pPlayers[p->player_id]->initModel(playerModel[1], descriptorSetLayout.ssbo);	// 일단 나 제외 1번모델로
 		pPlayers[p->player_id]->setScale(glm::vec3(1.5f));
 		pPlayers[p->player_id]->setAnimationClip(CLIP_IDLE);
+		pPlayers[p->player_id]->setPosition(glm::vec3(p->pos_x, 0.f, p->pos_z));
+		pPlayers[p->player_id]->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
 		break;
 	}
 	case SC_POSITION: {

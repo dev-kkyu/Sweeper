@@ -38,6 +38,10 @@ struct SC_LOGIN_PACKET
 	char type;
 	char room_id;
 	char player_id;
+	float pos_x;		// 현재 플레이어 위치
+	float pos_z;
+	float dir_x;		// 현재 보고있는 방향
+	float dir_z;
 };
 
 struct SC_LOGOUT_PACKET
@@ -58,6 +62,10 @@ struct SC_ADD_PLAYER_PACKET
 	unsigned char size;
 	char type;
 	char player_id;
+	float pos_x;		// 현재 플레이어 위치
+	float pos_z;
+	float dir_x;		// 현재 보고있는 방향
+	float dir_z;
 };
 
 struct SC_POSITION_PACKET
