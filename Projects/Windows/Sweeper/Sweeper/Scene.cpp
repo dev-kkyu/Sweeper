@@ -227,7 +227,8 @@ void Scene::processPacket(unsigned char* packet)
 		my_id = p->player_id;
 		pMyPlayer = std::make_shared<PlayerObject>();
 		pMyPlayer->initModel(playerModel[0], descriptorSetLayout.ssbo);
-		pMyPlayer->setScale(glm::vec3(1.2f));
+		pMyPlayer->setScale(glm::vec3(1.5f));
+		pMyPlayer->setAnimationClip(19);	// Idle
 		//pMyPlayer->setAnimateSpeed(1.f);	// Todo : 필요시 적절히 조절할 것
 		camera.setPlayer(pMyPlayer);
 		pPlayers[my_id] = pMyPlayer;
@@ -245,7 +246,8 @@ void Scene::processPacket(unsigned char* packet)
 		std::cout << "플레이어 추가 패킷 수신 ID:[" << int(p->player_id) << "]\n";
 		pPlayers[p->player_id] = std::make_shared<PlayerObject>();
 		pPlayers[p->player_id]->initModel(playerModel[1], descriptorSetLayout.ssbo);	// 일단 나 제외 1번모델로
-		pPlayers[p->player_id]->setScale(glm::vec3(1.2f));
+		pPlayers[p->player_id]->setScale(glm::vec3(1.5f));
+		pPlayers[p->player_id]->setAnimationClip(19);
 		break;
 	}
 	case SC_POSITION: {
@@ -261,7 +263,7 @@ void Scene::processPacket(unsigned char* packet)
 	case SC_PLAYER_STATE: {
 		auto p = reinterpret_cast<SC_PLAYER_STATE_PACKET*>(packet);
 		if (p->state == PLAYER_STATE::IDLE)
-			pPlayers[p->player_id]->setAnimationClip(0);
+			pPlayers[p->player_id]->setAnimationClip(19);
 		else if (p->state == PLAYER_STATE::RUN)
 			pPlayers[p->player_id]->setAnimationClip(24);
 		std::cout << int(p->player_id) << "의 상태가 " << ((p->state == PLAYER_STATE::RUN) ? "RUN" : "IDLE") << "로 변경" << std::endl;

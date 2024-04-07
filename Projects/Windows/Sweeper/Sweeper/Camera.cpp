@@ -5,6 +5,7 @@
 #include <glm/gtx/vector_angle.hpp>
 
 Camera::Camera()
+	: distanceFromPlayer{ 6.f }		// 카메라 거리
 {
 	viewTransform = glm::lookAt(glm::vec3(0.f, 3.f, 10.f), glm::vec3(0.f), glm::vec3(0.0f, 1.0f, 0.0f));
 	projectionTransform = glm::perspective(glm::radians(45.0f), 16.f / 9.f, 0.1f, 100.0f);
@@ -21,7 +22,7 @@ void Camera::update(float elapsedTime)
 		glm::vec3 look = pPlayer->getLook();
 
 		glm::vec3 center = position;							// 카메라는 플레이어를 바라본다.
-		center.y += 1.5f;										// 플레이어의 원점이 바닥이므로 올려준다.
+		center.y += 2.2f;										// 플레이어의 원점이 바닥이므로 올려준다.
 
 		// 기존의 look(0, 0, 1)과 비교해서, 얼마나 회전되었는지 계산
 		float xzAngle = glm::orientedAngle(glm::vec3(0.f, 0.f, 1.f), look, glm::vec3(0.f, 1.f, 0.f));

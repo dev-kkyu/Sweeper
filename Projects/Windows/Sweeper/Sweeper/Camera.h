@@ -11,7 +11,7 @@ class PlayerObject;
 class Camera
 {
 private:
-	float distanceFromPlayer = 4.f;
+	float distanceFromPlayer;	// 생성자 호출 시 값 정해주기
 
 	glm::mat4 viewTransform{ 1.f };
 	glm::mat4 projectionTransform{ 1.f };
