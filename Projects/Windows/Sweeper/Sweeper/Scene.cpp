@@ -70,8 +70,9 @@ Scene::~Scene()
 {
 	// 플레이어는 shared_ptr이므로, 따로 삭제 X
 
-	playerModel[0].destroy();
-	playerModel[1].destroy();
+	for (auto& model : playerModel) {
+		model.destroy();
+	}
 
 	for (auto& object : wispObject) {
 		delete object;
