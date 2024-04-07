@@ -28,8 +28,8 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	// gltf skin모델 로드
 	mushroomModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/mushroom.glb");
 	// 플레이어 모델 로드 (skin model)	// 일단은 두개만 로드한다.
-	playerModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/Dragoon.glb");
-	playerModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/Nana.glb");
+	playerModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Dragoon.glb");
+	playerModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Mage.glb");
 
 	// 맵 생성
 	mapObject = new OBJModelObject;
@@ -70,9 +70,8 @@ Scene::~Scene()
 {
 	// 플레이어는 shared_ptr이므로, 따로 삭제 X
 
-	for (auto& model : playerModel) {
-		model.destroy();
-	}
+	playerModel[0].destroy();
+	playerModel[1].destroy();
 
 	for (auto& object : wispObject) {
 		delete object;
@@ -227,7 +226,7 @@ void Scene::processPacket(unsigned char* packet)
 		my_id = p->player_id;
 		pMyPlayer = std::make_shared<PlayerObject>();
 		pMyPlayer->initModel(playerModel[0], descriptorSetLayout.ssbo);
-		pMyPlayer->setScale(glm::vec3(1.5f));
+		pMyPlayer->setScale(glm::vec3(1.2f));
 		//pMyPlayer->setAnimateSpeed(1.f);	// Todo : 필요시 적절히 조절할 것
 		camera.setPlayer(pMyPlayer);
 		pPlayers[my_id] = pMyPlayer;
@@ -245,7 +244,7 @@ void Scene::processPacket(unsigned char* packet)
 		std::cout << "플레이어 추가 패킷 수신 ID:[" << int(p->player_id) << "]\n";
 		pPlayers[p->player_id] = std::make_shared<PlayerObject>();
 		pPlayers[p->player_id]->initModel(playerModel[1], descriptorSetLayout.ssbo);	// 일단 나 제외 1번모델로
-		pPlayers[p->player_id]->setScale(glm::vec3(1.5f));
+		pPlayers[p->player_id]->setScale(glm::vec3(1.2f));
 		break;
 	}
 	case SC_POSITION: {
