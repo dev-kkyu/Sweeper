@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <chrono>
+#include <string>
 
 struct GLFWwindow;
 class Timer {

@@ -119,7 +119,7 @@ void fullScreenToggle(GLFWwindow* window)
 				std::cerr << "Can't find any available monitor modes." << std::endl;
 				return;
 			}
-			int selectIdx = *std::ranges::max_element(candidateIdx, [&modes](const int a, const int b) {
+			int selectIdx = *std::max_element(candidateIdx.begin(), candidateIdx.end(), [&modes](const int a, const int b) {
 				if (modes[a].width != modes[b].width)
 					return modes[a].width < modes[b].width;							// 가능한 모드중에 제일 높은 해상도 선택
 				return modes[a].refreshRate < modes[b].refreshRate;					// 같은 해상도 중에서는 높은 주사율 선택
