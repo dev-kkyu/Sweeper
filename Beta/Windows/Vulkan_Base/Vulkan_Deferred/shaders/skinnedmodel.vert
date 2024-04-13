@@ -11,13 +11,15 @@ layout (set = 0, binding = 0) uniform UniformBufferObject
 {
 	mat4 view;
 	mat4 projection;
+	mat4 lightSpace;
+	vec4 lightPos;
 } ubo;
 
 layout(push_constant) uniform PushConstants {
 	mat4 model;
 } push;
 
-layout(std430, set = 2, binding = 0) readonly buffer JointMatrices {
+layout(std430, set = 3, binding = 0) readonly buffer JointMatrices {
 	mat4 jointMatrices[];
 };
 
@@ -26,6 +28,13 @@ layout (location = 1) out vec3 outColor;
 layout (location = 2) out vec2 outUV;
 layout (location = 3) out vec3 outViewVec;
 layout (location = 4) out vec3 outLightVec;
+layout (location = 5) out vec4 outShadowCoord;
+
+const mat4 biasMat = mat4( 
+	0.5, 0.0, 0.0, 0.0,
+	0.0, 0.5, 0.0, 0.0,
+	0.0, 0.0, 1.0, 0.0,
+	0.5, 0.5, 0.0, 1.0 );
 
 void main() 
 {
@@ -43,10 +52,10 @@ void main()
 	
 	outNormal = normalize(transpose(inverse(mat3(ubo.view * push.model * skinMat))) * inNormal);
 
-	vec3 lightPos = vec3(30.f, 30.f, 30.f);
-
 	vec4 pos = ubo.view * vec4(inPos, 1.0);
-	vec3 lPos = mat3(ubo.view) * lightPos;
+	vec3 lPos = mat3(ubo.view) * ubo.lightPos.xyz;
 	outLightVec = lPos - pos.xyz;
 	outViewVec = -pos.xyz;
+
+	outShadowCoord = ( biasMat * ubo.lightSpace * push.model ) * vec4(inPos, 1.0);
 }

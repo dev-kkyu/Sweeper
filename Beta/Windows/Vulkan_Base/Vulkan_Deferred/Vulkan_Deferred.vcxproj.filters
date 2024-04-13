@@ -124,5 +124,8 @@
     <None Include="shaders\skinnedmodel.vert">
       <Filter>소스 파일\Shader</Filter>
     </None>
+    <None Include="shaders\offscreen.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

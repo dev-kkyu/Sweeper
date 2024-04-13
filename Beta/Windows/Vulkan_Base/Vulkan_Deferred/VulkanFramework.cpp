@@ -342,6 +342,15 @@ namespace vkf
 		createDescriptorSets(descriptorSetLayout, bufferSize, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 	}
 
+	void BufferObject::createShadowUniformBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout)
+	{
+		this->fDevice = &fDevice;
+
+		createBuffers(sizeof(ShadowUniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+		createDescriptorPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		createDescriptorSets(descriptorSetLayout, sizeof(ShadowUniformBufferObject), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+	}
+
 	void BufferObject::destroy()
 	{
 		if (fDevice) {
@@ -362,6 +371,11 @@ namespace vkf
 	}
 
 	void BufferObject::updateUniformBuffer(const UniformBufferObject& ubo, uint32_t currentFrame)
+	{
+		copyTo(&ubo, sizeof(ubo), currentFrame);
+	}
+
+	void BufferObject::updateShadowUniformBuffer(const ShadowUniformBufferObject& ubo, uint32_t currentFrame)
 	{
 		copyTo(&ubo, sizeof(ubo), currentFrame);
 	}

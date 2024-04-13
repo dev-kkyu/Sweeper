@@ -166,6 +166,7 @@
   <ItemGroup>
     <None Include="shaders\model.frag" />
     <None Include="shaders\model.vert" />
+    <None Include="shaders\offscreen.vert" />
     <None Include="shaders\skinnedmodel.frag" />
     <None Include="shaders\skinnedmodel.vert" />
   </ItemGroup>

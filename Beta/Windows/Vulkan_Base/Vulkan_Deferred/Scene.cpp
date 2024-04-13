@@ -6,12 +6,16 @@
 Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }
 {
+	prepareOffscreenFramebuffer();
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
 
-	uniformBufferObject.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
+	setDescriptors();
 
 	createSamplerDescriptorPool(2);		// obj에 사용할 텍스처 별도로 불러올것
+
+	uniformBufferObject.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
+	shadowUniformBufferObject.createShadowUniformBufferObjects(fDevice, descriptorSetLayout.shadowUbo);
 
 	// obj와 텍스처 로드
 	mapBuffer.loadFromObjFile(fDevice, "models/map.obj");
@@ -78,13 +82,25 @@ Scene::~Scene()
 
 	vkDestroyDescriptorPool(fDevice.logicalDevice, samplerDescriptorPool, nullptr);
 
+	vkDestroySampler(fDevice.logicalDevice, offscreenPass.depthSampler, nullptr);
+	vkDestroyImageView(fDevice.logicalDevice, offscreenPass.shadowImageView, nullptr);
+	vkDestroyImage(fDevice.logicalDevice, offscreenPass.shadowImage, nullptr);
+	vkFreeMemory(fDevice.logicalDevice, offscreenPass.shadowMemory, nullptr);
+
+	vkDestroyFramebuffer(fDevice.logicalDevice, offscreenPass.frameBuffer, nullptr);
+
 	uniformBufferObject.destroy();
+	shadowUniformBufferObject.destroy();
 
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.model, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.skinModel, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.offscreen, nullptr);
 	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout.model, nullptr);
 	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout.skinModel, nullptr);
+	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout.offscreen, nullptr);
 	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.ssbo, nullptr);
+	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.shadowMap, nullptr);
+	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.shadowUbo, nullptr);
 	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.sampler, nullptr);
 	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.ubo, nullptr);
 }
@@ -93,11 +109,18 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 {
 	camera.update(elapsedTime);
 
+	vkf::ShadowUniformBufferObject subo{};
+	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0, 1, 0));
+	subo.depthMVP =depthViewMatrix;                   // model * view * project - 모델, 투영 단위행렬
+
 	vkf::UniformBufferObject ubo{};
 	ubo.view = camera.getView();
 	ubo.proj = camera.getProjection();
+	ubo.lightPos = glm::vec4(lightPos, 1.0f);
+	ubo.lightSpace = subo.depthMVP;
 
 	uniformBufferObject.updateUniformBuffer(ubo, currentFrame);
+	shadowUniformBufferObject.updateShadowUniformBuffer(subo, currentFrame);
 
 	// 모델들 업데이트
 	mapObject->update(elapsedTime, currentFrame);
@@ -227,6 +250,93 @@ void Scene::processMouseCursor(float xpos, float ypos)
 	}
 }
 
+void Scene::prepareOffscreenFramebuffer()
+{
+	vkf::createImage(fDevice, offscreenPass.width, offscreenPass.height, 1, VK_SAMPLE_COUNT_1_BIT, offscreenDepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, offscreenPass.shadowImage, offscreenPass.shadowMemory);
+
+	vkf::createImageView(fDevice, offscreenPass.shadowImage, offscreenDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
+
+	VkSamplerCreateInfo sampler;
+	sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	sampler.maxAnisotropy = 1.0f;
+	sampler.magFilter = VK_FILTER_LINEAR;
+	sampler.minFilter = VK_FILTER_LINEAR;
+	sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	sampler.mipLodBias = 0.0f;
+	sampler.maxAnisotropy = 1.0f;
+	sampler.minLod = 0.0f;
+	sampler.maxLod = 1.0f;
+	sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+	vkCreateSampler(fDevice.logicalDevice, &sampler, nullptr, &offscreenPass.depthSampler);
+
+	prepareOffscreenRenderpass();
+
+	VkFramebufferCreateInfo fbufCreateInfo;
+	fbufCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	fbufCreateInfo.renderPass = offscreenPass.renderPass;
+	fbufCreateInfo.attachmentCount = 1;
+	fbufCreateInfo.pAttachments = &offscreenPass.shadowImageView;
+	fbufCreateInfo.width = offscreenPass.width;
+	fbufCreateInfo.height = offscreenPass.height;
+	fbufCreateInfo.layers = 1;
+
+	vkCreateFramebuffer(fDevice.logicalDevice, &fbufCreateInfo, nullptr, &offscreenPass.frameBuffer);
+}
+
+void Scene::prepareOffscreenRenderpass()
+{
+	VkAttachmentDescription attachmentDescription{};
+	attachmentDescription.format = VK_FORMAT_D32_SFLOAT;
+	attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+	attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+
+	VkAttachmentReference depthReference = {};
+	depthReference.attachment = 0;
+	depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription subpass = {};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 0;
+	subpass.pDepthStencilAttachment = &depthReference;
+
+	std::array<VkSubpassDependency, 2> dependencies;
+
+	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[0].dstSubpass = 0;
+	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	dependencies[0].dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+	dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	dependencies[0].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+	dependencies[1].srcSubpass = 0;
+	dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[1].srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+	dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	dependencies[1].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+	VkRenderPassCreateInfo renderPassCreateInfo;
+	renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassCreateInfo.attachmentCount = 1;
+	renderPassCreateInfo.pAttachments = &attachmentDescription;
+	renderPassCreateInfo.subpassCount = 1;
+	renderPassCreateInfo.pSubpasses = &subpass;
+	renderPassCreateInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+	renderPassCreateInfo.pDependencies = dependencies.data();
+
+	vkCreateRenderPass(fDevice.logicalDevice, &renderPassCreateInfo, nullptr, &offscreenPass.renderPass);
+}
+
 void Scene::createDescriptorSetLayout()
 {
 	VkDescriptorSetLayoutBinding uboLayoutBinding{};
@@ -242,6 +352,20 @@ void Scene::createDescriptorSetLayout()
 	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	samplerLayoutBinding.pImmutableSamplers = nullptr;
 	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	VkDescriptorSetLayoutBinding shadowUboLayoutBinding{};
+	samplerLayoutBinding.binding = 0;
+	samplerLayoutBinding.descriptorCount = 1;
+	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	samplerLayoutBinding.pImmutableSamplers = nullptr;
+	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	VkDescriptorSetLayoutBinding shadowMapLayoutBinding{};
+	shadowMapLayoutBinding.binding = 0;
+	shadowMapLayoutBinding.descriptorCount = 1;
+	shadowMapLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	shadowMapLayoutBinding.pImmutableSamplers = nullptr;
+	shadowMapLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
 	VkDescriptorSetLayoutBinding ssboLayoutBinding{};
 	ssboLayoutBinding.binding = 0;
@@ -264,10 +388,64 @@ void Scene::createDescriptorSetLayout()
 		throw std::runtime_error("failed to create descriptor set layout!");
 	}
 
+	layoutInfo.pBindings = &shadowUboLayoutBinding;
+	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.shadowUbo) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor set layout!");
+	}
+
+	layoutInfo.pBindings = &shadowMapLayoutBinding;
+	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.shadowMap) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor set layout!");
+	}
+
 	layoutInfo.pBindings = &ssboLayoutBinding;
 	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.ssbo) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor set layout!");
 	}
+}
+
+void Scene::setDescriptors()
+{
+	std::array<VkDescriptorPoolSize, 1> poolSizes{};
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[0].descriptorCount = 1;
+
+	VkDescriptorPoolCreateInfo poolInfo;
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
+	poolInfo.maxSets = 1;
+
+	if (vkCreateDescriptorPool(fDevice.logicalDevice, &poolInfo, nullptr, &offscreenPass.descriptorPool) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor pool!");
+	}
+
+	VkDescriptorSetAllocateInfo allocInfo;
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = offscreenPass.descriptorPool;
+	allocInfo.descriptorSetCount = 1;
+	allocInfo.pSetLayouts = &descriptorSetLayout.shadowUbo;
+
+	if (vkAllocateDescriptorSets(fDevice.logicalDevice, &allocInfo, &offscreenPass.descriptorSet) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor pool!");
+	}
+
+	VkDescriptorImageInfo shadowMapDescriptor;
+	shadowMapDescriptor.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+	shadowMapDescriptor.imageView = offscreenPass.shadowImageView;
+	shadowMapDescriptor.sampler = offscreenPass.depthSampler;
+
+	std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
+
+	descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrites[0].dstSet = offscreenPass.descriptorSet;
+	descriptorWrites[0].dstBinding = 0;
+	descriptorWrites[0].dstArrayElement = 0;
+	descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	descriptorWrites[0].descriptorCount = 1;
+	descriptorWrites[0].pImageInfo = &shadowMapDescriptor;
+
+	vkUpdateDescriptorSets(fDevice.logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 }
 
 void Scene::createGraphicsPipeline()
@@ -342,11 +520,13 @@ void Scene::createGraphicsPipeline()
 	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 	dynamicState.pDynamicStates = dynamicStates.data();
 
-	// 여러 개의 디스크립터 셋을 사용할 때, set의 index를 pSetLayouts의 index와 맞춰줘야 한다.
-	std::vector<VkDescriptorSetLayout> setLayout{ 3 };
+
+// 여러 개의 디스크립터 셋을 사용할 때, set의 index를 pSetLayouts의 index와 맞춰줘야 한다.
+	std::vector<VkDescriptorSetLayout> setLayout{ 4 };
 	setLayout[0] = descriptorSetLayout.ubo;
 	setLayout[1] = descriptorSetLayout.sampler;
-	setLayout[2] = descriptorSetLayout.ssbo;									// skinModel에서만 사용
+	setLayout[2] = descriptorSetLayout.shadowMap;
+	setLayout[3] = descriptorSetLayout.ssbo;									// skinModel에서만 사용
 
 	// push constant
 	VkPushConstantRange pushConstantRange{};
@@ -356,7 +536,7 @@ void Scene::createGraphicsPipeline()
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 2;										// model에서는 1번 인덱스까지만 사용
+	pipelineLayoutInfo.setLayoutCount = 3;										// model에서는 2번 인덱스까지만 사용
 	pipelineLayoutInfo.pSetLayouts = setLayout.data();
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
@@ -365,8 +545,16 @@ void Scene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
-	pipelineLayoutInfo.setLayoutCount = 3;										// skinModel에서는 2번 인덱스까지 사용
+	pipelineLayoutInfo.setLayoutCount = 4;										// skinModel에서는 3번 인덱스까지 사용
 	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout.skinModel) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create pipeline layout!");
+	}
+
+	pipelineLayoutInfo.setLayoutCount = 1;
+	pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout.shadowUbo;
+	pipelineLayoutInfo.pushConstantRangeCount = 0;
+	pipelineLayoutInfo.pPushConstantRanges = nullptr;
+	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout.offscreen) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
@@ -406,6 +594,21 @@ void Scene::createGraphicsPipeline()
 	vertexInputInfo.pVertexAttributeDescriptions = skinAttributeDescriptions.data();
 
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.skinModel) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+	vkf::Shader shadowMapShader{ fDevice, "shaders/offscreen.vert.spv", "shaders/model.frag.spv" };
+	pipelineInfo.stageCount = 1;
+	colorBlending.attachmentCount = 0;
+	rasterizer.cullMode = VK_CULL_MODE_NONE;
+	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	rasterizer.depthBiasEnable = VK_TRUE;
+	dynamicStates.push_back(VK_DYNAMIC_STATE_DEPTH_BIAS);
+	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+	dynamicState.pDynamicStates = dynamicStates.data();
+	pipelineInfo.renderPass = offscreenPass.renderPass;
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.offscreen) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 }

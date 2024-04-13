@@ -99,6 +99,8 @@ private:
 	std::array<VkFence, MAX_FRAMES_IN_FLIGHT> inFlightFences;
 	uint32_t currentFrame = 0;
 
+	float depthBiasConstant = 1.25f;
+	float depthBiasSlope = 1.75f;
 
 private:
 	void cleanupSwapChain();

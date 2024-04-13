@@ -31,6 +31,12 @@ namespace vkf
 	struct UniformBufferObject {
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 proj;
+		alignas(16) glm::mat4 lightSpace;
+		alignas(16) glm::vec4 lightPos;
+	};
+
+	struct ShadowUniformBufferObject {
+		alignas(16) glm::mat4 depthMVP;
 	};
 
 	struct PushConstantData {
@@ -127,10 +133,12 @@ namespace vkf
 	public:
 		void createUniformBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout);		// ubo, ssbo 중 하나만 생성 및 호출할 것
 		void createShaderStorageBufferObjects(vkf::Device& fDevice, VkDeviceSize bufferSize, VkDescriptorSetLayout descriptorSetLayout);
+		void createShadowUniformBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout);
 		void destroy();
 
 		void copyTo(const void* data, VkDeviceSize size, uint32_t currentFrame);
 		void updateUniformBuffer(const UniformBufferObject& ubo, uint32_t currentFrame);
+		void updateShadowUniformBuffer(const ShadowUniformBufferObject& ubo, uint32_t currentFrame);
 
 	private:
 		void createBuffers(VkDeviceSize bufferSize, VkBufferUsageFlags usage);
