@@ -380,6 +380,16 @@ namespace vkf
 		copyTo(&ubo, sizeof(ubo), currentFrame);
 	}
 
+	VkDescriptorPool BufferObject::getDescriptorPool()
+	{
+		return descriptorPool;
+	}
+
+	VkDescriptorSet BufferObject::getDescriptorSet(uint32_t currentFrame)
+	{
+		return descriptorSets[currentFrame];
+	}
+
 	void BufferObject::createBuffers(VkDeviceSize bufferSize, VkBufferUsageFlags usage)
 	{
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {

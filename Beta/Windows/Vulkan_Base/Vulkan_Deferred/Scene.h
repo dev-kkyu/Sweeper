@@ -36,20 +36,7 @@ private:
 	vkf::BufferObject uniformBufferObject;
 	vkf::BufferObject shadowUniformBufferObject;
 
-	struct OffscreenPass {
-		int32_t width{ 2048 }, height{ 2048 };
-		VkFramebuffer frameBuffer;
-		VkImage shadowImage;
-		VkDeviceMemory shadowMemory;
-		VkImageView shadowImageView;
-		VkRenderPass renderPass;
-		VkSampler depthSampler;
-		VkDescriptorImageInfo descriptor;
-		VkDescriptorPool descriptorPool;
-		VkDescriptorSet descriptorSet;
-	} offscreenPass{};
-
-	const VkFormat offscreenDepthFormat{ VK_FORMAT_D16_UNORM };
+	vkf::OffscreenPass &offscreenPass;
 
 	VkDescriptorPool samplerDescriptorPool;
 
@@ -79,22 +66,21 @@ private:
 	bool leftButtonPressed = false;
 
 public:
-	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass);
+	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass, vkf::OffscreenPass& offscreen);
 	~Scene();
 
 	void update(float elapsedTime, uint32_t currentFrame);
 	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+	void offscreenDraw(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
 	void processKeyboard(int key, int action, int mods);
 	void processMouseButton(int button, int action, int mods, float xpos, float ypos);
 	void processMouseCursor(float xpos, float ypos);
 
 private:
-	void prepareOffscreenFramebuffer();
-	void prepareOffscreenRenderpass();
 	void createDescriptorSetLayout();
-	void setDescriptors();
 	void createGraphicsPipeline();
+	void setDescriptors();
 
 	// obj 모델은 직접 buffer와 texture를 넣어주도록 설계. 따라서 texture를 위한 descriptor pool을 만들어준다.
 	void createSamplerDescriptorPool(uint32_t setCount);

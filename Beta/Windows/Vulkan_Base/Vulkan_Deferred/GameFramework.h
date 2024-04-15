@@ -78,19 +78,13 @@ private:
 	VkDeviceMemory colorImageMemory;
 	VkImageView colorImageView;
 
-	VkImage positionImage;
-	VkDeviceMemory positionImageMemory;
-	VkImageView positionImageView;
-
-	VkImage normalImage;
-	VkDeviceMemory normalImageMemory;
-	VkImageView normalImageView;
-
 	VkImage depthImage;
 	VkDeviceMemory depthImageMemory;
 	VkImageView depthImageView;
 
 	VkSampler colorSampler;
+
+	vkf::OffscreenPass offscreenPass{};
 
 	std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> commandBuffers;
 
@@ -101,6 +95,8 @@ private:
 
 	float depthBiasConstant = 1.25f;
 	float depthBiasSlope = 1.75f;
+	const VkFormat offscreenDepthFormat{ VK_FORMAT_D16_UNORM };
+	const uint32_t shadowMapize{ 2048 };
 
 private:
 	void cleanupSwapChain();
@@ -116,13 +112,14 @@ private:
 	void createImageViews();
 	void createRenderPass();
 	void createCommandPool();
-	void createPositionResources();
-	void createNormalResources();
 	void createColorResources();
 	void createDepthResources();
 	void createFramebuffers();
 	void createCommandBuffers();
 	void createSyncObjects();
+	
+	void prepareOffscreenRenderpass();
+	void prepareOffscreenFramebuffer();
 
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 

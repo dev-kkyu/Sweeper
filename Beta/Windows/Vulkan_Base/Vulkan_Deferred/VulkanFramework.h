@@ -39,6 +39,18 @@ namespace vkf
 		alignas(16) glm::mat4 depthMVP;
 	};
 
+	struct OffscreenPass {
+		int32_t width, height;
+		VkFramebuffer frameBuffer;
+		VkImage shadowImage;
+		VkDeviceMemory shadowMemory;
+		VkImageView shadowImageView;
+		VkRenderPass renderPass;
+		VkSampler depthSampler;
+		VkDescriptorPool descriptorPool;
+		VkDescriptorSet descriptorSet;
+	};
+
 	struct PushConstantData {
 		alignas(16) glm::mat4 model;
 	};
@@ -139,6 +151,8 @@ namespace vkf
 		void copyTo(const void* data, VkDeviceSize size, uint32_t currentFrame);
 		void updateUniformBuffer(const UniformBufferObject& ubo, uint32_t currentFrame);
 		void updateShadowUniformBuffer(const ShadowUniformBufferObject& ubo, uint32_t currentFrame);
+		VkDescriptorPool getDescriptorPool();
+		VkDescriptorSet getDescriptorSet(uint32_t currentFrame);
 
 	private:
 		void createBuffers(VkDeviceSize bufferSize, VkBufferUsageFlags usage);
