@@ -90,7 +90,7 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 
 	vkf::UniformBufferObject ubo{};
 	ubo.view = camera.getView();
-	ubo.proj = camera.getProjection();
+	ubo.projection = camera.getProjection();
 
 	uniformBufferObject.updateUniformBuffer(ubo, currentFrame);
 
