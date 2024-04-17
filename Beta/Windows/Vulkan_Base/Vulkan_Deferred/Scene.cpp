@@ -81,6 +81,7 @@ Scene::~Scene()
 
 	vkDestroyDescriptorPool(fDevice.logicalDevice, samplerDescriptorPool, nullptr);
 
+	vkDestroyDescriptorPool(fDevice.logicalDevice, offscreenPass.descriptorPool, nullptr);
 	vkDestroySampler(fDevice.logicalDevice, offscreenPass.depthSampler, nullptr);
 	vkDestroyImageView(fDevice.logicalDevice, offscreenPass.shadowImageView, nullptr);
 	vkDestroyImage(fDevice.logicalDevice, offscreenPass.shadowImage, nullptr);
@@ -112,6 +113,8 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0, 1, 0));
 	subo.depthMVP =depthViewMatrix;                   // model * view * project - 모델, 투영 단위행렬
 
+	//updateLight(elapsedTime);
+
 	vkf::UniformBufferObject ubo{};
 	ubo.view = camera.getView();
 	ubo.proj = camera.getProjection();
@@ -141,6 +144,7 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.model);
 	// firstSet은 set의 시작인덱스
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 2, 1, &offscreenPass.descriptorSet, 0, nullptr);
 
 	mapObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
 	for (auto& object : warriorObject) {
@@ -150,6 +154,7 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	// skinModel
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.skinModel);
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.skinModel, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.skinModel, 2, 1, &offscreenPass.descriptorSet, 0, nullptr);
 
 	for (int i = 0; i < mushroomObject.size(); ++i) {
 		mushroomObject[i]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
@@ -162,16 +167,16 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 void Scene::offscreenDraw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.offscreen);
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.offscreen, 0, 1, &offscreenPass.descriptorSet, 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.offscreen, 0, 1, &shadowUniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 
-	mapObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
+	mapObject->drawPos(commandBuffer, pipelineLayout.offscreen, currentFrame);
 	for (auto& object : warriorObject) {
-		object->draw(commandBuffer, pipelineLayout.model, currentFrame);
+		object->drawPos(commandBuffer, pipelineLayout.offscreen, currentFrame);
 	}
 	for (int i = 0; i < mushroomObject.size(); ++i) {
-		mushroomObject[i]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
+		mushroomObject[i]->drawPos(commandBuffer, pipelineLayout.offscreen, currentFrame);
 	}
-	pPlayer->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
+	pPlayer->drawPos(commandBuffer, pipelineLayout.offscreen, currentFrame);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)
@@ -281,11 +286,11 @@ void Scene::createDescriptorSetLayout()
 	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
 	VkDescriptorSetLayoutBinding shadowUboLayoutBinding{};
-	samplerLayoutBinding.binding = 0;
-	samplerLayoutBinding.descriptorCount = 1;
-	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	samplerLayoutBinding.pImmutableSamplers = nullptr;
-	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	shadowUboLayoutBinding.binding = 0;
+	shadowUboLayoutBinding.descriptorCount = 1;
+	shadowUboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	shadowUboLayoutBinding.pImmutableSamplers = nullptr;
+	shadowUboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
 	VkDescriptorSetLayoutBinding shadowMapLayoutBinding{};
 	shadowMapLayoutBinding.binding = 0;
@@ -337,7 +342,7 @@ void Scene::setDescriptors()
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	poolSizes[0].descriptorCount = 1;
 
-	VkDescriptorPoolCreateInfo poolInfo;
+	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
@@ -347,7 +352,7 @@ void Scene::setDescriptors()
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 
-	VkDescriptorSetAllocateInfo allocInfo;
+	VkDescriptorSetAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocInfo.descriptorPool = offscreenPass.descriptorPool;
 	allocInfo.descriptorSetCount = 1;
@@ -357,7 +362,7 @@ void Scene::setDescriptors()
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
 
-	VkDescriptorImageInfo shadowMapDescriptor;
+	VkDescriptorImageInfo shadowMapDescriptor{};
 	shadowMapDescriptor.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 	shadowMapDescriptor.imageView = offscreenPass.shadowImageView;
 	shadowMapDescriptor.sampler = offscreenPass.depthSampler;
@@ -524,15 +529,23 @@ void Scene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
+	pipelineInfo.layout = pipelineLayout.offscreen;
+
 	vkf::Shader shadowMapShader{ fDevice, "shaders/offscreen.vert.spv", "shaders/model.frag.spv" };
+	auto shadowBindingDescription = vkf::ShadowMapVertex::getBindingDescription();
+	auto shadowAttributeDescriptions = vkf::ShadowMapVertex::getAttributeDescriptions();
+	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.pVertexBindingDescriptions = &shadowBindingDescription;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(shadowAttributeDescriptions.size());
+	vertexInputInfo.pVertexAttributeDescriptions = shadowAttributeDescriptions.data();
 	pipelineInfo.stageCount = 1;
 	pipelineInfo.pStages = &shadowMapShader.shaderStages[0];
 	colorBlending.attachmentCount = 0;
+	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 	rasterizer.depthBiasEnable = VK_TRUE;
 	rasterizer.cullMode = VK_CULL_MODE_NONE;
 	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 	dynamicStates.push_back(VK_DYNAMIC_STATE_DEPTH_BIAS);
-	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 	dynamicState.pDynamicStates = dynamicStates.data();
 	pipelineInfo.renderPass = offscreenPass.renderPass;
@@ -543,7 +556,7 @@ void Scene::createGraphicsPipeline()
 
 void Scene::createSamplerDescriptorPool(uint32_t setCount)
 {
-	std::array<VkDescriptorPoolSize, 2> poolSizes{};
+	std::array<VkDescriptorPoolSize, 1> poolSizes{};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	poolSizes[0].descriptorCount = setCount;
 
@@ -556,4 +569,12 @@ void Scene::createSamplerDescriptorPool(uint32_t setCount)
 	if (vkCreateDescriptorPool(fDevice.logicalDevice, &poolInfo, nullptr, &samplerDescriptorPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
+}
+
+void Scene::updateLight(float elapsedTime)
+{
+	// Animate the light source
+	lightPos.x = cos(glm::radians(elapsedTime * 360.0f)) * 40.0f;
+	lightPos.y = -50.0f + sin(glm::radians(elapsedTime * 360.0f)) * 20.0f;
+	lightPos.z = 25.0f + sin(glm::radians(elapsedTime * 360.0f)) * 5.0f;
 }

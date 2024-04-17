@@ -12,7 +12,7 @@ layout (location = 5) in vec4 inShadowCoord;
 
 layout (location = 0) out vec4 outFragColor;
 
-#define ambient 0.5
+#define ambient 0.1
 
 float textureProj(vec4 shadowCoord, vec2 off)
 {

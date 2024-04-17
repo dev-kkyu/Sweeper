@@ -81,6 +81,13 @@ namespace vkf
 		static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions();
 	};
 
+	struct ShadowMapVertex {
+		glm::vec3 pos;
+
+		static VkVertexInputBindingDescription getBindingDescription();
+		static std::array<VkVertexInputAttributeDescription, 1> getAttributeDescriptions();
+	};
+
 	class Shader
 	{
 	private:

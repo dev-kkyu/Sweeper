@@ -1,7 +1,6 @@
-ï»¿#version 450
+#version 450
 
-layout (set = 0, binding = 0) uniform UniformBufferObject
-{
+layout (set = 0, binding = 0) uniform UniformBufferObject {
 	mat4 view;
 	mat4 projection;
 	mat4 lightSpace;
@@ -30,18 +29,18 @@ layout (location = 3) out vec3 outViewVec;
 layout (location = 4) out vec3 outLightVec;
 layout (location = 5) out vec4 outShadowCoord;
 
-const mat4 biasMat = mat4( 
+const mat4 biasMat = mat4(
 	0.5, 0.0, 0.0, 0.0,
 	0.0, 0.5, 0.0, 0.0,
 	0.0, 0.0, 1.0, 0.0,
 	0.5, 0.5, 0.0, 1.0 );
 
-void main() 
+void main()
 {
 	outColor = inColor;
 	outUV = inUV;
 
-	// í˜„ì¬ vertex pos ì˜ ê°€ì¤‘ì¹˜ì™€ joint ì¸ë±ìŠ¤ë¡œë¶€í„° ìŠ¤í‚¤ë‹ ì²˜ë¦¬ëœ í–‰ë ¬ì„ ê³„ì‚°í•œë‹¤.
+	// ÇöÀç vertex pos ÀÇ °¡ÁßÄ¡¿Í joint ÀÎµ¦½º·ÎºÎÅÍ ½ºÅ°´× Ã³¸®µÈ Çà·ÄÀ» °è»êÇÑ´Ù.
 	mat4 skinMat = 
 		inJointWeights.x * jointMatrices[int(inJointIndices.x)] +
 		inJointWeights.y * jointMatrices[int(inJointIndices.y)] +

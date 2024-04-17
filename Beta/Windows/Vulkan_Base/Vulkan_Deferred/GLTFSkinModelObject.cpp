@@ -42,6 +42,11 @@ void GLTFSkinModelObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout p
 	}
 }
 
+void GLTFSkinModelObject::drawPos(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
+{
+	model->bindBuffers(commandBuffer);
+}
+
 void GLTFSkinModelObject::release()
 {
 	for (auto& skin : skins) {

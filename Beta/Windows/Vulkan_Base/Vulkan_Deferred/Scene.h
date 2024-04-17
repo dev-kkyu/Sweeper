@@ -60,7 +60,7 @@ private:
 
 	Camera camera;
 
-	glm::vec3 lightPos = glm::vec3(30.f, 30.f, 30.f);
+	glm::vec3 lightPos = glm::vec3(100.f, 100.f, 100.f);
 
 	unsigned int keyState;
 	bool leftButtonPressed = false;
@@ -84,5 +84,7 @@ private:
 
 	// obj 모델은 직접 buffer와 texture를 넣어주도록 설계. 따라서 texture를 위한 descriptor pool을 만들어준다.
 	void createSamplerDescriptorPool(uint32_t setCount);
+
+	void updateLight(float elapsedTime);
 
 };

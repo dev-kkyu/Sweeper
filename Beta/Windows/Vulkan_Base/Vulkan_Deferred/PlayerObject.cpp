@@ -34,6 +34,11 @@ void PlayerObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipeline
 	GLTFSkinModelObject::draw(commandBuffer, pipelineLayout, currentFrame);
 }
 
+void PlayerObject::drawPos(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
+{
+	GLTFSkinModelObject::drawPos(commandBuffer, pipelineLayout, currentFrame);
+}
+
 void PlayerObject::release()
 {
 }

@@ -121,10 +121,10 @@
     <None Include="shaders\skinnedmodel.frag">
       <Filter>소스 파일\Shader</Filter>
     </None>
-    <None Include="shaders\skinnedmodel.vert">
+    <None Include="shaders\offscreen.vert">
       <Filter>소스 파일\Shader</Filter>
     </None>
-    <None Include="shaders\offscreen.vert">
+    <None Include="shaders\skinnedmodel.vert">
       <Filter>소스 파일\Shader</Filter>
     </None>
   </ItemGroup>
