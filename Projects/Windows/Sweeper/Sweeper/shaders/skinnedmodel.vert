@@ -7,10 +7,10 @@ layout (location = 3) in vec3 inColor;
 layout (location = 4) in vec4 inJointIndices;
 layout (location = 5) in vec4 inJointWeights;
 
-layout (set = 0, binding = 0) uniform UniformBufferObject
-{
+layout (set = 0, binding = 0) uniform UniformBufferObject {
 	mat4 view;
 	mat4 projection;
+	vec3 lightPos;
 } ubo;
 
 layout(push_constant) uniform PushConstants {
@@ -39,14 +39,12 @@ void main()
 		inJointWeights.z * jointMatrices[int(inJointIndices.z)] +
 		inJointWeights.w * jointMatrices[int(inJointIndices.w)];
 
-	gl_Position = ubo.projection * ubo.view * push.model * skinMat * vec4(inPos.xyz, 1.0);
+	gl_Position = ubo.projection * ubo.view * push.model * skinMat * vec4(inPos, 1.0);
 	
 	outNormal = normalize(transpose(inverse(mat3(ubo.view * push.model * skinMat))) * inNormal);
 
-	vec3 lightPos = vec3(30.f, 30.f, 30.f);
-
 	vec4 pos = ubo.view * vec4(inPos, 1.0);
-	vec3 lPos = mat3(ubo.view) * lightPos;
+	vec3 lPos = mat3(ubo.view) * ubo.lightPos;
 	outLightVec = lPos - pos.xyz;
 	outViewVec = -pos.xyz;
 }
