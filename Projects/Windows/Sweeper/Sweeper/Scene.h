@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "OBJModelObject.h"
 #include "PlayerObject.h"
 #include "GLTFModelObject.h"
@@ -47,9 +49,8 @@ private:
 	VulkanGLTFModel wispModel;
 	std::array<GLTFModelObject*, 10> wispObject;
 
-	// gltf skin 버섯
 	VulkanGLTFSkinModel mushroomModel;
-	std::array<GLTFSkinModelObject*, 100> mushroomObject;
+	std::unordered_map<int, std::shared_ptr<GLTFSkinModelObject>> pMonsterObjects;	// 다형성을 위한 포인터 사용
 
 	// gltf skin 캐릭터 에셋
 	std::array<VulkanGLTFSkinModel, 4> playerModel;		// 캐릭터 종류는 총 4개이다.

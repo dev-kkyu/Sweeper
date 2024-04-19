@@ -2,6 +2,7 @@
 
 #include "Room.h"
 #include "PlayerObject.h"
+#include "MonsterObject.h"
 
 #include <iostream>
 
@@ -73,6 +74,22 @@ void Session::start(Room* parentRoom, int player_id)
 				p.dir_z = dir.z;
 				sendPacket(&p);
 			}
+		}
+	}
+	// 모든 몬스터 추가 패킷을 보낸다
+	{
+		SC_ADD_MONSTER_PACKET p;
+		p.size = sizeof(p);
+		p.type = SC_ADD_MONSTER;
+		for (auto& m : parentRoom->monsters) {
+			p.monster_id = m.first;
+			auto pos = m.second->getPosition();
+			auto dir = m.second->getLook();
+			p.pos_x = pos.x;
+			p.pos_z = pos.z;
+			p.dir_x = dir.x;
+			p.dir_z = dir.z;
+			sendPacket(&p);
 		}
 	}
 }

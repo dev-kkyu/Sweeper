@@ -48,16 +48,6 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 		wispObject[i]->rotate(180.f);
 	}
 
-	// 버섯 생성
-	for (int i = 0; i < mushroomObject.size(); ++i) {
-		mushroomObject[i] = new GLTFSkinModelObject;
-		mushroomObject[i]->initModel(mushroomModel, descriptorSetLayout.ssbo);
-		int x = i / 10 - 5;
-		int z = i % 10 - 5;
-		mushroomObject[i]->setPosition({ x * 5.f, 0.f, z * 5.f });
-		mushroomObject[i]->setAnimateSpeed(float(rand()) / RAND_MAX + 0.5f);
-	}
-
 	// 전사 생성
 	for (int i = 0; i < warriorObject.size(); ++i) {
 		warriorObject[i] = new OBJModelObject;
@@ -88,9 +78,7 @@ Scene::~Scene()
 	warriorTexture.destroy();
 	warriorBuffer.destroy();
 
-	for (auto& object : mushroomObject) {
-		delete object;
-	}
+	pMonsterObjects.clear();
 	mushroomModel.destroy();
 
 	delete mapObject;
@@ -123,8 +111,8 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	// 모델들 업데이트
 	mapObject->update(elapsedTime, currentFrame);
 
-	for (int i = 0; i < mushroomObject.size(); ++i) {
-		mushroomObject[i]->update(elapsedTime, currentFrame);
+	for (auto& m : pMonsterObjects) {
+		m.second->update(elapsedTime, currentFrame);
 	}
 
 	for (auto& object : warriorObject) {
@@ -160,8 +148,8 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.skinModel);
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.skinModel, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 
-	for (int i = 0; i < mushroomObject.size(); ++i) {
-		mushroomObject[i]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
+	for (auto& m : pMonsterObjects) {
+		m.second->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
 	}
 
 	for (auto& player : pPlayers) {
@@ -357,6 +345,23 @@ void Scene::processPacket(unsigned char* packet)
 		else
 			std::cout << int(p->player_id) << ": STATE 에러" << std::endl;
 		std::cout << int(p->player_id) << "의 상태가 " << ((p->state == PLAYER_STATE::RUN) ? "RUN" : (p->state == PLAYER_STATE::IDLE) ? "IDLE" : "ATTACK") << "로 변경" << std::endl;
+		break;
+	}
+	case SC_ADD_MONSTER: {
+		auto p = reinterpret_cast<SC_ADD_MONSTER_PACKET*>(packet);
+		pMonsterObjects.try_emplace(p->monster_id, std::make_shared<GLTFSkinModelObject>());
+		pMonsterObjects[p->monster_id]->initModel(mushroomModel, descriptorSetLayout.ssbo);
+		pMonsterObjects[p->monster_id]->setPosition({ p->pos_x, 0.f, p->pos_z });
+		pMonsterObjects[p->monster_id]->setLook({ p->dir_x, 0.f, p->dir_z });
+		std::cout << int(p->monster_id) << ": 몬스터 추가" << std::endl;
+		break;
+	}
+	case SC_MOVE_MONSTER: {
+		auto p = reinterpret_cast<SC_MOVE_MONSTER_PACKET*>(packet);
+		break;
+	}
+	case SC_REMOVE_MONSTER: {
+		auto p = reinterpret_cast<SC_REMOVE_MONSTER_PACKET*>(packet);
 		break;
 	}
 	}

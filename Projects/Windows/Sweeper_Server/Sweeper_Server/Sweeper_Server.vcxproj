@@ -131,6 +131,7 @@
   <ItemGroup>
     <ClCompile Include="GameObjectBase.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MonsterObject.cpp" />
     <ClCompile Include="PlayerObject.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="Server.cpp" />
@@ -138,6 +139,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObjectBase.h" />
+    <ClInclude Include="MonsterObject.h" />
     <ClInclude Include="PlayerObject.h" />
     <ClInclude Include="protocol.h" />
     <ClInclude Include="Room.h" />

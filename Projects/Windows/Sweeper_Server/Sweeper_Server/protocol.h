@@ -11,6 +11,9 @@ constexpr char SC_ADD_PLAYER = 4;
 constexpr char SC_POSITION = 5;
 constexpr char SC_PLAYER_LOOK = 6;
 constexpr char SC_PLAYER_STATE = 7;
+constexpr char SC_ADD_MONSTER = 8;
+constexpr char SC_MOVE_MONSTER = 9;
+constexpr char SC_REMOVE_MONSTER = 10;
 
 constexpr char CS_KEY_EVENT = 1;
 constexpr char CS_MOVE_MOUSE = 2;
@@ -95,6 +98,35 @@ struct SC_PLAYER_STATE_PACKET
 	char type;
 	char player_id;
 	PLAYER_STATE state;
+};
+
+struct SC_ADD_MONSTER_PACKET
+{
+	unsigned char size;
+	char type;
+	char monster_id;
+	float pos_x;		// 몬스터 위치
+	float pos_z;
+	float dir_x;		// 현재 보고있는 방향
+	float dir_z;
+};
+
+struct SC_MOVE_MONSTER_PACKET
+{
+	unsigned char size;
+	char type;
+	char monster_id;
+	float pos_x;		// 몬스터 위치
+	float pos_z;
+	float dir_x;		// 현재 보고있는 방향
+	float dir_z;
+};
+
+struct SC_REMOVE_MONSTER_PACKET
+{
+	unsigned char size;
+	char type;
+	char monster_id;
 };
 
 struct CS_KEY_EVENT_PACKET
