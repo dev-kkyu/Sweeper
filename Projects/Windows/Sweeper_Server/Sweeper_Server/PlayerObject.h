@@ -9,8 +9,14 @@
 
 #include "GameObjectBase.h"
 
+class Room;
 class PlayerObject : public GameObjectBase
 {
+private:
+	// 플레이어의 소속 정보, 플레이어는 세션이다
+	Room* parentRoom;
+	int my_id;
+
 private:
 	// 고정 상태인 경우 움직이지 않는다
 	bool isFixedState = false;
@@ -26,11 +32,11 @@ private:
 	float velocity;			// 현재 수직 속도
 
 public:
-	PlayerObject();
+	PlayerObject(Room* parentRoom, int p_id);
 	virtual ~PlayerObject();
 
 	virtual void initialize() override;
-	virtual void update(float elapsedTime) override;
+	virtual bool update(float elapsedTime) override;
 	virtual void release() override;
 
 	unsigned int getKeyState() const;

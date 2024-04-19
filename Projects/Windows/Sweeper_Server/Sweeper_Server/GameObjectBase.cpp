@@ -74,3 +74,13 @@ void GameObjectBase::rotate(float degree)
 	modelTransform = modelTransform * rotateMatrix;
 }
 
+bool GameObjectBase::isCollide(const GameObjectBase& other)
+{
+	glm::vec3 aPos = getPosition();
+	glm::vec3 bPos = other.getPosition();
+	float collision_dist = collisionRadius + other.collisionRadius;
+
+	float dist2 = (aPos.x - bPos.x) * (aPos.x - bPos.x) + (aPos.z - bPos.z) * (aPos.z - bPos.z);
+	return dist2 <= collision_dist * collision_dist;
+}
+

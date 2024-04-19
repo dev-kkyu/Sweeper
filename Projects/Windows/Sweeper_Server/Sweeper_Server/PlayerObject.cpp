@@ -1,6 +1,10 @@
 #include "PlayerObject.h"
 
-PlayerObject::PlayerObject()
+#include "Room.h"
+#include "Session.h"
+
+PlayerObject::PlayerObject(Room* parentRoom, int p_id)
+	: parentRoom{ parentRoom }, my_id{ p_id }
 {
 	gravity = 25.f;								// 중력을 이것으로 조정해 준다.
 	jumpSpeed = glm::sqrt(2.f * gravity * 1.f);	// 최대 높이 1m
@@ -15,10 +19,10 @@ void PlayerObject::initialize()
 {
 }
 
-void PlayerObject::update(float elapsedTime)
+bool PlayerObject::update(float elapsedTime)
 {
 	if (!keyState and !runJump)		// 업데이트 할 것이 없으면 리턴한다.
-		return;
+		return false;
 
 	if ((not isFixedState and keyState) or (runJump and keyState)) {
 		glm::vec3 look = getLook();
@@ -38,7 +42,22 @@ void PlayerObject::update(float elapsedTime)
 			}
 		}
 
-		move(direction, elapsedTime * 4.f);
+		move(direction, elapsedTime * 4.f);		// 초당 이동속도 4m
+
+		// 이동 후 충돌처리
+		// 플레이어끼리
+		for (int i = 0; i < 4 - 1; ++i) {
+			if (i == my_id)
+				continue;
+			if (parentRoom->sessions[i]) {
+				if (isCollide(*parentRoom->sessions[i]->player)) {
+					glm::vec3 myPos = getPosition();
+					glm::vec3 otherPos = parentRoom->sessions[i]->player->getPosition();
+					glm::vec3 dir = myPos - otherPos;
+					move(dir, elapsedTime * 4.f);	// 움직인 방향과 무관하게, 상대와 나의 방향벡터를 구하면 슬라이딩 벡터가 가능하다
+				}
+			}
+		}
 	}
 
 	// 현재 점프 중이라면
@@ -55,6 +74,8 @@ void PlayerObject::update(float elapsedTime)
 
 		setPosition(pos);
 	}
+
+	return true;
 }
 
 void PlayerObject::release()

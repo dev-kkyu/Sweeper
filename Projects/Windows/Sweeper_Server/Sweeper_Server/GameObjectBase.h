@@ -12,12 +12,15 @@ protected:
 	glm::mat4 modelTransform{ 1.f };
 	glm::vec3 scaleValue{ 1.f };
 
+	// 충돌 반지름 (기본 0.5f)
+	float collisionRadius = 0.5f;
+
 public:
 	GameObjectBase();
 	virtual ~GameObjectBase();
 
 	virtual void initialize() = 0;
-	virtual void update(float elapsedTime) = 0;
+	virtual bool update(float elapsedTime) = 0;		// 업데이트 된 것이 없으면 false
 	virtual void release() = 0;
 
 	virtual void setPosition(glm::vec3 position) final;
@@ -31,5 +34,7 @@ public:
 	virtual void move(glm::vec3 direction, float value) final;
 
 	virtual void rotate(float degree) final;
+
+	virtual bool isCollide(const GameObjectBase& other) final;
 
 };
