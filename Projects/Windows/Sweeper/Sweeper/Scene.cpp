@@ -30,7 +30,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	wispModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/wisp.glb");
 
 	// gltf skin모델 로드
-	mushroomModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/mushroom.glb");
+	mushroomModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/blue_mushroom.glb");
 	// 플레이어 모델 로드 (skin model)	// 일단은 두개만 로드한다.
 	playerModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Dragoon.glb");
 	playerModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Mage.glb");
