@@ -2,6 +2,8 @@
 
 #include "Room.h"
 #include "Session.h"
+#include "MonsterObject.h"
+#include <iostream>
 
 PlayerObject::PlayerObject(Room* parentRoom, int p_id)
 	: parentRoom{ parentRoom }, my_id{ p_id }
@@ -21,7 +23,30 @@ void PlayerObject::initialize()
 
 bool PlayerObject::update(float elapsedTime)
 {
-	if (!keyState and !runJump)		// 업데이트 할 것이 없으면 리턴한다.
+	if (isAttack) {
+		auto now_time = std::chrono::steady_clock::now();
+		if (now_time > attackBeginTime + std::chrono::milliseconds{ 700 }) {
+			isAttack = false;
+		}
+		else if (now_time > attackBeginTime + std::chrono::milliseconds{ 200 }) {
+			// 충돌검사
+			auto myPos = getPosition();
+			myPos += getLook();	// 칼 범위를 플레이어 앞쪽으로 세팅해준다.
+			for (auto& m : parentRoom->monsters) {
+				auto monPos = m.second->getPosition();
+				float dist2 = (myPos.x - monPos.x) * (myPos.x - monPos.x) + (myPos.z - monPos.z) * (myPos.z - monPos.z);
+				if (dist2 <= 1.5f) {	// 충돌
+					// Todo:
+					// 해당 몬스터에 공격받음을 알림
+					isAttack = false;
+					std::cout << m.first << ": 몬스터 공격받음" << std::endl;
+					break;
+				}
+			}
+		}
+	}
+
+	if (!keyState and !runJump)		// Position이 변경되지 않으면 false로 리턴한다.
 		return false;
 
 	// 공격중이 아니어야 XZ평면으로 움직일 수 있다. 다만 점프중일땐 움직일 수 있다
@@ -98,6 +123,12 @@ bool PlayerObject::getFixedState() const
 void PlayerObject::setFixedState(bool state)
 {
 	isFixedState = state;
+}
+
+void PlayerObject::setAttackStart()
+{
+	isAttack = true;
+	attackBeginTime = std::chrono::steady_clock::now();
 }
 
 void PlayerObject::processKeyInput(unsigned int key, bool is_pressed)

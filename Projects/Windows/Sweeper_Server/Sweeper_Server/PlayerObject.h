@@ -8,6 +8,7 @@
 #define KEY_MOUSE_RIGHT	0x20
 
 #include "GameObjectBase.h"
+#include <chrono>
 
 class Room;
 class PlayerObject : public GameObjectBase
@@ -31,6 +32,10 @@ private:
 	float jumpSpeed;		// 점프 시작 속도 (m/s)	-> 루트(2 * g * h) -> h == 최대높이
 	float velocity;			// 현재 수직 속도
 
+	// 공격 관련 변수
+	bool isAttack = false;
+	std::chrono::steady_clock::time_point attackBeginTime;
+
 public:
 	PlayerObject(Room* parentRoom, int p_id);
 	virtual ~PlayerObject();
@@ -42,6 +47,7 @@ public:
 	unsigned int getKeyState() const;
 	bool getFixedState() const;
 	void setFixedState(bool state);
+	void setAttackStart();
 
 	void processKeyInput(unsigned int key, bool is_pressed);
 	void processMoveMouse(float move_x, float move_y);

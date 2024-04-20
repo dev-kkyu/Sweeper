@@ -159,6 +159,10 @@ void Session::processPacket(unsigned char* packet)
 
 		// 마우스 버튼이 입력됐다면
 		if (nowState & KEY_MOUSE_RIGHT) {		// 한 번 클릭에 한 번 동작된다
+			// 공격 중임을 플레이어에게 알려준다. (공격 충돌검사용)
+			player->setAttackStart();
+
+			// 클라이언트에게, 공격 애니메이션을 렌더링 하도록 State를 전송한다
 			SC_PLAYER_STATE_PACKET p;
 			p.size = sizeof(p);
 			p.type = SC_PLAYER_STATE;
