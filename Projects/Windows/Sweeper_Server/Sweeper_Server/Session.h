@@ -16,8 +16,6 @@ public:
 	std::shared_ptr<PlayerObject> player;
 
 private:
-	asio::io_context& io_context;
-
 	asio::ip::tcp::socket socket;
 
 	Room* parentRoom = nullptr;
@@ -32,7 +30,7 @@ private:
 	int remain_size;
 
 public:
-	Session(asio::io_context& io_context, asio::ip::tcp::socket socket);
+	Session(asio::ip::tcp::socket socket);
 	void start(Room* parentRoom, int player_id);
 	void update(float elapsedTime);
 	void sendPacket(void* packet);

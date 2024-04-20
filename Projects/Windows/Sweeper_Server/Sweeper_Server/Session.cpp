@@ -6,8 +6,7 @@
 
 #include <iostream>
 
-Session::Session(asio::io_context& io_context, asio::ip::tcp::socket socket)
-	: io_context{ io_context }, socket{ std::move(socket) }
+Session::Session(asio::ip::tcp::socket socket) : socket{ std::move(socket) }
 {
 	remain_size = 0;
 }
@@ -176,7 +175,7 @@ void Session::processPacket(unsigned char* packet)
 			parentRoom->room_mutex.unlock();
 			{
 				// 1초 뒤에 State를 돌려주도록 예약한다.
-				auto timer = std::make_shared<asio::steady_timer>(io_context
+				auto timer = std::make_shared<asio::steady_timer>(parentRoom->io_context
 					, std::chrono::steady_clock::now() + std::chrono::milliseconds(700));
 				auto self = shared_from_this();
 				timer->async_wait(

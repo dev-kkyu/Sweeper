@@ -29,7 +29,7 @@ void Server::doAccept()
 		{
 			if (!ec) {		// 정상적으로 접속을 받아 작업을 완료했을 때
 
-				auto ptr = std::make_shared<Session>(io_context, std::move(socket));
+				auto ptr = std::make_shared<Session>(std::move(socket));
 
 				// 세션을 방에 추가해준다. 세션은 플레이어를 가짐. Todo : 적절한 방을 찾아서 넣어줘야 한다.
 				room->addSession(ptr);
