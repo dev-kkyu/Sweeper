@@ -14,6 +14,7 @@ constexpr char SC_PLAYER_STATE = 7;
 constexpr char SC_ADD_MONSTER = 8;
 constexpr char SC_MOVE_MONSTER = 9;
 constexpr char SC_REMOVE_MONSTER = 10;
+constexpr char SC_MONSTER_STATE = 11;
 
 constexpr char CS_KEY_EVENT = 1;
 constexpr char CS_MOVE_MOUSE = 2;
@@ -33,6 +34,15 @@ enum class PLAYER_STATE : char
 	IDLE = 0,
 	RUN = 1,
 	ATTACK = 2
+};
+
+enum class MONSTER_STATE : char
+{
+	IDLE = 0,
+	MOVE = 1,
+	HIT = 2,
+	DIE = 3,
+	ATTACK = 4
 };
 
 #pragma pack(push, 1)
@@ -127,6 +137,14 @@ struct SC_REMOVE_MONSTER_PACKET
 	unsigned char size;
 	char type;
 	char monster_id;
+};
+
+struct SC_MONSTER_STATE_PACKET
+{
+	unsigned char size;
+	char type;
+	char monster_id;
+	MONSTER_STATE state;
 };
 
 struct CS_KEY_EVENT_PACKET

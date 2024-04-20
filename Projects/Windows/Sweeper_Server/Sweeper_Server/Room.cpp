@@ -5,13 +5,14 @@
 
 #include <iostream>
 
-Room::Room(int room_id) : monster_ids{ 0 }
+Room::Room(asio::io_context& io_context, int room_id)
+	: io_context{ io_context }, monster_ids{ 0 }
 {
 	this->room_id = room_id;
 
 	// ¹ö¼¸ »ý¼º
 	for (int i = 0; i < 100; ++i) {
-		monsters.try_emplace(monster_ids, std::make_shared<MonsterObject>(monster_ids));
+		monsters.try_emplace(monster_ids, std::make_shared<MonsterObject>(this, monster_ids));
 		int x = i / 10 - 5;
 		int z = i % 10 - 5;
 		monsters[monster_ids]->setPosition({ x * 5.f, 0.f, z * 5.f });
@@ -51,5 +52,9 @@ void Room::update(float elapsedTime)
 		if (s) {
 			s->update(elapsedTime);
 		}
+	}
+
+	for (auto& m : monsters) {
+		m.second->update(elapsedTime);
 	}
 }

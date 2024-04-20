@@ -297,7 +297,7 @@ void Scene::processPacket(unsigned char* packet)
 		my_id = p->player_id;
 		pMyPlayer = std::make_shared<PlayerObject>();
 		pMyPlayer->initModel(playerModel[0], descriptorSetLayout.ssbo);
-		pMyPlayer->setScale(glm::vec3(1.5f));
+		pMyPlayer->setScale(glm::vec3(1.3f));
 		pMyPlayer->setAnimationClip(CLIP_IDLE);	// Idle
 		//pMyPlayer->setAnimateSpeed(1.f);	// Todo : 필요시 적절히 조절할 것
 		pMyPlayer->setPosition(glm::vec3(p->pos_x, 0.f, p->pos_z));
@@ -318,7 +318,7 @@ void Scene::processPacket(unsigned char* packet)
 		std::cout << "플레이어 추가 패킷 수신 ID:[" << int(p->player_id) << "]\n";
 		pPlayers[p->player_id] = std::make_shared<PlayerObject>();
 		pPlayers[p->player_id]->initModel(playerModel[1], descriptorSetLayout.ssbo);	// 일단 나 제외 1번모델로
-		pPlayers[p->player_id]->setScale(glm::vec3(1.5f));
+		pPlayers[p->player_id]->setScale(glm::vec3(1.3f));
 		pPlayers[p->player_id]->setAnimationClip(CLIP_IDLE);
 		pPlayers[p->player_id]->setPosition(glm::vec3(p->pos_x, 0.f, p->pos_z));
 		pPlayers[p->player_id]->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
@@ -362,6 +362,17 @@ void Scene::processPacket(unsigned char* packet)
 	}
 	case SC_REMOVE_MONSTER: {
 		auto p = reinterpret_cast<SC_REMOVE_MONSTER_PACKET*>(packet);
+		break;
+	}
+	case SC_MONSTER_STATE: {
+		auto p = reinterpret_cast<SC_MONSTER_STATE_PACKET*>(packet);
+		if (p->state == MONSTER_STATE::IDLE)
+			pMonsterObjects[p->monster_id]->setAnimationClip(0);
+		else if (p->state == MONSTER_STATE::HIT)
+			pMonsterObjects[p->monster_id]->setAnimationClip(2);
+		else
+			std::cout << int(p->monster_id) << ": STATE 에러" << std::endl;
+		std::cout << int(p->monster_id) << "의 상태가 " << ((p->state == MONSTER_STATE::IDLE) ? "IDLE" : "HIT") << "로 변경" << std::endl;
 		break;
 	}
 	}

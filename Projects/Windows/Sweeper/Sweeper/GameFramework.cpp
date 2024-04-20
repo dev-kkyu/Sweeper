@@ -215,6 +215,7 @@ void GameFramework::processPacket(unsigned char* packet)
 	case SC_ADD_MONSTER:
 	case SC_MOVE_MONSTER:
 	case SC_REMOVE_MONSTER:
+	case SC_MONSTER_STATE:
 		pScene->processPacket(packet);
 		break;
 	case SC_LOGIN_FAIL:

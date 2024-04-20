@@ -5,8 +5,16 @@
 #include "includes/glm/glm.hpp"
 #include "includes/glm/gtc/matrix_transform.hpp"
 
-class GameObjectBase
+#include <memory>
+
+class Room;
+class GameObjectBase : public std::enable_shared_from_this<GameObjectBase>	// 오브젝트 자체적으로 타이머 쓰려면 shared_ptr 필요
 {
+protected:
+	// 오브젝트 소속 정보, 플레이어는 세션안에, 몬스터는 monsters
+	Room* parentRoom;
+	int my_id;			// 플레이어 ID 혹은 몬스터ID
+
 protected:
 	// up은 항상 (0.f, 1.f, 0.f)이라고 가정한다.
 	glm::mat4 modelTransform{ 1.f };
@@ -16,12 +24,13 @@ protected:
 	float collisionRadius = 0.5f;
 
 public:
-	GameObjectBase();
+	GameObjectBase(Room* parentRoom, int o_id);
 	virtual ~GameObjectBase();
 
 	virtual void initialize() = 0;
 	virtual bool update(float elapsedTime) = 0;		// 업데이트 된 것이 없으면 false
 	virtual void release() = 0;
+	virtual void onHit(const GameObjectBase& other) = 0;
 
 	virtual void setPosition(glm::vec3 position) final;
 	virtual void setLook(glm::vec3 look) final;					// y는 항상 0으로 가정

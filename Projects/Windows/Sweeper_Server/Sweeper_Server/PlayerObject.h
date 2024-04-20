@@ -10,14 +10,8 @@
 #include "GameObjectBase.h"
 #include <chrono>
 
-class Room;
 class PlayerObject : public GameObjectBase
 {
-private:
-	// 플레이어의 소속 정보, 플레이어는 세션이다
-	Room* parentRoom;
-	int my_id;
-
 private:
 	// 고정 상태인 경우 움직이지 않는다
 	bool isFixedState = false;
@@ -43,6 +37,7 @@ public:
 	virtual void initialize() override;
 	virtual bool update(float elapsedTime) override;
 	virtual void release() override;
+	virtual void onHit(const GameObjectBase& other) override;
 
 	unsigned int getKeyState() const;
 	bool getFixedState() const;

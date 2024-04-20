@@ -5,15 +5,15 @@
 class MonsterObject : public GameObjectBase
 {
 private:
-	int my_id;
 
 public:
-	MonsterObject(int m_id);
+	MonsterObject(Room* parentRoom, int m_id);
 	virtual ~MonsterObject();
 
 	virtual void initialize() override;
 	virtual bool update(float elapsedTime) override;
 	virtual void release() override;
+	virtual void onHit(const GameObjectBase& other) override;
 
 };
 

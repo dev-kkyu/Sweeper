@@ -5,6 +5,7 @@
 #include <mutex>
 #include <unordered_map>
 
+namespace asio { class io_context; }
 class MonsterObject;
 class Session;
 class Room
@@ -15,6 +16,9 @@ private:
 public:
 	int room_id = -1;
 
+	// 타이머를 위해 io_context도 들고있는다
+	asio::io_context& io_context;
+
 	std::array<std::shared_ptr<Session>, 4> sessions;	// 한 방에는 4명이 있다
 
 	std::unordered_map<int, std::shared_ptr<MonsterObject>> monsters;
@@ -22,7 +26,7 @@ public:
 	std::mutex room_mutex;
 
 public:
-	Room(int room_id);
+	Room(asio::io_context& io_context, int room_id);
 	void addSession(std::shared_ptr<Session> session);
 	void update(float elapsedTime);
 

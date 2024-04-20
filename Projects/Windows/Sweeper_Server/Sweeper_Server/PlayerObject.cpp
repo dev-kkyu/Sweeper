@@ -6,7 +6,7 @@
 #include <iostream>
 
 PlayerObject::PlayerObject(Room* parentRoom, int p_id)
-	: parentRoom{ parentRoom }, my_id{ p_id }
+	: GameObjectBase{ parentRoom, p_id }
 {
 	gravity = 25.f;								// 중력을 이것으로 조정해 준다.
 	jumpSpeed = glm::sqrt(2.f * gravity * 1.f);	// 최대 높이 1m
@@ -36,8 +36,7 @@ bool PlayerObject::update(float elapsedTime)
 				auto monPos = m.second->getPosition();
 				float dist2 = (myPos.x - monPos.x) * (myPos.x - monPos.x) + (myPos.z - monPos.z) * (myPos.z - monPos.z);
 				if (dist2 <= 1.5f) {	// 충돌
-					// Todo:
-					// 해당 몬스터에 공격받음을 알림
+					m.second->onHit(*this);
 					isAttack = false;
 					std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 					break;
@@ -107,6 +106,10 @@ bool PlayerObject::update(float elapsedTime)
 }
 
 void PlayerObject::release()
+{
+}
+
+void PlayerObject::onHit(const GameObjectBase& other)
 {
 }
 

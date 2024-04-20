@@ -3,7 +3,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include "includes/glm/gtx/vector_angle.hpp"
 
-GameObjectBase::GameObjectBase()
+GameObjectBase::GameObjectBase(Room* parentRoom, int o_id)
+	: parentRoom{ parentRoom }, my_id{ o_id }
 {
 }
 

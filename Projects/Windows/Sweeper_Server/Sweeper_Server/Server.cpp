@@ -14,7 +14,7 @@ Server::Server(asio::io_context& io_context, int port)
 {
 	// 방 생성
 	// Todo: 여러 방으로 확장 필요
-	room = std::make_shared<Room>(0);			// 일단 방번호 0번 설정
+	room = std::make_shared<Room>(io_context, 0);			// 일단 방번호 0번 설정
 
 	fps_value = 60;			// 초당 60번 업데이트
 
