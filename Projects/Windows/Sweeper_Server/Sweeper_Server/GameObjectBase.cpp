@@ -74,7 +74,7 @@ void GameObjectBase::rotate(float degree)
 	modelTransform = modelTransform * rotateMatrix;
 }
 
-bool GameObjectBase::isCollide(const GameObjectBase& other)
+bool GameObjectBase::isCollide(const GameObjectBase& other) const
 {
 	glm::vec3 aPos = getPosition();
 	glm::vec3 bPos = other.getPosition();

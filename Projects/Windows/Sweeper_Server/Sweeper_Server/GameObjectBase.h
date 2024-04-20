@@ -35,6 +35,6 @@ public:
 
 	virtual void rotate(float degree) final;
 
-	virtual bool isCollide(const GameObjectBase& other) final;
+	virtual bool isCollide(const GameObjectBase& other) const final;
 
 };

@@ -46,7 +46,7 @@ bool PlayerObject::update(float elapsedTime)
 
 		// 이동 후 충돌처리
 		// 플레이어끼리
-		for (int i = 0; i < 4 - 1; ++i) {
+		for (int i = 0; i < 4; ++i) {
 			if (i == my_id)
 				continue;
 			if (parentRoom->sessions[i]) {
