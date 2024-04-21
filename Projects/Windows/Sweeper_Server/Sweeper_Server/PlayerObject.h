@@ -19,6 +19,9 @@ private:
 	// 키가 눌려진 상태를 종합한다.
 	unsigned int keyState = 0;
 
+	// 움직이는 속도
+	float moveSpeed = 0.f;
+
 	// 점프 관련 변수
 	bool runJump = false;
 	// 값은 생성자에서 넣어준다.

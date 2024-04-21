@@ -8,6 +8,8 @@
 PlayerObject::PlayerObject(Room* parentRoom, int p_id)
 	: GameObjectBase{ parentRoom, p_id }
 {
+	moveSpeed = 4.f;							// 초당 이동속도 4m
+
 	gravity = 25.f;								// 중력을 이것으로 조정해 준다.
 	jumpSpeed = glm::sqrt(2.f * gravity * 1.f);	// 최대 높이 1m
 	velocity = 0.f;
@@ -70,7 +72,7 @@ bool PlayerObject::update(float elapsedTime)
 				}
 			}
 
-			move(direction, elapsedTime * 4.f);		// 초당 이동속도 4m
+			move(direction, elapsedTime * moveSpeed);		// 초당 이동속도 4m
 
 			// 이동 후 충돌처리
 			// 플레이어끼리
@@ -82,7 +84,7 @@ bool PlayerObject::update(float elapsedTime)
 						glm::vec3 myPos = getPosition();
 						glm::vec3 otherPos = parentRoom->sessions[i]->player->getPosition();
 						glm::vec3 dir = myPos - otherPos;
-						move(dir, elapsedTime * 4.f);	// 움직인 방향과 무관하게, 상대와 나의 방향벡터를 구하면 슬라이딩 벡터가 가능하다
+						move(dir, elapsedTime * moveSpeed);	// 움직인 방향과 무관하게, 상대와 나의 방향벡터를 구하면 슬라이딩 벡터가 가능하다
 					}
 				}
 			}
@@ -92,7 +94,7 @@ bool PlayerObject::update(float elapsedTime)
 					glm::vec3 myPos = getPosition();
 					glm::vec3 otherPos = m.second->getPosition();
 					glm::vec3 dir = myPos - otherPos;
-					move(dir, elapsedTime * 4.f);
+					move(dir, elapsedTime * moveSpeed);
 				}
 			}
 		}
