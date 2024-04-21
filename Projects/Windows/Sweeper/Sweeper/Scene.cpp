@@ -62,27 +62,27 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 
 Scene::~Scene()
 {
-	// 플레이어는 shared_ptr이므로, 따로 삭제 X
-
-	for (auto& model : playerModel) {
+	// 플레이어 객체들은 shared_ptr이므로, 따로 삭제 X
+	for (auto& model : playerModel) {		// 플레이어 모델들
 		model.destroy();
 	}
 
-	for (auto& object : wispObject) {
+	for (auto& object : wispObject) {		// 도깨비불 객체
 		delete object;
 	}
+	wispModel.destroy();					// 도깨비불 모델
 
-	for (auto& object : warriorObject) {
+	for (auto& object : warriorObject) {	// 전사 객체
 		delete object;
 	}
-	warriorTexture.destroy();
+	warriorTexture.destroy();				// 전사 모델
 	warriorBuffer.destroy();
 
-	pMonsterObjects.clear();
-	mushroomModel.destroy();
+	pMonsterObjects.clear();				// 몬스터 객체들
+	mushroomModel.destroy();				// 몬스터-버섯 모델
 
-	delete mapObject;
-	mapTexture.destroy();
+	delete mapObject;						// 맵 객체
+	mapTexture.destroy();					// 맵 모델
 	mapBuffer.destroy();
 
 	vkDestroyDescriptorPool(fDevice.logicalDevice, samplerDescriptorPool, nullptr);
