@@ -41,6 +41,17 @@ bool MonsterObject::update(float elapsedTime)
 				if (isCollide(*parentRoom->sessions[i]->player))
 					move(-newDir, 2.f * elapsedTime);
 
+				// 타 몬스터와 충돌
+				for (auto& m : parentRoom->monsters) {
+					if (m.first == my_id)	// 나와의 충돌처리는 하면 안된다
+						continue;
+					if (isCollide(*m.second)) {
+						glm::vec3 otherPos = m.second->getPosition();
+						glm::vec3 dir = myPos - otherPos;
+						move(dir, elapsedTime * 2.f);
+					}
+				}
+
 				return true;
 			}
 		}
