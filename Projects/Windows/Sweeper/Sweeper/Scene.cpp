@@ -362,6 +362,7 @@ void Scene::processPacket(unsigned char* packet)
 	}
 	case SC_MONSTER_LOOK: {
 		auto p = reinterpret_cast<SC_MONSTER_LOOK_PACKET*>(packet);
+		pMonsterObjects[p->monster_id]->setLook({ p->dir_x, 0.f, p->dir_z });
 		break;
 	}
 	case SC_REMOVE_MONSTER: {

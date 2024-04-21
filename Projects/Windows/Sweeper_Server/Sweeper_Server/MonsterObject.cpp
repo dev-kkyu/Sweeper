@@ -30,14 +30,27 @@ void MonsterObject::onHit(const GameObjectBase& other)
 {
 	// player의 update에서 호출될 예정이므로, 락X (업데이트 전에 락 걸기 때문)
 	{
-		SC_MONSTER_STATE_PACKET p;
-		p.monster_id = my_id;
-		p.size = sizeof(p);
-		p.type = SC_MONSTER_STATE;
-		p.state = MONSTER_STATE::HIT;
-		for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 변경된 플레이어 State를 보내준다.
-			if (s)
-				s->sendPacket(&p);
+		auto newDir = other.getPosition() - getPosition();
+		setLook(newDir);		// 플레이어 방향으로, look을 바꿔준다
+
+		SC_MONSTER_STATE_PACKET p1;
+		p1.size = sizeof(p1);
+		p1.type = SC_MONSTER_STATE;
+		p1.monster_id = my_id;
+		p1.state = MONSTER_STATE::HIT;
+
+		SC_MONSTER_LOOK_PACKET p2;
+		p2.size = sizeof(p2);
+		p2.type = SC_MONSTER_LOOK;
+		p2.monster_id = my_id;
+		p2.dir_x = newDir.x;
+		p2.dir_z = newDir.z;
+
+		for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 변경된 플레이어 State와 Look을 보내준다.
+			if (s) {
+				s->sendPacket(&p1);
+				s->sendPacket(&p2);
+			}
 		}
 	}
 
