@@ -35,6 +35,12 @@ bool MonsterObject::update(float elapsedTime)
 				auto newDir = playerPos - myPos;
 				setLook(newDir);
 				moveForward(2.f * elapsedTime);		// 초당 2m 거리로 플레이어를 향해 간다
+
+				// 이동 후 충돌처리
+				// 플레이어와 충돌
+				if (isCollide(*parentRoom->sessions[i]->player))
+					move(-newDir, 2.f * elapsedTime);
+
 				return true;
 			}
 		}
