@@ -209,11 +209,12 @@ void GameFramework::processPacket(unsigned char* packet)
 	case SC_LOGIN:
 	case SC_LOGOUT:
 	case SC_ADD_PLAYER:
-	case SC_POSITION:
+	case SC_MOVE_PLAYER:
 	case SC_PLAYER_LOOK:
 	case SC_PLAYER_STATE:
 	case SC_ADD_MONSTER:
 	case SC_MOVE_MONSTER:
+	case SC_MONSTER_LOOK:
 	case SC_REMOVE_MONSTER:
 	case SC_MONSTER_STATE:
 		pScene->processPacket(packet);

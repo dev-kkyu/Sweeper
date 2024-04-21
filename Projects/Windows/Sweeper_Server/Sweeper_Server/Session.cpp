@@ -98,9 +98,9 @@ void Session::update(float elapsedTime)
 	// 변화가 있을 때에만 데이터를 전송하는 것으로 최적화
 	if (player->update(elapsedTime)) {
 		// 프레임마다 내 위치를 모두에게 전송한다.
-		SC_POSITION_PACKET p;
+		SC_MOVE_PLAYER_PACKET p;
 		p.size = sizeof(p);
-		p.type = SC_POSITION;
+		p.type = SC_MOVE_PLAYER;
 		p.player_id = player_id;
 		auto pos = player->getPosition();
 		std::tie(p.x, p.y, p.z) = std::tie(pos.x, pos.y, pos.z);

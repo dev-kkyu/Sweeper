@@ -8,13 +8,14 @@ constexpr char SC_LOGIN = 1;
 constexpr char SC_LOGOUT = 2;
 constexpr char SC_LOGIN_FAIL = 3;
 constexpr char SC_ADD_PLAYER = 4;
-constexpr char SC_POSITION = 5;
+constexpr char SC_MOVE_PLAYER = 5;
 constexpr char SC_PLAYER_LOOK = 6;
 constexpr char SC_PLAYER_STATE = 7;
 constexpr char SC_ADD_MONSTER = 8;
 constexpr char SC_MOVE_MONSTER = 9;
-constexpr char SC_REMOVE_MONSTER = 10;
-constexpr char SC_MONSTER_STATE = 11;
+constexpr char SC_MONSTER_LOOK = 10;
+constexpr char SC_REMOVE_MONSTER = 11;
+constexpr char SC_MONSTER_STATE = 12;
 
 constexpr char CS_KEY_EVENT = 1;
 constexpr char CS_MOVE_MOUSE = 2;
@@ -83,7 +84,7 @@ struct SC_ADD_PLAYER_PACKET
 	float dir_z;
 };
 
-struct SC_POSITION_PACKET
+struct SC_MOVE_PLAYER_PACKET
 {
 	unsigned char size;
 	char type;
@@ -126,8 +127,15 @@ struct SC_MOVE_MONSTER_PACKET
 	unsigned char size;
 	char type;
 	char monster_id;
-	float pos_x;		// 몬스터 위치
-	float pos_z;
+	float x;			// 몬스터 위치
+	float z;
+};
+
+struct SC_MONSTER_LOOK_PACKET
+{
+	unsigned char size;
+	char type;
+	char monster_id;
 	float dir_x;		// 현재 보고있는 방향
 	float dir_z;
 };

@@ -324,8 +324,8 @@ void Scene::processPacket(unsigned char* packet)
 		pPlayers[p->player_id]->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
 		break;
 	}
-	case SC_POSITION: {
-		auto p = reinterpret_cast<SC_POSITION_PACKET*>(packet);
+	case SC_MOVE_PLAYER: {
+		auto p = reinterpret_cast<SC_MOVE_PLAYER_PACKET*>(packet);
 		pPlayers[p->player_id]->setPosition(glm::vec3(p->x, p->y, p->z));
 		break;
 	}
@@ -358,6 +358,10 @@ void Scene::processPacket(unsigned char* packet)
 	}
 	case SC_MOVE_MONSTER: {
 		auto p = reinterpret_cast<SC_MOVE_MONSTER_PACKET*>(packet);
+		break;
+	}
+	case SC_MONSTER_LOOK: {
+		auto p = reinterpret_cast<SC_MONSTER_LOOK_PACKET*>(packet);
 		break;
 	}
 	case SC_REMOVE_MONSTER: {
