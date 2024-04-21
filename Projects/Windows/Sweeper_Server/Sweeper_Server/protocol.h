@@ -127,8 +127,10 @@ struct SC_MOVE_MONSTER_PACKET
 	unsigned char size;
 	char type;
 	char monster_id;
-	float x;			// 몬스터 위치
-	float z;
+	float pos_x;		// 몬스터 위치
+	float pos_z;
+	float dir_x;		// 현재 보고있는 방향
+	float dir_z;
 };
 
 struct SC_MONSTER_LOOK_PACKET

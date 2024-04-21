@@ -55,6 +55,22 @@ void Room::update(float elapsedTime)
 	}
 
 	for (auto& m : monsters) {
-		m.second->update(elapsedTime);
+		if (m.second->update(elapsedTime)) {			// 변화가 있을 시 정보를 보내준다
+			SC_MOVE_MONSTER_PACKET p;
+			p.size = sizeof(p);
+			p.type = SC_MOVE_MONSTER;
+			p.monster_id = m.first;
+			auto pos = m.second->getPosition();
+			auto look = m.second->getLook();
+			p.pos_x = pos.x;
+			p.pos_z = pos.z;
+			p.dir_x = look.x;
+			p.dir_z = look.z;
+			for (auto& s : sessions) {		// 모든 세션에게 변화된 몬스터 위치 정보를 보내준다
+				if (s) {
+					s->sendPacket(&p);
+				}
+			}
+		}
 	}
 }

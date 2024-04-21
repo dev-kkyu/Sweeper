@@ -2,6 +2,9 @@
 
 #include "Room.h"
 #include "Session.h"
+#include "PlayerObject.h"
+
+#include <limits>
 
 MonsterObject::MonsterObject(Room* parentRoom, int m_id)
 	: GameObjectBase{ parentRoom, m_id }
@@ -19,6 +22,24 @@ void MonsterObject::initialize()
 
 bool MonsterObject::update(float elapsedTime)
 {
+	// update 호출 전 lock이 걸려있다.
+	for (int i = 0; i < 4; ++i) {
+		if (parentRoom->sessions[i]) {		// Todo: 0번 플레이어 대신, 제일 가까운 플레이어에게 가도록 해야한다
+			auto playerPos = parentRoom->sessions[i]->player->getPosition();
+			auto myPos = getPosition();
+			float dist2 = (myPos.x - playerPos.x) * (myPos.x - playerPos.x) + (myPos.z - playerPos.z) * (myPos.z - playerPos.z);
+			float targetDist2 = 3.f * 3.f;
+			if (dist2 < std::numeric_limits<float>::epsilon())	// 거리가 너무 작으면 처리하지 않는다, Todo: 나중에 삭제할수도 있다
+				return false;
+			if (dist2 <= targetDist2) {		// 3.f 거리 내에 있으면
+				auto newDir = playerPos - myPos;
+				setLook(newDir);
+				moveForward(2.f * elapsedTime);		// 초당 2m 거리로 플레이어를 향해 간다
+				return true;
+			}
+		}
+	}
+
 	return false;
 }
 

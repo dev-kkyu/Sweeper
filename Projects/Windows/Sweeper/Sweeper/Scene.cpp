@@ -358,6 +358,8 @@ void Scene::processPacket(unsigned char* packet)
 	}
 	case SC_MOVE_MONSTER: {
 		auto p = reinterpret_cast<SC_MOVE_MONSTER_PACKET*>(packet);
+		pMonsterObjects[p->monster_id]->setPosition({ p->pos_x, 0.f, p->pos_z });
+		pMonsterObjects[p->monster_id]->setLook({ p->dir_x, 0.f, p->dir_z });
 		break;
 	}
 	case SC_MONSTER_LOOK: {
