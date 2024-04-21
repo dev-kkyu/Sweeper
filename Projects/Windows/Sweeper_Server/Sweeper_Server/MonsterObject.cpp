@@ -6,6 +6,7 @@
 MonsterObject::MonsterObject(Room* parentRoom, int m_id)
 	: GameObjectBase{ parentRoom, m_id }
 {
+	collisionRadius = 0.4f;
 }
 
 MonsterObject::~MonsterObject()

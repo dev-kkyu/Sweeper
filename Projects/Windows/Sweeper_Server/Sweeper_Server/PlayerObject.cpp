@@ -11,6 +11,8 @@ PlayerObject::PlayerObject(Room* parentRoom, int p_id)
 	gravity = 25.f;								// 중력을 이것으로 조정해 준다.
 	jumpSpeed = glm::sqrt(2.f * gravity * 1.f);	// 최대 높이 1m
 	velocity = 0.f;
+
+	collisionRadius = 0.4f;						// 캐릭터 충돌 반지름 조정
 }
 
 PlayerObject::~PlayerObject()
@@ -82,6 +84,15 @@ bool PlayerObject::update(float elapsedTime)
 						glm::vec3 dir = myPos - otherPos;
 						move(dir, elapsedTime * 4.f);	// 움직인 방향과 무관하게, 상대와 나의 방향벡터를 구하면 슬라이딩 벡터가 가능하다
 					}
+				}
+			}
+			// 몬스터끼리
+			for (auto& m : parentRoom->monsters) {
+				if (isCollide(*m.second)) {
+					glm::vec3 myPos = getPosition();
+					glm::vec3 otherPos = m.second->getPosition();
+					glm::vec3 dir = myPos - otherPos;
+					move(dir, elapsedTime * 4.f);
 				}
 			}
 		}
