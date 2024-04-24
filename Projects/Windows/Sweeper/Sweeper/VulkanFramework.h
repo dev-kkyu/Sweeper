@@ -31,7 +31,7 @@ namespace vkf
 	struct UniformBufferObject {
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 projection;
-		alignas(16) glm::vec3 lightPos = glm::vec3(5.0f, 5.0f, 5.0f);
+		alignas(16) glm::vec3 lightPos = glm::vec3(0.0f, 50.0f, 0.0f);
 	};
 
 	struct PushConstantData {
