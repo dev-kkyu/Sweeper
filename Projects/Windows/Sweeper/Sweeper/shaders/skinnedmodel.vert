@@ -43,8 +43,9 @@ void main()
 	
 	outNormal = normalize(transpose(inverse(mat3(ubo.view * push.model * skinMat))) * inNormal);
 
-	vec4 pos = ubo.view * vec4(inPos, 1.0);
+	vec3 fragPos = vec3(ubo.view * push.model * vec4(inPos, 1.0));
 	vec3 lPos = mat3(ubo.view) * ubo.lightPos;
-	outLightVec = lPos - pos.xyz;
-	outViewVec = -pos.xyz;
+	outLightVec = lPos - fragPos;
+	vec3 vPos = mat3(ubo.view) * vec3(inverse(ubo.view)[3]);
+	outViewVec = vPos - fragPos;
 }
