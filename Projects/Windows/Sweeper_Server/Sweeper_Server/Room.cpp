@@ -15,7 +15,7 @@ Room::Room(asio::io_context& io_context, int room_id)
 		monsters.try_emplace(monster_ids, std::make_shared<MonsterObject>(this, monster_ids));
 		int x = i / 10 - 5;
 		int z = i % 10 - 5;
-		monsters[monster_ids]->setPosition({ x * 5.f, 0.f, z * 5.f });
+		monsters[monster_ids]->setPosition({ 70.f + (x * 5.f), 0.f, 50.f + (z * 5.f) });
 		++monster_ids;
 	}
 }

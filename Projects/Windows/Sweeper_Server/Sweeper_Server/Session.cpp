@@ -17,6 +17,8 @@ void Session::start(Room* parentRoom, int player_id)
 	this->player_id = player_id;
 
 	player = std::make_shared<PlayerObject>(parentRoom, player_id);
+	player->setPosition({ 90.f, 0.f, 90.f });			// 초기 위치 설정
+	player->setLook({ 0.f, 0.f, -1.f });
 
 	doRead();		// 수신하기를 시작한다.
 
