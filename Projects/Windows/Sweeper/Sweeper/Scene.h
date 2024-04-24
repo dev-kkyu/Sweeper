@@ -35,15 +35,14 @@ private:
 
 	VkDescriptorPool samplerDescriptorPool;
 
-	// obj ¸Ê
-	vkf::MeshBuffer mapBuffer;
-	vkf::Texture mapTexture;
-	OBJModelObject* mapObject;
-
 	// obj Àü»ç
 	vkf::MeshBuffer warriorBuffer;
 	vkf::Texture warriorTexture;
 	std::array<OBJModelObject*, 10> warriorObject;
+
+	// gltf ÀÏ¹Ý ¸Ê
+	VulkanGLTFModel mapModel;
+	GLTFModelObject mapObject;
 
 	// gltf ÀÏ¹Ý µµ±úºñºÒ
 	VulkanGLTFModel wispModel;

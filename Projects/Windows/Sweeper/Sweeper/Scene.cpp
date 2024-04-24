@@ -18,15 +18,14 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 
 	uniformBufferObject.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 
-	createSamplerDescriptorPool(2);		// obj에 사용할 텍스처 별도로 불러올것
+	createSamplerDescriptorPool(1);		// obj에 사용할 텍스처 별도로 불러올것
 
 	// obj와 텍스처 로드
-	mapBuffer.loadFromObjFile(fDevice, "models/map.obj");
-	mapTexture.loadFromFile(fDevice, "textures/map.png", samplerDescriptorPool, descriptorSetLayout.sampler);
 	warriorBuffer.loadFromObjFile(fDevice, "models/warrior.obj");
 	warriorTexture.loadFromFile(fDevice, "textures/warrior.png", samplerDescriptorPool, descriptorSetLayout.sampler);
 
 	// gltf 모델 로드
+	mapModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/map.glb");
 	wispModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/wisp.glb");
 
 	// gltf skin모델 로드
@@ -36,9 +35,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	playerModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Mage.glb");
 
 	// 맵 생성
-	mapObject = new OBJModelObject;
-	mapObject->setBuffer(mapBuffer);
-	mapObject->setTexture(mapTexture);
+	mapObject.setModel(mapModel);
 
 	// 도깨비불 생성
 	for (int i = 0; i < wispObject.size(); ++i) {
@@ -81,9 +78,7 @@ Scene::~Scene()
 	pMonsterObjects.clear();				// 몬스터 객체들
 	mushroomModel.destroy();				// 몬스터-버섯 모델
 
-	delete mapObject;						// 맵 객체
-	mapTexture.destroy();					// 맵 모델
-	mapBuffer.destroy();
+	mapModel.destroy();						// 맵 모델 // 오브젝트는 알아서 삭제
 
 	vkDestroyDescriptorPool(fDevice.logicalDevice, samplerDescriptorPool, nullptr);
 
@@ -108,9 +103,9 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 
 	uniformBufferObject.updateUniformBuffer(ubo, currentFrame);
 
-	// 모델들 업데이트
-	mapObject->update(elapsedTime, currentFrame);
+	// 맵은 업데이트 X
 
+	// 모델들 업데이트
 	for (auto& m : pMonsterObjects) {
 		m.second->update(elapsedTime, currentFrame);
 	}
@@ -136,7 +131,7 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	// firstSet은 set의 시작인덱스
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 
-	mapObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
+	mapObject.draw(commandBuffer, pipelineLayout.model, currentFrame);
 	for (auto& object : warriorObject) {
 		object->draw(commandBuffer, pipelineLayout.model, currentFrame);
 	}

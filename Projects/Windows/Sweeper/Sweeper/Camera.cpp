@@ -8,7 +8,7 @@ Camera::Camera()
 	: distanceFromPlayer{ 6.f }		// 카메라 거리
 {
 	viewTransform = glm::lookAt(glm::vec3(0.f, 3.f, 10.f), glm::vec3(0.f), glm::vec3(0.0f, 1.0f, 0.0f));
-	projectionTransform = glm::perspective(glm::radians(45.0f), 16.f / 9.f, 0.1f, 100.0f);
+	projectionTransform = glm::perspective(glm::radians(45.0f), 16.f / 9.f, 0.1f, 500.0f);
 }
 
 Camera::~Camera()
