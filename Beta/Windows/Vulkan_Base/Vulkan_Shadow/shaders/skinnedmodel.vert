@@ -39,12 +39,13 @@ void main()
 		inJointWeights.z * jointMatrices[int(inJointIndices.z)] +
 		inJointWeights.w * jointMatrices[int(inJointIndices.w)];
 
-	gl_Position = ubo.projection * ubo.view * push.model * skinMat * vec4(inPos, 1.0);
-	
-	outNormal = normalize(transpose(inverse(mat3(ubo.view * push.model * skinMat))) * inNormal);
+	vec4 FragPos = push.model * vec4(inPos, 1.0);
 
-	vec4 pos = ubo.view * vec4(inPos, 1.0);
-	vec3 lPos = mat3(ubo.view) * ubo.lightPos;
-	outLightVec = lPos - pos.xyz;
-	outViewVec = -pos.xyz;
+	gl_Position = ubo.projection * ubo.view * FragPos;
+	
+	outNormal = normalize(transpose(inverse(mat3(push.model))) * inNormal);
+
+	outLightVec = ubo.lightPos - FragPos.xyz;
+	vec3 vPos = vec3(inverse(ubo.view)[3]);
+	outViewVec = vPos - FragPos.xyz;
 }
