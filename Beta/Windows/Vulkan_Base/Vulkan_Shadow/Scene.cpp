@@ -257,7 +257,7 @@ void Scene::createDescriptorSetLayout()
 
 void Scene::createGraphicsPipeline()
 {
-	vkf::Shader modelShader{ fDevice, "shaders/model.vert.spv", "shaders/model.frag.spv" };
+	vkf::Shader modelShader{ fDevice, "shaders/model.vert.spv", "shaders/fragment.frag.spv" };
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -381,7 +381,7 @@ void Scene::createGraphicsPipeline()
 	}
 
 	// skinModel¿ë pipeline »ý¼º
-	vkf::Shader skinModelShader{ fDevice, "shaders/skinnedmodel.vert.spv", "shaders/skinnedmodel.frag.spv" };
+	vkf::Shader skinModelShader{ fDevice, "shaders/skinnedmodel.vert.spv", "shaders/fragment.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(skinModelShader.shaderStages.size());
 	pipelineInfo.pStages = skinModelShader.shaderStages.data();
 

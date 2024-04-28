@@ -164,10 +164,9 @@
     <ClInclude Include="VulkanGLTFSkinModel.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\model.frag" />
+    <None Include="shaders\fragment.frag" />
     <None Include="shaders\model.vert" />
     <None Include="shaders\model_offscreen.vert" />
-    <None Include="shaders\skinnedmodel.frag" />
     <None Include="shaders\skinnedmodel.vert" />
     <None Include="shaders\skinnedmodel_offscreen.vert" />
   </ItemGroup>
