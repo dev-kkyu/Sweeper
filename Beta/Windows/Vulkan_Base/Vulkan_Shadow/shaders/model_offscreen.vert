@@ -6,7 +6,10 @@ layout (location = 0) in vec3 inPos;
 // layout (location = 3) in vec3 inColor;
 
 layout (set = 0, binding = 0) uniform UniformBufferObject {
+	mat4 view;
+	mat4 projection;
 	mat4 lightSpaceMatrix;
+	vec3 lightPos;
 } ubo;
 
 layout (push_constant) uniform PushConstants {

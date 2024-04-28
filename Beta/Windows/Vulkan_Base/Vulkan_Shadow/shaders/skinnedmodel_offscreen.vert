@@ -8,7 +8,10 @@ layout (location = 4) in vec4 inJointIndices;
 layout (location = 5) in vec4 inJointWeights;
 
 layout (set = 0, binding = 0) uniform UniformBufferObject {
+	mat4 view;
+	mat4 projection;
 	mat4 lightSpaceMatrix;
+	vec3 lightPos;
 } ubo;
 
 layout(push_constant) uniform PushConstants {
