@@ -70,6 +70,7 @@ void GameFramework::initVulkan(GLFWwindow* window)
 	createColorResources();
 	createDepthResources();
 	createFramebuffers();
+	createOffscreenFramebuffer();
 	createCommandBuffers();
 	createSyncObjects();
 
@@ -85,6 +86,11 @@ void GameFramework::cleanup()
 
 	// 씬 소멸
 	pScene.reset(nullptr);
+
+	// 오프스크린 정보 Destroy
+	vkDestroyImageView(fDevice.logicalDevice, offscreenPass.depthImageView, nullptr);
+	vkDestroyImage(fDevice.logicalDevice, offscreenPass.depthImage, nullptr);
+	vkFreeMemory(fDevice.logicalDevice, offscreenPass.depthImageMemory, nullptr);
 
 	cleanupSwapChain();
 
@@ -585,6 +591,17 @@ void GameFramework::createFramebuffers()
 			throw std::runtime_error("failed to create framebuffer!");
 		}
 	}
+}
+
+void GameFramework::createOffscreenFramebuffer()
+{
+	// 쉐도우 맵 이미지 리소스 만들기
+	VkFormat offscreenDepthFormat = VK_FORMAT_D16_UNORM;
+	// usage : 그림자 매핑을 위해 깊이 attachment에서 직접 샘플링
+	vkf::createImage(fDevice, shadowMapize, shadowMapize, 1, VK_SAMPLE_COUNT_1_BIT, offscreenDepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, offscreenPass.depthImage, offscreenPass.depthImageMemory);
+	offscreenPass.depthImageView = vkf::createImageView(fDevice, offscreenPass.depthImage, offscreenDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
+
+	// Todo : 샘플러 만들기, 렌더 패스 만들기, 프레임버퍼 만들기, descriptor 정보들 만들기
 }
 
 VkFormat GameFramework::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)

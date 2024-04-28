@@ -74,6 +74,20 @@ private:
 
 	vkf::RenderPass renderPass;
 
+	// 쉐도우 매핑을 위한 offScreen 정보들
+	const uint32_t shadowMapize{ 2048 };
+	struct OffscreenPass {
+		VkFramebuffer frameBuffer;
+		VkImage depthImage;
+		VkDeviceMemory depthImageMemory;
+		VkImageView depthImageView;
+		//VkRenderPass renderPass;		// vkf::RenderPass 에 존재
+		VkSampler depthSampler;
+		VkDescriptorSetLayout samplerDescriptorSetLayout;
+		VkDescriptorPool samplerDescriptorPool;
+		VkDescriptorSet samplerDescriptorSets;
+	} offscreenPass{};
+
 	VkImage colorImage;
 	VkDeviceMemory colorImageMemory;
 	VkImageView colorImageView;
@@ -107,6 +121,7 @@ private:
 	void createColorResources();
 	void createDepthResources();
 	void createFramebuffers();
+	void createOffscreenFramebuffer();
 	void createCommandBuffers();
 	void createSyncObjects();
 

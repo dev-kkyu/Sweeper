@@ -29,7 +29,7 @@ private:
 
 	struct {
 		vkf::BufferObject scene;
-		vkf::BufferObject offscreen;
+		vkf::BufferObject offscreen;	// 추후 간소화 될 수 있다 (shader 바꾸게 되면 view, projection, lightPos 필요없음)
 	} uniformBufferObject;
 
 	glm::vec3 lightPos = glm::vec3(5.f, 5.f, 5.f);
