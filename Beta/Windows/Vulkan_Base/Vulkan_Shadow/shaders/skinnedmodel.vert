@@ -27,6 +27,13 @@ layout (location = 1) out vec3 outColor;
 layout (location = 2) out vec2 outUV;
 layout (location = 3) out vec3 outViewVec;
 layout (location = 4) out vec3 outLightVec;
+layout (location = 5) out vec4 outShadowCoord;
+
+const mat4 biasMat = mat4( 
+	0.5, 0.0, 0.0, 0.0,
+	0.0, 0.5, 0.0, 0.0,
+	0.0, 0.0, 1.0, 0.0,
+	0.5, 0.5, 0.0, 1.0 );
 
 void main() 
 {
@@ -49,4 +56,6 @@ void main()
 	outLightVec = ubo.lightPos - FragPos.xyz;
 	vec3 vPos = vec3(inverse(ubo.view)[3]);
 	outViewVec = vPos - FragPos.xyz;
+
+	outShadowCoord = biasMat * ubo.lightSpaceMatrix * FragPos;
 }
