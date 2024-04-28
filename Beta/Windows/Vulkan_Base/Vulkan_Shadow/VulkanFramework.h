@@ -28,6 +28,12 @@ namespace vkf
 		VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
 	};
 
+	struct RenderPass
+	{
+		VkRenderPass scene = VK_NULL_HANDLE;
+		VkRenderPass offscreen = VK_NULL_HANDLE;
+	};
+
 	struct UniformBufferObject {
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 projection;

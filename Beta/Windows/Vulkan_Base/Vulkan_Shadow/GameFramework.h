@@ -72,7 +72,7 @@ private:
 	std::vector<VkImageView> swapChainImageViews;
 	std::vector<VkFramebuffer> swapChainFramebuffers;
 
-	VkRenderPass renderPass;
+	vkf::RenderPass renderPass;
 
 	VkImage colorImage;
 	VkDeviceMemory colorImageMemory;

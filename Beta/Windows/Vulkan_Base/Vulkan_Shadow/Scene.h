@@ -10,7 +10,7 @@ class Scene
 private:
 	vkf::Device& fDevice;
 	VkSampleCountFlagBits& msaaSamples;
-	VkRenderPass& renderPass;
+	vkf::RenderPass& renderPass;
 
 	struct {
 		VkDescriptorSetLayout ubo = VK_NULL_HANDLE;
@@ -54,7 +54,7 @@ private:
 	bool leftButtonPressed = false;
 
 public:
-	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass);
+	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass);
 	~Scene();
 
 	void update(float elapsedTime, uint32_t currentFrame);
