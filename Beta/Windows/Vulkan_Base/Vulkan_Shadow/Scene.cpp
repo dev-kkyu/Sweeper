@@ -77,8 +77,7 @@ Scene::~Scene()
 
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.model, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.skinModel, nullptr);
-	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout.model, nullptr);
-	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout.skinModel, nullptr);
+	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout, nullptr);
 	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.ssbo, nullptr);
 	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.sampler, nullptr);
 	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.ubo, nullptr);
@@ -108,18 +107,17 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.model);
+	// UBO 바인드, firstSet은 set의 시작인덱스
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 
-	// firstSet은 set의 시작인덱스
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
-
-	plainObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
-	pPlayer->draw(commandBuffer, pipelineLayout.model, currentFrame);
-	gltfModelObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
+	plainObject->draw(commandBuffer, pipelineLayout, currentFrame);
+	pPlayer->draw(commandBuffer, pipelineLayout, currentFrame);
+	gltfModelObject->draw(commandBuffer, pipelineLayout, currentFrame);
 
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.skinModel);
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.skinModel, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
-	skinModelObject[0]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
-	skinModelObject[1]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
+	// ubo는 공용이기 때문에, 다시 bind 하지 않는다
+	skinModelObject[0]->draw(commandBuffer, pipelineLayout, currentFrame);
+	skinModelObject[1]->draw(commandBuffer, pipelineLayout, currentFrame);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)
@@ -342,7 +340,7 @@ void Scene::createGraphicsPipeline()
 	std::vector<VkDescriptorSetLayout> setLayout{ 3 };
 	setLayout[0] = descriptorSetLayout.ubo;
 	setLayout[1] = descriptorSetLayout.sampler;
-	setLayout[2] = descriptorSetLayout.ssbo;									// skinModel에서만 사용
+	setLayout[2] = descriptorSetLayout.ssbo;										// skinModel에서만 사용
 
 	// push constant
 	VkPushConstantRange pushConstantRange{};
@@ -352,17 +350,12 @@ void Scene::createGraphicsPipeline()
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 2;										// model에서는 1번 인덱스까지만 사용
+	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayout.size());	// model에서는 1번 인덱스까지만 사용 (2개)
 	pipelineLayoutInfo.pSetLayouts = setLayout.data();
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
-	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout.model) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create pipeline layout!");
-	}
-
-	pipelineLayoutInfo.setLayoutCount = 3;										// skinModel에서는 2번 인덱스까지 사용
-	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout.skinModel) != VK_SUCCESS) {
+	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
@@ -378,7 +371,7 @@ void Scene::createGraphicsPipeline()
 	pipelineInfo.pDepthStencilState = &depthStencil;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.layout = pipelineLayout.model;
+	pipelineInfo.layout = pipelineLayout;
 	pipelineInfo.renderPass = renderPass;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
@@ -388,8 +381,6 @@ void Scene::createGraphicsPipeline()
 	}
 
 	// skinModel용 pipeline 생성
-	pipelineInfo.layout = pipelineLayout.skinModel;
-
 	vkf::Shader skinModelShader{ fDevice, "shaders/skinnedmodel.vert.spv", "shaders/skinnedmodel.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(skinModelShader.shaderStages.size());
 	pipelineInfo.pStages = skinModelShader.shaderStages.data();

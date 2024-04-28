@@ -18,10 +18,7 @@ private:
 		VkDescriptorSetLayout ssbo = VK_NULL_HANDLE;
 	} descriptorSetLayout;
 
-	struct {
-		VkPipelineLayout model = VK_NULL_HANDLE;
-		VkPipelineLayout skinModel = VK_NULL_HANDLE;
-	} pipelineLayout;
+	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;		// model 파이프라인은 0, 1번 셋만 사용한다
 
 	struct {
 		VkPipeline model = VK_NULL_HANDLE;
