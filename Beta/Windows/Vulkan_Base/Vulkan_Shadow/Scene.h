@@ -25,7 +25,12 @@ private:
 		VkPipeline skinModel = VK_NULL_HANDLE;
 	} pipeline;
 
-	vkf::BufferObject uniformBufferObject;
+	struct {
+		vkf::BufferObject scene;
+		vkf::BufferObject offscreen;
+	} uniformBufferObject;
+
+	glm::vec3 lightPos = glm::vec3(5.f, 5.f, 5.f);
 
 	VkDescriptorPool samplerDescriptorPool;
 
@@ -54,6 +59,9 @@ public:
 
 	void update(float elapsedTime, uint32_t currentFrame);
 	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+
+	void bindUBOScene(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+	void bindUBOOffScreen(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
 	void processKeyboard(int key, int action, int mods);
 	void processMouseButton(int button, int action, int mods, float xpos, float ypos);

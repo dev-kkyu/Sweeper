@@ -9,7 +9,8 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderP
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
 
-	uniformBufferObject.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
+	uniformBufferObject.scene.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
+	uniformBufferObject.offscreen.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 
 	createSamplerDescriptorPool(2);
 
@@ -73,7 +74,8 @@ Scene::~Scene()
 
 	vkDestroyDescriptorPool(fDevice.logicalDevice, samplerDescriptorPool, nullptr);
 
-	uniformBufferObject.destroy();
+	uniformBufferObject.scene.destroy();
+	uniformBufferObject.offscreen.destroy();
 
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.model, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.skinModel, nullptr);
@@ -85,15 +87,26 @@ Scene::~Scene()
 
 void Scene::update(float elapsedTime, uint32_t currentFrame)
 {
+	// 카메라 업데이트
 	camera.update(elapsedTime);
 
+	// ubo 업데이트
 	vkf::UniformBufferObject ubo{};
 	ubo.view = camera.getView();
 	ubo.projection = camera.getProjection();
+	ubo.lightPos = lightPos;
 
-	uniformBufferObject.updateUniformBuffer(ubo, currentFrame);
+	glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
+	glm::mat4 lightProjection = glm::perspective(glm::radians(45.f), 1.f, 0.f, 100.f);
+	ubo.lightSpaceMatrix = lightProjection * lightView;
 
+	uniformBufferObject.scene.updateUniformBuffer(ubo, currentFrame);
 
+	ubo.view = lightView;
+	ubo.projection = lightProjection;
+	uniformBufferObject.offscreen.updateUniformBuffer(ubo, currentFrame);
+
+	// 오브젝트 업데이트
 	plainObject->update(elapsedTime, currentFrame);
 
 	pPlayer->update(elapsedTime, currentFrame);
@@ -107,8 +120,6 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.model);
-	// UBO 바인드, firstSet은 set의 시작인덱스
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 
 	plainObject->draw(commandBuffer, pipelineLayout, currentFrame);
 	pPlayer->draw(commandBuffer, pipelineLayout, currentFrame);
@@ -118,6 +129,17 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	// ubo는 공용이기 때문에, 다시 bind 하지 않는다
 	skinModelObject[0]->draw(commandBuffer, pipelineLayout, currentFrame);
 	skinModelObject[1]->draw(commandBuffer, pipelineLayout, currentFrame);
+}
+
+void Scene::bindUBOScene(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+{
+	// UBO 바인드, firstSet은 set의 시작인덱스
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
+}
+
+void Scene::bindUBOOffScreen(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+{
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &uniformBufferObject.offscreen.descriptorSets[currentFrame], 0, nullptr);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)
