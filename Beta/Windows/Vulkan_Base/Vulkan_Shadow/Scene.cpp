@@ -77,8 +77,10 @@ Scene::~Scene()
 	uniformBufferObject.scene.destroy();
 	uniformBufferObject.offscreen.destroy();
 
-	vkDestroyPipeline(fDevice.logicalDevice, pipeline.model, nullptr);
-	vkDestroyPipeline(fDevice.logicalDevice, pipeline.skinModel, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.model, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.skinModel, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.offscreen.model, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.offscreen.skinModel, nullptr);
 	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout, nullptr);
 	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.ssbo, nullptr);
 	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.sampler, nullptr);
@@ -119,27 +121,19 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.model);
+	// UBO 바인드, firstSet은 set의 시작인덱스
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
+
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.scene.model);
 
 	plainObject->draw(commandBuffer, pipelineLayout, currentFrame);
 	pPlayer->draw(commandBuffer, pipelineLayout, currentFrame);
 	gltfModelObject->draw(commandBuffer, pipelineLayout, currentFrame);
 
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.skinModel);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.scene.skinModel);
 	// ubo는 공용이기 때문에, 다시 bind 하지 않는다
 	skinModelObject[0]->draw(commandBuffer, pipelineLayout, currentFrame);
 	skinModelObject[1]->draw(commandBuffer, pipelineLayout, currentFrame);
-}
-
-void Scene::bindUBOScene(VkCommandBuffer commandBuffer, uint32_t currentFrame)
-{
-	// UBO 바인드, firstSet은 set의 시작인덱스
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
-}
-
-void Scene::bindUBOOffScreen(VkCommandBuffer commandBuffer, uint32_t currentFrame)
-{
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &uniformBufferObject.offscreen.descriptorSets[currentFrame], 0, nullptr);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)
@@ -398,7 +392,7 @@ void Scene::createGraphicsPipeline()
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.model) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.scene.model) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
@@ -414,7 +408,7 @@ void Scene::createGraphicsPipeline()
 	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(skinAttributeDescriptions.size());
 	vertexInputInfo.pVertexAttributeDescriptions = skinAttributeDescriptions.data();
 
-	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.skinModel) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.scene.skinModel) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 }

@@ -21,8 +21,10 @@ private:
 	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;		// model 파이프라인은 0, 1번 셋만 사용한다
 
 	struct {
-		VkPipeline model = VK_NULL_HANDLE;
-		VkPipeline skinModel = VK_NULL_HANDLE;
+		struct {
+			VkPipeline model = VK_NULL_HANDLE;
+			VkPipeline skinModel = VK_NULL_HANDLE;
+		} scene, offscreen;
 	} pipeline;
 
 	struct {
@@ -59,9 +61,6 @@ public:
 
 	void update(float elapsedTime, uint32_t currentFrame);
 	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame);
-
-	void bindUBOScene(VkCommandBuffer commandBuffer, uint32_t currentFrame);
-	void bindUBOOffScreen(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
 	void processKeyboard(int key, int action, int mods);
 	void processMouseButton(int button, int action, int mods, float xpos, float ypos);

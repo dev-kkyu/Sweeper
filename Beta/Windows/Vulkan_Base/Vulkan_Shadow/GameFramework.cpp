@@ -702,7 +702,6 @@ void GameFramework::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 	scissor.extent = swapChainExtent;
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	pScene->bindUBOScene(commandBuffer, currentFrame);
 	pScene->draw(commandBuffer, currentFrame);
 
 	vkCmdEndRenderPass(commandBuffer);
