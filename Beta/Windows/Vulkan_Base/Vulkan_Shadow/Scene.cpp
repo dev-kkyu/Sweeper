@@ -119,18 +119,25 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	skinModelObject[1]->update(elapsedTime, currentFrame);
 }
 
-void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen)
 {
-	// UBO 바인드, firstSet은 set의 시작인덱스
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
+	// if문을 쓰지 않기 위한 코드..
+	Pipeline::Type* lineType[2]{ &pipeline.scene, &pipeline.offscreen };
+	vkf::BufferObject* uboType[2]{ &uniformBufferObject.scene, &uniformBufferObject.offscreen };
+	int idx = !!static_cast<int>(isOffscreen);
+	Pipeline::Type& line = *lineType[idx];
+	vkf::BufferObject& ubo = *uboType[idx];
 
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.scene.model);
+	// UBO 바인드, firstSet은 set의 시작인덱스
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &ubo.descriptorSets[currentFrame], 0, nullptr);
+
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, line.model);
 
 	plainObject->draw(commandBuffer, pipelineLayout, currentFrame);
 	pPlayer->draw(commandBuffer, pipelineLayout, currentFrame);
 	gltfModelObject->draw(commandBuffer, pipelineLayout, currentFrame);
 
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.scene.skinModel);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, line.skinModel);
 	// ubo는 공용이기 때문에, 다시 bind 하지 않는다
 	skinModelObject[0]->draw(commandBuffer, pipelineLayout, currentFrame);
 	skinModelObject[1]->draw(commandBuffer, pipelineLayout, currentFrame);
