@@ -97,7 +97,7 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	ubo.lightPos = lightPos;
 
 	glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
-	glm::mat4 lightProjection = glm::perspective(glm::radians(45.f), 1.f, 0.f, 100.f);
+	glm::mat4 lightProjection = glm::perspective(glm::radians(45.f), 1.f, 0.1f, 100.f);
 	ubo.lightSpaceMatrix = lightProjection * lightView;
 
 	uniformBufferObject.scene.updateUniformBuffer(ubo, currentFrame);
