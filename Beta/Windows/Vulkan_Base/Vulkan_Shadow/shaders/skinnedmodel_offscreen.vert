@@ -7,7 +7,7 @@ layout (location = 0) in vec3 inPos;
 layout (location = 4) in vec4 inJointIndices;
 layout (location = 5) in vec4 inJointWeights;
 
-layout (set = 0, binding = 0) uniform UniformBufferObject {
+layout (set = 2, binding = 0) uniform UniformBufferObject {
 	mat4 view;
 	mat4 projection;
 	mat4 lightSpaceMatrix;
@@ -18,7 +18,7 @@ layout(push_constant) uniform PushConstants {
 	mat4 model;
 } push;
 
-layout(std430, set = 2, binding = 0) readonly buffer JointMatrices {
+layout(std430, set = 3, binding = 0) readonly buffer JointMatrices {
 	mat4 jointMatrices[];
 };
 

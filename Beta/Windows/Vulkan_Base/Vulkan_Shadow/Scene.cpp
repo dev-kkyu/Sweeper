@@ -129,7 +129,7 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOf
 	vkf::BufferObject& ubo = *uboType[idx];
 
 	// UBO 바인드, firstSet은 set의 시작인덱스
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &ubo.descriptorSets[currentFrame], 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &ubo.descriptorSets[currentFrame], 0, nullptr);
 
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, line.model);
 
@@ -360,10 +360,11 @@ void Scene::createGraphicsPipeline()
 	dynamicState.pDynamicStates = dynamicStates.data();
 
 	// 여러 개의 디스크립터 셋을 사용할 때, set의 index를 pSetLayouts의 index와 맞춰줘야 한다.
-	std::vector<VkDescriptorSetLayout> setLayout{ 3 };
-	setLayout[0] = descriptorSetLayout.ubo;
+	std::vector<VkDescriptorSetLayout> setLayout{ 4 };
+	setLayout[0] = descriptorSetLayout.sampler;				// 임시로 넣어주었다. Todo : shadow map 전용 layout 필요
 	setLayout[1] = descriptorSetLayout.sampler;
-	setLayout[2] = descriptorSetLayout.ssbo;										// skinModel에서만 사용
+	setLayout[2] = descriptorSetLayout.ubo;
+	setLayout[3] = descriptorSetLayout.ssbo;										// skinModel에서만 사용
 
 	// push constant
 	VkPushConstantRange pushConstantRange{};
