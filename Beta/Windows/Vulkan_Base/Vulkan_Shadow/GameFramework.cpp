@@ -76,7 +76,7 @@ void GameFramework::initVulkan(GLFWwindow* window)
 	createCommandBuffers();
 	createSyncObjects();
 
-	pScene = std::make_unique<Scene>(fDevice, msaaSamples, renderPass);
+	pScene = std::make_unique<Scene>(fDevice, msaaSamples, renderPass, offscreenPass.samplerDescriptorSetLayout);
 	gameTimer.SetWindow(window);
 	gameTimer.SetGpuName(fDevice.physicalDeviceProperties.deviceName);
 }

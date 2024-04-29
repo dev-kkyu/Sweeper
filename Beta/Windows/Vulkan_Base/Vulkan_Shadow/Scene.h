@@ -11,6 +11,7 @@ private:
 	vkf::Device& fDevice;
 	VkSampleCountFlagBits& msaaSamples;
 	vkf::RenderPass& renderPass;
+	VkDescriptorSetLayout& shadowSetLayout;
 
 	struct {
 		VkDescriptorSetLayout ubo = VK_NULL_HANDLE;
@@ -56,7 +57,7 @@ private:
 	bool leftButtonPressed = false;
 
 public:
-	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass);
+	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout);
 	~Scene();
 
 	void update(float elapsedTime, uint32_t currentFrame);

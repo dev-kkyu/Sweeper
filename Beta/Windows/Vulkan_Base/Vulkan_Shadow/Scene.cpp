@@ -3,8 +3,8 @@
 
 #include <GLFW/glfw3.h>
 
-Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass)
-	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }
+Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout)
+	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }
 {
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
@@ -361,7 +361,7 @@ void Scene::createGraphicsPipeline()
 
 	// 여러 개의 디스크립터 셋을 사용할 때, set의 index를 pSetLayouts의 index와 맞춰줘야 한다.
 	std::vector<VkDescriptorSetLayout> setLayout{ 4 };
-	setLayout[0] = descriptorSetLayout.sampler;				// 임시로 넣어주었다. Todo : shadow map 전용 layout 필요
+	setLayout[0] = shadowSetLayout;
 	setLayout[1] = descriptorSetLayout.sampler;
 	setLayout[2] = descriptorSetLayout.ubo;
 	setLayout[3] = descriptorSetLayout.ssbo;										// skinModel에서만 사용
