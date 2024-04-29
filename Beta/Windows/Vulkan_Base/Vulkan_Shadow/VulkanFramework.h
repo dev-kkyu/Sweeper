@@ -76,18 +76,19 @@ namespace vkf
 	private:
 		vkf::Device* fDevice = nullptr;
 
-		VkShaderModule vertShaderModule = VK_NULL_HANDLE;
-		VkShaderModule fragShaderModule = VK_NULL_HANDLE;
+		std::vector<VkShaderModule> shaderModules;
 
 	public:
-		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages{};
+		std::vector<VkPipelineShaderStageCreateInfo> shaderStages{};
 
 	public:
 		Shader(vkf::Device& fDevice, std::string vertFilename, std::string fragFilename);
+		Shader(vkf::Device& fDevice, std::string vertFilename);
 		~Shader();
 
 	private:
 		void createShader(const std::string& vertFilename, const std::string& fragFilename);
+		void createShader(const std::string& vertFilename);
 		void destroy();
 		VkShaderModule createShaderModule(const std::vector<char>& code);
 	};
