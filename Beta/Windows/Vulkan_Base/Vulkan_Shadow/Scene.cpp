@@ -443,7 +443,7 @@ void Scene::createGraphicsPipeline()
 		pipelineInfo.renderPass = renderPass.offscreen;
 	}
 	// skinModel
-	vkf::Shader offModelShader{ fDevice, "shaders/skinnedmodel_offscreen.vert.spv" };
+	vkf::Shader offModelShader{ fDevice, "shaders/skinnedmodel.vert.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(offModelShader.shaderStages.size());
 	pipelineInfo.pStages = offModelShader.shaderStages.data();
 
@@ -452,7 +452,7 @@ void Scene::createGraphicsPipeline()
 	}
 
 	// Model
-	vkf::Shader offSkinModelShader{ fDevice, "shaders/model_offscreen.vert.spv" };
+	vkf::Shader offSkinModelShader{ fDevice, "shaders/model.vert.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(offSkinModelShader.shaderStages.size());
 	pipelineInfo.pStages = offSkinModelShader.shaderStages.data();
 

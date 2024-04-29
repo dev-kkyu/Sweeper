@@ -118,12 +118,6 @@
     <None Include="shaders\model.vert">
       <Filter>소스 파일\Shader</Filter>
     </None>
-    <None Include="shaders\model_offscreen.vert">
-      <Filter>소스 파일\Shader</Filter>
-    </None>
-    <None Include="shaders\skinnedmodel_offscreen.vert">
-      <Filter>소스 파일\Shader</Filter>
-    </None>
     <None Include="shaders\fragment.frag">
       <Filter>소스 파일\Shader</Filter>
     </None>

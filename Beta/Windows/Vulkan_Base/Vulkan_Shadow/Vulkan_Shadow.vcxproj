@@ -166,9 +166,7 @@
   <ItemGroup>
     <None Include="shaders\fragment.frag" />
     <None Include="shaders\model.vert" />
-    <None Include="shaders\model_offscreen.vert" />
     <None Include="shaders\skinnedmodel.vert" />
-    <None Include="shaders\skinnedmodel_offscreen.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
