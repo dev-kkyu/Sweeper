@@ -442,19 +442,15 @@ void Scene::createGraphicsPipeline()
 
 		pipelineInfo.renderPass = renderPass.offscreen;
 	}
-	// skinModel
-	vkf::Shader offModelShader{ fDevice, "shaders/skinnedmodel.vert.spv" };
-	pipelineInfo.stageCount = static_cast<uint32_t>(offModelShader.shaderStages.size());
-	pipelineInfo.pStages = offModelShader.shaderStages.data();
+	// skinModel, 위에서 pStages는 skinModel Shader로 연결되어 있다
+	pipelineInfo.stageCount = 1;		// vertex shader만 사용
 
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.offscreen.skinModel) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
 	// Model
-	vkf::Shader offSkinModelShader{ fDevice, "shaders/model.vert.spv" };
-	pipelineInfo.stageCount = static_cast<uint32_t>(offSkinModelShader.shaderStages.size());
-	pipelineInfo.pStages = offSkinModelShader.shaderStages.data();
+	pipelineInfo.pStages = modelShader.shaderStages.data();
 
 	vertexInputInfo.vertexBindingDescriptionCount = 1;
 	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
