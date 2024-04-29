@@ -76,7 +76,8 @@ void GameFramework::initVulkan(GLFWwindow* window)
 	createCommandBuffers();
 	createSyncObjects();
 
-	pScene = std::make_unique<Scene>(fDevice, msaaSamples, renderPass, offscreenPass.samplerDescriptorSetLayout);
+	pScene = std::make_unique<Scene>(fDevice, msaaSamples, renderPass,
+		offscreenPass.samplerDescriptorSetLayout, offscreenPass.samplerDescriptorSet);
 	gameTimer.SetWindow(window);
 	gameTimer.SetGpuName(fDevice.physicalDeviceProperties.deviceName);
 }
@@ -857,40 +858,90 @@ void GameFramework::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 		throw std::runtime_error("failed to begin recording command buffer!");
 	}
 
-	VkRenderPassBeginInfo renderPassInfo{};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = renderPass.scene;
-	renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
-	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = swapChainExtent;
+	// 첫 번째 렌더 패스 : 조명의 POV에서 장면을 렌더링하여 그림자 맵을 생성합니다.
+	{
+		VkRenderPassBeginInfo renderPassInfo{};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = renderPass.offscreen;
+		renderPassInfo.framebuffer = offscreenPass.frameBuffer;
+		renderPassInfo.renderArea.offset = { 0, 0 };
+		renderPassInfo.renderArea.extent = { shadowMapize, shadowMapize };
 
-	std::array<VkClearValue, 2> clearValues{};
-	clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-	clearValues[1].depthStencil = { 1.0f, 0 };
+		std::array<VkClearValue, 1> clearValues{};
+		clearValues[0].depthStencil = { 1.0f, 0 };
 
-	renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-	renderPassInfo.pClearValues = clearValues.data();
+		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues = clearValues.data();
 
-	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	// 뷰포트 뒤집음으로써, NDC 좌표계를 바꿔준다. -> OpenGL과 유사하게, glm에서 사용하는 방식. Vulkan 1.1이후 지원
-	VkViewport viewport{};
-	viewport.x = 0.0f;
-	viewport.y = (float)swapChainExtent.height;
-	viewport.width = (float)swapChainExtent.width;
-	viewport.height = -(float)swapChainExtent.height;
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+		// Offscreen 렌더시에는 NDC 좌표 뒤집지 않는다
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = (float)shadowMapize;
+		viewport.height = (float)shadowMapize;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-	VkRect2D scissor{};
-	scissor.offset = { 0, 0 };
-	scissor.extent = swapChainExtent;
-	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+		VkRect2D scissor{};
+		scissor.offset = { 0, 0 };
+		scissor.extent = { shadowMapize, shadowMapize };
+		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	pScene->draw(commandBuffer, currentFrame, false);
+		// 그림자 아티팩트를 방지하기 위해 Depth bias(and slope)가 사용됩니다.
+		// constant 깊이 바이어스 factor (항상 적용됨)
+		float depthBiasConstant = 1.25f;
+		// 폴리곤의 slope에 따라 적용되는 slope depth bias factor
+		float depthBiasSlope = 1.75f;
 
-	vkCmdEndRenderPass(commandBuffer);
+		// 깊이 바이어스 설정("다각형 오프셋"이라고도 함)
+		// 그림자 매핑 아티팩트를 방지하는 데 필요합니다.
+		vkCmdSetDepthBias(commandBuffer, depthBiasConstant, 0.0f, depthBiasSlope);
+
+		pScene->draw(commandBuffer, currentFrame, true);
+
+		vkCmdEndRenderPass(commandBuffer);
+	}
+
+	// 두 번째 패스 : 그림자 맵이 적용된 장면 렌더링
+	{
+		VkRenderPassBeginInfo renderPassInfo{};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = renderPass.scene;
+		renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
+		renderPassInfo.renderArea.offset = { 0, 0 };
+		renderPassInfo.renderArea.extent = swapChainExtent;
+
+		std::array<VkClearValue, 2> clearValues{};
+		clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
+		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues = clearValues.data();
+
+		vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		// 뷰포트 뒤집음으로써, NDC 좌표계를 바꿔준다. -> OpenGL과 유사하게, glm에서 사용하는 방식. Vulkan 1.1이후 지원
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = (float)swapChainExtent.height;
+		viewport.width = (float)swapChainExtent.width;
+		viewport.height = -(float)swapChainExtent.height;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+		VkRect2D scissor{};
+		scissor.offset = { 0, 0 };
+		scissor.extent = swapChainExtent;
+		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+		pScene->draw(commandBuffer, currentFrame, false);
+
+		vkCmdEndRenderPass(commandBuffer);
+	}
 
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
 		throw std::runtime_error("failed to record command buffer!");

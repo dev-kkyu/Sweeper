@@ -3,8 +3,8 @@
 
 #include <GLFW/glfw3.h>
 
-Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout)
-	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }
+Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet)
+	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }
 {
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
@@ -127,6 +127,9 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOf
 	int idx = !!static_cast<int>(isOffscreen);
 	Pipeline::Type& line = *lineType[idx];
 	vkf::BufferObject& ubo = *uboType[idx];
+
+	// shadow map bind (offscreen draw시에는 사용하지 않는다)
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowSet, 0, nullptr);
 
 	// UBO 바인드, firstSet은 set의 시작인덱스
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &ubo.descriptorSets[currentFrame], 0, nullptr);

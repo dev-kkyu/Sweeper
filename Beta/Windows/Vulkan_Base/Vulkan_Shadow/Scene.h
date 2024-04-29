@@ -12,6 +12,7 @@ private:
 	VkSampleCountFlagBits& msaaSamples;
 	vkf::RenderPass& renderPass;
 	VkDescriptorSetLayout& shadowSetLayout;
+	VkDescriptorSet& shadowSet;
 
 	struct {
 		VkDescriptorSetLayout ubo = VK_NULL_HANDLE;
@@ -33,7 +34,7 @@ private:
 		vkf::BufferObject offscreen;	// 추후 간소화 될 수 있다 (shader 바꾸게 되면 view, projection, lightPos 필요없음)
 	} uniformBufferObject;
 
-	glm::vec3 lightPos = glm::vec3(5.f, 5.f, 5.f);
+	glm::vec3 lightPos = glm::vec3(10.f, 10.f, 10.f);
 
 	VkDescriptorPool samplerDescriptorPool;
 
@@ -57,7 +58,7 @@ private:
 	bool leftButtonPressed = false;
 
 public:
-	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout);
+	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet);
 	~Scene();
 
 	void update(float elapsedTime, uint32_t currentFrame);
