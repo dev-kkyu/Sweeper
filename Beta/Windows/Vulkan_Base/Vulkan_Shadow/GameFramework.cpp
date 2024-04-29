@@ -89,6 +89,7 @@ void GameFramework::cleanup()
 	pScene.reset(nullptr);
 
 	// 오프스크린 정보 Destroy
+	vkDestroyFramebuffer(fDevice.logicalDevice, offscreenPass.frameBuffer, nullptr);
 	vkDestroySampler(fDevice.logicalDevice, offscreenPass.depthSampler, nullptr);
 	vkDestroyImageView(fDevice.logicalDevice, offscreenPass.depthImageView, nullptr);
 	vkDestroyImage(fDevice.logicalDevice, offscreenPass.depthImage, nullptr);
@@ -671,9 +672,25 @@ void GameFramework::createOffscreenFramebuffer()
 	sampler.minLod = 0.0f;
 	sampler.maxLod = 1.0f;
 	sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-	vkCreateSampler(fDevice.logicalDevice, &sampler, nullptr, &offscreenPass.depthSampler);
+	if (vkCreateSampler(fDevice.logicalDevice, &sampler, nullptr, &offscreenPass.depthSampler) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create depth texture sampler!");
+	}
 
-	// Todo : 프레임버퍼 만들기, descriptor 정보들 만들기, 파이프라인 만들기
+	// 프레임버퍼 생성
+	VkFramebufferCreateInfo framebufferInfo{};
+	framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	framebufferInfo.renderPass = renderPass.offscreen;
+	framebufferInfo.attachmentCount = 1;
+	framebufferInfo.pAttachments = &offscreenPass.depthImageView;
+	framebufferInfo.width = shadowMapize;
+	framebufferInfo.height = shadowMapize;
+	framebufferInfo.layers = 1;
+
+	if (vkCreateFramebuffer(fDevice.logicalDevice, &framebufferInfo, nullptr, &offscreenPass.frameBuffer) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create offscreen framebuffer!");
+	}
+
+	// Todo : descriptor 정보들 만들기, 파이프라인 만들기
 }
 
 VkBool32 GameFramework::formatIsFilterable(VkPhysicalDevice device, VkFormat format, VkImageTiling tiling)
