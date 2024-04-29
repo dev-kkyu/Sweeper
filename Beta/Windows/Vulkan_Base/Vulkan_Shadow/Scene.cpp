@@ -419,6 +419,48 @@ void Scene::createGraphicsPipeline()
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.scene.skinModel) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
+
+	// offscreen 파이프라인 생성
+	{
+		// 그림자 생성시에는 멀티샘플링 Off
+		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+		// No blend attachment states (no color attachments used)
+		colorBlending.attachmentCount = 0;
+		// Disable culling, so all faces contribute to shadows
+		rasterizer.cullMode = VK_CULL_MODE_NONE;
+		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;			// 그림자 샘플에서는 기본 OP도 이걸로 되어있다
+		// Enable depth bias
+		rasterizer.depthBiasEnable = VK_TRUE;
+		// Add depth bias to dynamic state, so we can change it at runtime
+		dynamicStates.push_back(VK_DYNAMIC_STATE_DEPTH_BIAS);
+		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+		dynamicState.pDynamicStates = dynamicStates.data();
+
+		pipelineInfo.renderPass = renderPass.offscreen;
+	}
+	// skinModel
+	vkf::Shader offModelShader{ fDevice, "shaders/skinnedmodel_offscreen.vert.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(offModelShader.shaderStages.size());
+	pipelineInfo.pStages = offModelShader.shaderStages.data();
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.offscreen.skinModel) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+	// Model
+	vkf::Shader offSkinModelShader{ fDevice, "shaders/model_offscreen.vert.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(offSkinModelShader.shaderStages.size());
+	pipelineInfo.pStages = offSkinModelShader.shaderStages.data();
+
+	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.offscreen.model) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
 }
 
 void Scene::createSamplerDescriptorPool(uint32_t setCount)
