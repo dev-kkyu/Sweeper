@@ -89,6 +89,7 @@ void GameFramework::cleanup()
 	pScene.reset(nullptr);
 
 	// 오프스크린 정보 Destroy
+	vkDestroySampler(fDevice.logicalDevice, offscreenPass.depthSampler, nullptr);
 	vkDestroyImageView(fDevice.logicalDevice, offscreenPass.depthImageView, nullptr);
 	vkDestroyImage(fDevice.logicalDevice, offscreenPass.depthImage, nullptr);
 	vkFreeMemory(fDevice.logicalDevice, offscreenPass.depthImageMemory, nullptr);
@@ -655,7 +656,39 @@ void GameFramework::createOffscreenFramebuffer()
 	vkf::createImage(fDevice, shadowMapize, shadowMapize, 1, VK_SAMPLE_COUNT_1_BIT, offscreenDepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, offscreenPass.depthImage, offscreenPass.depthImageMemory);
 	offscreenPass.depthImageView = vkf::createImageView(fDevice, offscreenPass.depthImage, offscreenDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
 
-	// Todo : 샘플러 만들기, 프레임버퍼 만들기, descriptor 정보들 만들기, 파이프라인 만들기
+	// 샘플러 생성
+	VkFilter shadowmap_filter = formatIsFilterable(fDevice.physicalDevice, offscreenDepthFormat, VK_IMAGE_TILING_OPTIMAL) ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
+	VkSamplerCreateInfo sampler{};
+	sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	sampler.magFilter = shadowmap_filter;
+	sampler.minFilter = shadowmap_filter;
+	sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	sampler.addressModeV = sampler.addressModeU;
+	sampler.addressModeW = sampler.addressModeU;
+	sampler.mipLodBias = 0.0f;
+	sampler.maxAnisotropy = 1.0f;
+	sampler.minLod = 0.0f;
+	sampler.maxLod = 1.0f;
+	sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+	vkCreateSampler(fDevice.logicalDevice, &sampler, nullptr, &offscreenPass.depthSampler);
+
+	// Todo : 프레임버퍼 만들기, descriptor 정보들 만들기, 파이프라인 만들기
+}
+
+VkBool32 GameFramework::formatIsFilterable(VkPhysicalDevice device, VkFormat format, VkImageTiling tiling)
+{
+	// 주어진 format이 LINEAR 필터링을 지원하는지 확인한다
+	VkFormatProperties formatProps;
+	vkGetPhysicalDeviceFormatProperties(device, format, &formatProps);
+
+	if (tiling == VK_IMAGE_TILING_OPTIMAL)
+		return formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+
+	if (tiling == VK_IMAGE_TILING_LINEAR)
+		return formatProps.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+
+	return false;
 }
 
 VkFormat GameFramework::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)

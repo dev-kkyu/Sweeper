@@ -140,6 +140,7 @@ private:
 	std::vector<const char*> getRequiredExtensions();
 	bool checkValidationLayerSupport();
 
+	VkBool32 formatIsFilterable(VkPhysicalDevice device, VkFormat format, VkImageTiling tiling);	// ½¦µµ¿ì ¸Ê »ùÇÃ·¯ »ý¼º½Ã ÇÊ¿ä
 	VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 	VkFormat findDepthFormat();
 	bool hasStencilComponent(VkFormat format);
