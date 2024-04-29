@@ -86,7 +86,7 @@ private:
 		VkSampler depthSampler;
 		VkDescriptorSetLayout samplerDescriptorSetLayout;
 		VkDescriptorPool samplerDescriptorPool;
-		VkDescriptorSet samplerDescriptorSets;
+		VkDescriptorSet samplerDescriptorSet;
 	} offscreenPass{};
 
 	VkImage colorImage;
@@ -124,6 +124,7 @@ private:
 	void createFramebuffers();
 	void createOffscreenRenderPass();
 	void createOffscreenFramebuffer();
+	void createOffscreenDescriptors();
 	void createCommandBuffers();
 	void createSyncObjects();
 

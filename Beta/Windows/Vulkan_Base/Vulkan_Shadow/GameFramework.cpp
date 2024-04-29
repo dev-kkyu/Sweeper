@@ -72,6 +72,7 @@ void GameFramework::initVulkan(GLFWwindow* window)
 	createFramebuffers();
 	createOffscreenRenderPass();
 	createOffscreenFramebuffer();
+	createOffscreenDescriptors();
 	createCommandBuffers();
 	createSyncObjects();
 
@@ -89,6 +90,8 @@ void GameFramework::cleanup()
 	pScene.reset(nullptr);
 
 	// 오프스크린 정보 Destroy
+	vkDestroyDescriptorPool(fDevice.logicalDevice, offscreenPass.samplerDescriptorPool, nullptr);
+	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, offscreenPass.samplerDescriptorSetLayout, nullptr);
 	vkDestroyFramebuffer(fDevice.logicalDevice, offscreenPass.frameBuffer, nullptr);
 	vkDestroySampler(fDevice.logicalDevice, offscreenPass.depthSampler, nullptr);
 	vkDestroyImageView(fDevice.logicalDevice, offscreenPass.depthImageView, nullptr);
@@ -689,8 +692,70 @@ void GameFramework::createOffscreenFramebuffer()
 	if (vkCreateFramebuffer(fDevice.logicalDevice, &framebufferInfo, nullptr, &offscreenPass.frameBuffer) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create offscreen framebuffer!");
 	}
+}
 
-	// Todo : descriptor 정보들 만들기, 파이프라인 만들기
+void GameFramework::createOffscreenDescriptors()
+{
+	// Pool 생성
+	std::array<VkDescriptorPoolSize, 1> poolSizes{};
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[0].descriptorCount = 1;	// 한개만 생성
+
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
+	poolInfo.maxSets = 1;	// 한개만 생성
+
+	if (vkCreateDescriptorPool(fDevice.logicalDevice, &poolInfo, nullptr, &offscreenPass.samplerDescriptorPool) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create offscreen descriptor pool!");
+	}
+
+	// Layout 생성
+	std::array<VkDescriptorSetLayoutBinding, 1> samplerLayoutBinding{};
+	samplerLayoutBinding[0].binding = 0;		// shader의 binding
+	samplerLayoutBinding[0].descriptorCount = 1;
+	samplerLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	samplerLayoutBinding[0].pImmutableSamplers = nullptr;
+	samplerLayoutBinding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	VkDescriptorSetLayoutCreateInfo layoutInfo{};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = static_cast<uint32_t>(samplerLayoutBinding.size());
+	layoutInfo.pBindings = samplerLayoutBinding.data();
+
+	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &offscreenPass.samplerDescriptorSetLayout) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create offscreen descriptor set layout!");
+	}
+
+	// Set 생성 -> shadow map image의 view, image sampler를 연결한 set, 추후 set = 0 에 할당할 set이다.
+	// Set 할당 (Pool로부터, Layout을 참조하여)
+	VkDescriptorSetAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = offscreenPass.samplerDescriptorPool;
+	allocInfo.descriptorSetCount = 1;
+	allocInfo.pSetLayouts = &offscreenPass.samplerDescriptorSetLayout;
+
+	if (vkAllocateDescriptorSets(fDevice.logicalDevice, &allocInfo, &offscreenPass.samplerDescriptorSet) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate offscreen descriptor set!");
+	}
+
+	// Set에 쓰기
+	VkDescriptorImageInfo imageInfo{};
+	imageInfo.sampler = offscreenPass.depthSampler;
+	imageInfo.imageView = offscreenPass.depthImageView;
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;	// Depth Image 이다.
+
+	std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
+	descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrites[0].dstSet = offscreenPass.samplerDescriptorSet;
+	descriptorWrites[0].dstBinding = 0;
+	descriptorWrites[0].dstArrayElement = 0;
+	descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	descriptorWrites[0].descriptorCount = 1;
+	descriptorWrites[0].pImageInfo = &imageInfo;
+
+	vkUpdateDescriptorSets(fDevice.logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 }
 
 VkBool32 GameFramework::formatIsFilterable(VkPhysicalDevice device, VkFormat format, VkImageTiling tiling)
