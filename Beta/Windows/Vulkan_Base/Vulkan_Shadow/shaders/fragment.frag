@@ -35,7 +35,7 @@ float filterPCF(vec4 sc)
 
 	float shadowFactor = 0.0;
 	int count = 0;
-	int range = 2;		// 필터링 범위
+	int range = 1;
 	
 	for (int x = -range; x <= range; x++)
 	{
