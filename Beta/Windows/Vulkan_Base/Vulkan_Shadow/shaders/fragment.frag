@@ -12,8 +12,6 @@ layout (location = 5) in vec4 inShadowCoord;
 
 layout (location = 0) out vec4 outFragColor;
 
-#define ambient 0.1
-
 float textureProj(vec4 shadowCoord, vec2 off)
 {
 	float shadow = 1.0;
@@ -22,7 +20,7 @@ float textureProj(vec4 shadowCoord, vec2 off)
 		float dist = texture( shadowMap, shadowCoord.st + off ).r;
 		if ( shadowCoord.w > 0.0 && dist < shadowCoord.z ) 
 		{
-			shadow = ambient;
+			shadow = 0.0;
 		}
 	}
 	return shadow;
@@ -37,13 +35,13 @@ float filterPCF(vec4 sc)
 
 	float shadowFactor = 0.0;
 	int count = 0;
-	int range = 1;
+	int range = 2;		// 필터링 범위
 	
 	for (int x = -range; x <= range; x++)
 	{
 		for (int y = -range; y <= range; y++)
 		{
-			shadowFactor += textureProj(sc, vec2(dx*x, dy*y));
+			shadowFactor += textureProj(sc, vec2(dx * x, dy * y));
 			count++;
 		}
 	
@@ -57,12 +55,18 @@ void main()
 	float shadow = filterPCF(inShadowCoord / inShadowCoord.w);
 
 	vec4 color = texture(texSampler, inUV) * vec4(inColor, 1.0);
+	
+	vec3 lightColor = vec3(1.0);
 
 	vec3 N = normalize(inNormal);
 	vec3 L = normalize(inLightVec);
 	vec3 V = normalize(inViewVec);
 	vec3 R = reflect(-L, N);
-	vec3 diffuse = max(dot(N, L), ambient) * inColor;
-	vec3 specular = pow(max(dot(R, V), 0.0), 16.0) * vec3(0.75);
-	outFragColor = vec4((diffuse * color.rgb + specular) * shadow, color.a);
+	vec3 ambient = 0.1 * lightColor;
+	vec3 diffuse = max(dot(N, L), 0.0) * lightColor;
+	vec3 specular = pow(max(dot(R, V), 0.0), 64.0) * lightColor;
+
+	vec3 lighting = (ambient + shadow * (diffuse + specular)) * color.rgb;
+
+	outFragColor = vec4(lighting, color.a);
 }

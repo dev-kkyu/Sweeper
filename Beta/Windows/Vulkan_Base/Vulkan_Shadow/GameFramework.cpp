@@ -894,7 +894,7 @@ void GameFramework::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 		// constant 깊이 바이어스 factor (항상 적용됨)
 		float depthBiasConstant = 1.25f;
 		// 폴리곤의 slope에 따라 적용되는 slope depth bias factor
-		float depthBiasSlope = 1.75f;
+		float depthBiasSlope = 10.f;
 
 		// 깊이 바이어스 설정("다각형 오프셋"이라고도 함)
 		// 그림자 매핑 아티팩트를 방지하는 데 필요합니다.
