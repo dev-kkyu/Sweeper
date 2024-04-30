@@ -92,18 +92,21 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	// 카메라 업데이트
 	camera.update(elapsedTime);
 
-	// ubo 업데이트
+	// UBO 업데이트
 	vkf::UniformBufferObject ubo{};
+	// Scene의 변환행렬 계산
 	ubo.view = camera.getView();
 	ubo.projection = camera.getProjection();
 	ubo.lightPos = lightPos;
 
+	// Scene을 드로우 할 때, 그림자 계산을 위한 빛 공간의 변환행렬을 알고 있어야 한다
 	glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
 	glm::mat4 lightProjection = glm::perspective(glm::radians(45.f), 1.f, 1.f, 100.f);		// 종횡비는 가로세로 같다. near 값은 1.f로 한다
-	ubo.lightSpaceMatrix = lightProjection * lightView;
+	ubo.lightSpace = lightProjection * lightView;
 
 	uniformBufferObject.scene.updateUniformBuffer(ubo, currentFrame);
 
+	// 오프스크린에 draw 할 때는, 빛의 시점에서 장면을 그린다
 	ubo.view = lightView;
 	ubo.projection = lightProjection;
 	uniformBufferObject.offscreen.updateUniformBuffer(ubo, currentFrame);

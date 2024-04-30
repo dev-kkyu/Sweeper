@@ -10,7 +10,7 @@ layout (location = 5) in vec4 inJointWeights;
 layout (set = 2, binding = 0) uniform UniformBufferObject {
 	mat4 view;
 	mat4 projection;
-	mat4 lightSpaceMatrix;
+	mat4 lightSpace;
 	vec3 lightPos;
 } ubo;
 
@@ -57,5 +57,5 @@ void main()
 	vec3 vPos = vec3(inverse(ubo.view)[3]);
 	outViewVec = vPos - FragPos.xyz;
 
-	outShadowCoord = biasMat * ubo.lightSpaceMatrix * FragPos;
+	outShadowCoord = biasMat * ubo.lightSpace * FragPos;
 }

@@ -37,8 +37,8 @@ namespace vkf
 	struct UniformBufferObject {
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 projection;
-		alignas(16) glm::mat4 lightSpaceMatrix;							// offScreen에서 사용
-		alignas(16) glm::vec3 lightPos;
+		alignas(16) glm::mat4 lightSpace;			// Scene Draw에서 사용 (그림자 계산, 빛 시점의 VP 행렬)
+		alignas(16) glm::vec3 lightPos;				// Scene Draw에서 사용 (조명 계산)
 	};
 
 	struct PushConstantData {
