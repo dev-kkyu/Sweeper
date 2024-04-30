@@ -120,12 +120,6 @@ namespace vkf
 		createShader(vertFilename, fragFilename);
 	}
 
-	Shader::Shader(vkf::Device& fDevice, std::string vertFilename)
-	{
-		this->fDevice = &fDevice;
-		createShader(vertFilename);
-	}
-
 	Shader::~Shader()
 	{
 		destroy();
@@ -136,11 +130,8 @@ namespace vkf
 		std::vector<char> vertShaderCode = vkf::readFile(vertFilename);
 		std::vector<char> fragShaderCode = vkf::readFile(fragFilename);
 
-		VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-		VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
-		shaderModules.reserve(2);
-		shaderModules.emplace_back(vertShaderModule);
-		shaderModules.emplace_back(fragShaderModule);
+		vertShaderModule = createShaderModule(vertShaderCode);
+		fragShaderModule = createShaderModule(fragShaderCode);
 
 		VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
 		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -155,35 +146,15 @@ namespace vkf
 		fragShaderStageInfo.pName = "main";
 
 		// shaderStages를 만들어 준다.
-		shaderStages.resize(2);
 		shaderStages[0] = vertShaderStageInfo;
 		shaderStages[1] = fragShaderStageInfo;
-	}
-
-	void Shader::createShader(const std::string& vertFilename)
-	{
-		std::vector<char> vertShaderCode = vkf::readFile(vertFilename);
-
-		VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-		shaderModules.emplace_back(vertShaderModule);
-
-		VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-		vertShaderStageInfo.module = vertShaderModule;
-		vertShaderStageInfo.pName = "main";
-
-		// shaderStages를 만들어 준다.
-		shaderStages.resize(1);
-		shaderStages[0] = vertShaderStageInfo;
 	}
 
 	void Shader::destroy()
 	{
 		if (fDevice) {
-			for (auto& mod : shaderModules) {
-				vkDestroyShaderModule(fDevice->logicalDevice, mod, nullptr);
-			}
+			vkDestroyShaderModule(fDevice->logicalDevice, fragShaderModule, nullptr);
+			vkDestroyShaderModule(fDevice->logicalDevice, vertShaderModule, nullptr);
 		}
 	}
 
