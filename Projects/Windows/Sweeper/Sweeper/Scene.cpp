@@ -98,6 +98,9 @@ Scene::~Scene()
 
 void Scene::update(float elapsedTime, uint32_t currentFrame)
 {
+	glm::vec3 playerPos = pMyPlayer->getPosition();
+	lightPos = playerPos + glm::vec3(10, 10, 10);		// light는 플레이어 위치에 따라서 바뀐다
+
 	// 카메라 업데이트
 	camera.update(elapsedTime);
 
@@ -109,7 +112,7 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	ubo.lightPos = lightPos;
 
 	// Scene을 드로우 할 때, 그림자 계산을 위한 빛 공간의 변환행렬을 알고 있어야 한다
-	glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
+	glm::mat4 lightView = glm::lookAt(lightPos, playerPos, glm::vec3(0.f, 1.f, 0.f));		// 빛은 플레이어를 비춘다 (그림자 연산)
 	glm::mat4 lightProjection = glm::perspective(glm::radians(45.f), 1.f, 1.f, 100.f);		// 종횡비는 가로세로 같다. near 값은 1.f로 한다
 	ubo.lightSpace = lightProjection * lightView;
 
