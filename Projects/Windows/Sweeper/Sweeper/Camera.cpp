@@ -5,7 +5,7 @@
 #include <glm/gtx/vector_angle.hpp>
 
 Camera::Camera()
-	: distanceFromPlayer{ 6.f }		// 카메라 거리
+	: distanceFromPlayer{ 10.f }		// 카메라 거리
 {
 	viewTransform = glm::lookAt(glm::vec3(0.f, 3.f, 10.f), glm::vec3(0.f), glm::vec3(0.0f, 1.0f, 0.0f));
 	projectionTransform = glm::perspective(glm::radians(45.0f), 16.f / 9.f, 1.f, 500.0f);

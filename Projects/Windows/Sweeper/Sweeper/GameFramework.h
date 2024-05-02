@@ -78,7 +78,7 @@ private:
 	vkf::RenderPass renderPass;
 
 	// 쉐도우 매핑을 위한 offScreen 정보들
-	const uint32_t shadowMapize{ 2048 };						// 가로 X 세로 사이즈
+	const uint32_t shadowMapize{ 8192 };						// 가로 X 세로 사이즈
 	const VkFormat offscreenDepthFormat{ VK_FORMAT_D16_UNORM };	// 16비트면 충분
 	struct OffscreenPass {
 		VkFramebuffer frameBuffer;
