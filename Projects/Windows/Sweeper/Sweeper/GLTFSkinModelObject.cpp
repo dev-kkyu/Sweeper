@@ -442,8 +442,8 @@ void GLTFSkinModelObject::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayo
 		nodeMatrix = worldMatrix * nodeMatrix;
 		// Pass the final matrix to the vertex shader using push constants
 		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &nodeMatrix);
-		// 현재 노드의 skin data에 해당하는 ssbo를 2번에 바인드 한다.
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &skins[node->skin].ssbo.descriptorSets[currentFrame], 0, nullptr);
+		// 현재 노드의 skin data에 해당하는 ssbo를 3번에 바인드 한다.
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 3, 1, &skins[node->skin].ssbo.descriptorSets[currentFrame], 0, nullptr);
 		for (Primitive& primitive : node->mesh.primitives)
 		{
 			if (primitive.indexCount > 0)

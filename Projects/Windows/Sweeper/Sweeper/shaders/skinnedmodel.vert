@@ -7,9 +7,10 @@ layout (location = 3) in vec3 inColor;
 layout (location = 4) in vec4 inJointIndices;
 layout (location = 5) in vec4 inJointWeights;
 
-layout (set = 0, binding = 0) uniform UniformBufferObject {
+layout (set = 2, binding = 0) uniform UniformBufferObject {
 	mat4 view;
 	mat4 projection;
+	mat4 lightSpace;
 	vec3 lightPos;
 } ubo;
 
@@ -17,7 +18,7 @@ layout(push_constant) uniform PushConstants {
 	mat4 model;
 } push;
 
-layout(std430, set = 2, binding = 0) readonly buffer JointMatrices {
+layout(std430, set = 3, binding = 0) readonly buffer JointMatrices {
 	mat4 jointMatrices[];
 };
 
@@ -26,6 +27,13 @@ layout (location = 1) out vec3 outColor;
 layout (location = 2) out vec2 outUV;
 layout (location = 3) out vec3 outViewVec;
 layout (location = 4) out vec3 outLightVec;
+layout (location = 5) out vec4 outShadowCoord;
+
+const mat4 biasMat = mat4( 
+	0.5, 0.0, 0.0, 0.0,
+	0.0, 0.5, 0.0, 0.0,
+	0.0, 0.0, 1.0, 0.0,
+	0.5, 0.5, 0.0, 1.0 );
 
 void main() 
 {
@@ -39,13 +47,15 @@ void main()
 		inJointWeights.z * jointMatrices[int(inJointIndices.z)] +
 		inJointWeights.w * jointMatrices[int(inJointIndices.w)];
 
-	gl_Position = ubo.projection * ubo.view * push.model * skinMat * vec4(inPos, 1.0);
-	
-	outNormal = normalize(transpose(inverse(mat3(ubo.view * push.model * skinMat))) * inNormal);
+	vec4 FragPos = push.model * skinMat * vec4(inPos, 1.0);
 
-	vec3 fragPos = vec3(ubo.view * push.model * vec4(inPos, 1.0));
-	vec3 lPos = mat3(ubo.view) * ubo.lightPos;
-	outLightVec = lPos - fragPos;
-	vec3 vPos = mat3(ubo.view) * vec3(inverse(ubo.view)[3]);
-	outViewVec = vPos - fragPos;
+	gl_Position = ubo.projection * ubo.view * FragPos;
+	
+	outNormal = normalize(transpose(inverse(mat3(push.model * skinMat))) * inNormal);
+
+	outLightVec = ubo.lightPos - FragPos.xyz;
+	vec3 vPos = vec3(inverse(ubo.view)[3]);
+	outViewVec = vPos - FragPos.xyz;
+
+	outShadowCoord = biasMat * ubo.lightSpace * FragPos;
 }

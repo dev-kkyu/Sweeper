@@ -13,7 +13,9 @@ class Scene
 private:
 	vkf::Device& fDevice;
 	VkSampleCountFlagBits& msaaSamples;
-	VkRenderPass& renderPass;
+	vkf::RenderPass& renderPass;
+	VkDescriptorSetLayout& shadowSetLayout;
+	VkDescriptorSet& shadowSet;
 
 	struct {
 		VkDescriptorSetLayout ubo = VK_NULL_HANDLE;
@@ -21,18 +23,23 @@ private:
 		VkDescriptorSetLayout ssbo = VK_NULL_HANDLE;
 	} descriptorSetLayout;
 
-	struct {
-		VkPipelineLayout model = VK_NULL_HANDLE;
-		VkPipelineLayout skinModel = VK_NULL_HANDLE;
-	} pipelineLayout;
+	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;		// model 파이프라인은 0, 1, 2번 셋만 사용한다
 
-	struct {
-		VkPipeline model = VK_NULL_HANDLE;
-		VkPipeline skinModel = VK_NULL_HANDLE;
+	struct Pipeline {
+		struct Type {
+			VkPipeline model = VK_NULL_HANDLE;
+			VkPipeline skinModel = VK_NULL_HANDLE;
+		} scene, offscreen;
 	} pipeline;
 
-	vkf::BufferObject uniformBufferObject;
+	struct {
+		vkf::BufferObject scene;
+		vkf::BufferObject offscreen;
+	} uniformBufferObject;
 
+	glm::vec3 lightPos = glm::vec3(10.f, 10.f, 10.f);
+
+	// obj 텍스처 로드에 사용할 DescriptorPool
 	VkDescriptorPool samplerDescriptorPool;
 
 	// obj 전사
@@ -63,11 +70,11 @@ private:
 	bool leftButtonPressed = false;
 
 public:
-	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass);
+	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet);
 	~Scene();
 
 	void update(float elapsedTime, uint32_t currentFrame);
-	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen);
 
 	void processKeyboard(int key, int action, int mods);
 	void processMouseButton(int button, int action, int mods, float xpos, float ypos);

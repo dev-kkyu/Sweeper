@@ -28,10 +28,17 @@ namespace vkf
 		VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
 	};
 
+	struct RenderPass
+	{
+		VkRenderPass scene = VK_NULL_HANDLE;
+		VkRenderPass offscreen = VK_NULL_HANDLE;
+	};
+
 	struct UniformBufferObject {
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 projection;
-		alignas(16) glm::vec3 lightPos = glm::vec3(0.0f, 50.0f, 0.0f);
+		alignas(16) glm::mat4 lightSpace;			// Scene Draw에서 사용 (그림자 계산, 빛 시점의 VP 행렬)
+		alignas(16) glm::vec3 lightPos;				// Scene Draw에서 사용 (조명 계산)
 	};
 
 	struct PushConstantData {

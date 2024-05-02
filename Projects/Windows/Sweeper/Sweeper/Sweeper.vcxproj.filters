@@ -121,16 +121,13 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\model.vert">
-      <Filter>소스 파일\Shader</Filter>
-    </None>
-    <None Include="shaders\skinnedmodel.frag">
-      <Filter>소스 파일\Shader</Filter>
-    </None>
     <None Include="shaders\skinnedmodel.vert">
       <Filter>소스 파일\Shader</Filter>
     </None>
-    <None Include="shaders\model.frag">
+    <None Include="shaders\fragment.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\model.vert">
       <Filter>소스 파일\Shader</Filter>
     </None>
   </ItemGroup>

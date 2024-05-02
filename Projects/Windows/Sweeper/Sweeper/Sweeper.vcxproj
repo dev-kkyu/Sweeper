@@ -166,9 +166,8 @@
     <ClInclude Include="VulkanGLTFSkinModel.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\model.frag" />
+    <None Include="shaders\fragment.frag" />
     <None Include="shaders\model.vert" />
-    <None Include="shaders\skinnedmodel.frag" />
     <None Include="shaders\skinnedmodel.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
