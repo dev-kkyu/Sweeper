@@ -156,8 +156,3 @@ void PlayerObject::processKeyInput(unsigned int key, bool is_pressed)
 		keyState &= ~key;
 	}
 }
-
-void PlayerObject::processMoveMouse(float move_x, float move_y)
-{
-	rotate(-move_x * 100.f);
-}

@@ -257,8 +257,6 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 		{
 		case GLFW_MOUSE_BUTTON_LEFT:
 			leftButtonPressed = true;
-			if (pMyPlayer)
-				pMyPlayer->setStartMousePos(xpos, ypos);	// 좌우 회전용 (추후 카메라로 넘길 예정)
 			camera.setStartMousePos(xpos, ypos);			// 위아래 회전용 (위아래 회전은 플레이어 방향에 영향을 주지 않는다)
 			break;
 		case GLFW_MOUSE_BUTTON_RIGHT: {
@@ -307,8 +305,6 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 void Scene::processMouseCursor(float xpos, float ypos)
 {
 	if (leftButtonPressed) {
-		if (pMyPlayer)
-			pMyPlayer->processMouseCursor(xpos, ypos);
 		camera.processMouseCursor(xpos, ypos);
 	}
 }
