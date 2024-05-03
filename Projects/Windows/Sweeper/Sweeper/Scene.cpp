@@ -348,7 +348,8 @@ void Scene::processPacket(unsigned char* packet)
 	}
 	case SC_MOVE_PLAYER: {
 		auto p = reinterpret_cast<SC_MOVE_PLAYER_PACKET*>(packet);
-		pPlayers[p->player_id]->setPosition(glm::vec3(p->x, p->y, p->z));
+		pPlayers[p->player_id]->setPosition(glm::vec3(p->pos_x, p->pos_y, p->pos_z));
+		pPlayers[p->player_id]->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
 		break;
 	}
 	case SC_PLAYER_LOOK: {

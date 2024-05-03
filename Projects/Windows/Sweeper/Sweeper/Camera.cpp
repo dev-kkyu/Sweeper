@@ -65,5 +65,5 @@ void Camera::processMouseCursor(float xpos, float ypos)
 	startYpos = ypos;
 
 	pitchAngle -= moveY * 40.f;
-	pitchAngle = glm::clamp(pitchAngle, -15.f, 35.f);
+	pitchAngle = glm::clamp(pitchAngle, -15.f, 75.f);
 }

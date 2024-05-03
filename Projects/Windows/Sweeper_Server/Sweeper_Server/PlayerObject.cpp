@@ -55,14 +55,19 @@ bool PlayerObject::update(float elapsedTime)
 	// 공격중이 아니어야 XZ평면으로 움직일 수 있다. 다만 점프중일땐 움직일 수 있다
 	if (keyState) {
 		if (not isFixedState or runJump) {
-			glm::vec3 look = getLook();
-			glm::vec3 right = getRight();
+			//glm::vec3 look = getLook();
+			//glm::vec3 right = getRight();
 
+			//glm::vec3 direction{ 0.f };
+			//if (keyState & KEY_UP) direction += 1.f * look;
+			//if (keyState & KEY_DOWN) direction -= 1.f * look;
+			//if (keyState & KEY_LEFT) direction += 1.f * right;
+			//if (keyState & KEY_RIGHT) direction -= 1.f * right;
 			glm::vec3 direction{ 0.f };
-			if (keyState & KEY_UP) direction += 1.f * look;
-			if (keyState & KEY_DOWN) direction -= 1.f * look;
-			if (keyState & KEY_LEFT) direction += 1.f * right;
-			if (keyState & KEY_RIGHT) direction -= 1.f * right;
+			if (keyState & KEY_UP) direction.z += 1.f;
+			if (keyState & KEY_DOWN) direction.z -= 1.f;
+			if (keyState & KEY_LEFT) direction.x += 1.f;
+			if (keyState & KEY_RIGHT) direction.x -= 1.f;
 
 			// 점프 처리
 			if (keyState & KEY_SPACE) {
@@ -72,7 +77,12 @@ bool PlayerObject::update(float elapsedTime)
 				}
 			}
 
-			move(direction, elapsedTime * moveSpeed);		// 초당 이동속도 4m
+			// 이동 방향으로, 플레이어 방향을 바꿔준다.
+			// Todo : 자연스러운 회전 필요...
+			setLook(direction);
+
+			//move(direction, elapsedTime * moveSpeed);		// 초당 이동속도 4m
+			moveForward(elapsedTime * moveSpeed);		// 초당 이동속도 4m
 
 			// 이동 후 충돌처리
 			// 플레이어끼리

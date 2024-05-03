@@ -88,9 +88,11 @@ struct SC_MOVE_PLAYER_PACKET
 	unsigned char size;
 	char type;
 	char player_id;
-	float x;
-	float y;
-	float z;
+	float pos_x;
+	float pos_y;
+	float pos_z;
+	float dir_x;		// 현재 보고있는 방향
+	float dir_z;
 };
 
 struct SC_PLAYER_LOOK_PACKET

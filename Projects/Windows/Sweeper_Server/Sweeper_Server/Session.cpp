@@ -105,7 +105,9 @@ void Session::update(float elapsedTime)
 		p.type = SC_MOVE_PLAYER;
 		p.player_id = player_id;
 		auto pos = player->getPosition();
-		std::tie(p.x, p.y, p.z) = std::tie(pos.x, pos.y, pos.z);
+		auto look = player->getLook();
+		std::tie(p.pos_x, p.pos_y, p.pos_z) = std::tie(pos.x, pos.y, pos.z);
+		p.dir_x = look.x; p.dir_z = look.z;
 
 		// 내 위치를 모두에게 보낸다.	// 룸에서 update 호출 시 락 걸어주기 때문에 여기서는 하지 않는다.
 		for (auto& s : parentRoom->sessions) {
