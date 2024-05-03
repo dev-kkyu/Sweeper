@@ -23,7 +23,7 @@ private:
 	float startYpos = 0.f;
 
 	// 카메라 위아래의 회전 각도
-	float pitchAngle = 10.f;
+	float pitchAngle;			// 생성자 호출 시 값 정해주기
 
 public:
 	Camera();
