@@ -175,8 +175,9 @@ void PlayerObject::rotateAndMoveToDirection(const glm::vec3& direction, float el
 	glm::vec3 look = getLook();
 	glm::vec3 dir = glm::normalize(direction);
 	glm::vec3 crossProduct = glm::cross(look, dir);
-	float dotProduct = glm::dot(look, dir);
-	float radianAngle = glm::acos(dotProduct);				// 0 ~ pi (예각으로 나온다)
+	//float dotProduct = glm::dot(look, dir);
+	//float radianAngle = glm::acos(glm::clamp(dotProduct, -1.f, 1.f));				// 0 ~ pi (예각으로 나온다)
+	float radianAngle = glm::angle(look, dir);				// 0 ~ pi (예각으로 나온다)
 
 	float rotateSign = 1.f;
 	if (crossProduct.y < 0.f)								// 시계방향으로 돌지 반시계방향으로 돌지 정해준다
