@@ -18,7 +18,6 @@ constexpr char SC_REMOVE_MONSTER = 11;
 constexpr char SC_MONSTER_STATE = 12;
 
 constexpr char CS_KEY_EVENT = 1;
-constexpr char CS_MOVE_MOUSE = 2;
 
 enum class MY_KEY_EVENT : char
 {
@@ -89,9 +88,11 @@ struct SC_MOVE_PLAYER_PACKET
 	unsigned char size;
 	char type;
 	char player_id;
-	float x;
-	float y;
-	float z;
+	float pos_x;
+	float pos_y;
+	float pos_z;
+	float dir_x;		// 현재 보고있는 방향
+	float dir_z;
 };
 
 struct SC_PLAYER_LOOK_PACKET
@@ -163,14 +164,6 @@ struct CS_KEY_EVENT_PACKET
 	char type;
 	bool is_pressed;
 	MY_KEY_EVENT key;
-};
-
-struct CS_MOVE_MOUSE_PACKET
-{
-	unsigned char size;
-	char type;
-	float move_x;
-	float move_y;
 };
 
 #pragma pack(pop)

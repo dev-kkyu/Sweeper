@@ -1,7 +1,5 @@
 #include "GameObjectBase.h"
 
-#include <stdexcept>
-
 #include <glm/gtx/vector_angle.hpp>
 
 GameObjectBase::GameObjectBase()

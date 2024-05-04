@@ -48,7 +48,8 @@ public:
 	void setAttackStart();
 
 	void processKeyInput(unsigned int key, bool is_pressed);
-	void processMoveMouse(float move_x, float move_y);
+
+private:
+	void rotateAndMoveToDirection(const glm::vec3& direction, float elapsedTime);
 
 };
-

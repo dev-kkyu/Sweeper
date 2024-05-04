@@ -105,7 +105,9 @@ void Session::update(float elapsedTime)
 		p.type = SC_MOVE_PLAYER;
 		p.player_id = player_id;
 		auto pos = player->getPosition();
-		std::tie(p.x, p.y, p.z) = std::tie(pos.x, pos.y, pos.z);
+		auto look = player->getLook();
+		std::tie(p.pos_x, p.pos_y, p.pos_z) = std::tie(pos.x, pos.y, pos.z);
+		p.dir_x = look.x; p.dir_z = look.z;
 
 		// 내 위치를 모두에게 보낸다.	// 룸에서 update 호출 시 락 걸어주기 때문에 여기서는 하지 않는다.
 		for (auto& s : parentRoom->sessions) {
@@ -218,28 +220,6 @@ void Session::processPacket(unsigned char* packet)
 			p.state = isRun ? PLAYER_STATE::RUN : PLAYER_STATE::IDLE;
 			parentRoom->room_mutex.lock();
 			for (auto& s : parentRoom->sessions) {			// 모든 플레이어에게 변경된 플레이어 State를 보내준다.
-				if (s)
-					s->sendPacket(&p);
-			}
-			parentRoom->room_mutex.unlock();
-		}
-		break;
-	}
-	case CS_MOVE_MOUSE: {
-		{
-			CS_MOVE_MOUSE_PACKET* p = reinterpret_cast<CS_MOVE_MOUSE_PACKET*>(packet);
-			player->processMoveMouse(p->move_x, p->move_y);		// 마우스에 따라 회전시켜 준다.
-		}
-		{
-			auto look = player->getLook();
-			SC_PLAYER_LOOK_PACKET p;
-			p.size = sizeof(p);
-			p.type = SC_PLAYER_LOOK;
-			p.player_id = player_id;
-			p.dir_x = look.x;
-			p.dir_z = look.z;
-			parentRoom->room_mutex.lock();
-			for (auto& s : parentRoom->sessions) {			// 모든 플레이어에게 변경된 플레이어 Look을 보내준다.
 				if (s)
 					s->sendPacket(&p);
 			}

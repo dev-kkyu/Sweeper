@@ -5,6 +5,9 @@
 #include "MonsterObject.h"
 #include <iostream>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include "includes/glm/gtx/vector_angle.hpp"
+
 PlayerObject::PlayerObject(Room* parentRoom, int p_id)
 	: GameObjectBase{ parentRoom, p_id }
 {
@@ -55,14 +58,19 @@ bool PlayerObject::update(float elapsedTime)
 	// 공격중이 아니어야 XZ평면으로 움직일 수 있다. 다만 점프중일땐 움직일 수 있다
 	if (keyState) {
 		if (not isFixedState or runJump) {
-			glm::vec3 look = getLook();
-			glm::vec3 right = getRight();
+			//glm::vec3 look = getLook();
+			//glm::vec3 right = getRight();
 
+			//glm::vec3 direction{ 0.f };
+			//if (keyState & KEY_UP) direction += 1.f * look;
+			//if (keyState & KEY_DOWN) direction -= 1.f * look;
+			//if (keyState & KEY_LEFT) direction += 1.f * right;
+			//if (keyState & KEY_RIGHT) direction -= 1.f * right;
 			glm::vec3 direction{ 0.f };
-			if (keyState & KEY_UP) direction += 1.f * look;
-			if (keyState & KEY_DOWN) direction -= 1.f * look;
-			if (keyState & KEY_LEFT) direction += 1.f * right;
-			if (keyState & KEY_RIGHT) direction -= 1.f * right;
+			if (keyState & KEY_UP) direction.z += 1.f;
+			if (keyState & KEY_DOWN) direction.z -= 1.f;
+			if (keyState & KEY_LEFT) direction.x += 1.f;
+			if (keyState & KEY_RIGHT) direction.x -= 1.f;
 
 			// 점프 처리
 			if (keyState & KEY_SPACE) {
@@ -72,7 +80,9 @@ bool PlayerObject::update(float elapsedTime)
 				}
 			}
 
-			move(direction, elapsedTime * moveSpeed);		// 초당 이동속도 4m
+			//move(direction, elapsedTime * moveSpeed);		// 초당 이동속도 4m
+			// 입력된 방향으로 플레이어 방향을 점차 바꾸면서, 해당 방향으로 전진한다
+			rotateAndMoveToDirection(direction, elapsedTime);
 
 			// 이동 후 충돌처리
 			// 플레이어끼리
@@ -157,7 +167,26 @@ void PlayerObject::processKeyInput(unsigned int key, bool is_pressed)
 	}
 }
 
-void PlayerObject::processMoveMouse(float move_x, float move_y)
+void PlayerObject::rotateAndMoveToDirection(const glm::vec3& direction, float elapsedTime)
 {
-	rotate(-move_x * 100.f);
+	if (glm::length(direction) <= 0.f)
+		return;
+
+	glm::vec3 look = getLook();
+	glm::vec3 dir = glm::normalize(direction);
+	glm::vec3 crossProduct = glm::cross(look, dir);
+	//float dotProduct = glm::dot(look, dir);
+	//float radianAngle = glm::acos(glm::clamp(dotProduct, -1.f, 1.f));				// 0 ~ pi (예각으로 나온다)
+	float radianAngle = glm::angle(look, dir);				// 0 ~ pi (예각으로 나온다)
+
+	float rotateSign = 1.f;
+	if (crossProduct.y < 0.f)								// 시계방향으로 돌지 반시계방향으로 돌지 정해준다
+		rotateSign = -1.f;
+
+	float angleOffset = radianAngle / glm::pi<float>();		// 각도에 따라 0.f ~ 1.f
+	float rotateSpeed = glm::max(angleOffset / 2.f, 0.2f) * elapsedTime * 30.f;		// 기본 값은 0.f ~ 0.5f이고, 최소값은 0.2f
+
+	rotate(glm::degrees(radianAngle * rotateSign) * rotateSpeed);
+
+	move(dir, elapsedTime * moveSpeed * (1.f - angleOffset));	// 현재 회전 방향에 따른 속도 조절
 }

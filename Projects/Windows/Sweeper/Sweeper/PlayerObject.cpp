@@ -29,26 +29,3 @@ void PlayerObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipeline
 void PlayerObject::release()
 {
 }
-
-void PlayerObject::setStartMousePos(float xpos, float ypos)
-{
-	startXpos = xpos;
-	startYpos = ypos;
-}
-
-void PlayerObject::processMouseCursor(float xpos, float ypos)
-{
-	float moveX = xpos - startXpos;
-	float moveY = ypos - startYpos;
-	startXpos = xpos;
-	startYpos = ypos;
-
-	// 서버에서 회전한 뒤, 클라에서 바꿔준다.
-
-	CS_MOVE_MOUSE_PACKET p;
-	p.size = sizeof(p);
-	p.type = CS_MOVE_MOUSE;
-	p.move_x = moveX;
-	p.move_y = moveY;
-	NetworkManager::getInstance().sendPacket(&p);
-}
