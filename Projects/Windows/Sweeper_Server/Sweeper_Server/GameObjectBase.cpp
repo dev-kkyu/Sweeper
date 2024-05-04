@@ -19,18 +19,16 @@ void GameObjectBase::setPosition(glm::vec3 position)
 
 void GameObjectBase::setLook(glm::vec3 look)
 {
-	if (glm::length(look) > 0.f) {
-		glm::vec3 position = getPosition();
+	glm::vec3 position = getPosition();
 
-		glm::vec3 baseDir{ 0.f, 0.f, 1.f };
-		glm::vec3 normalizedLook = glm::normalize(look);
-		float radianAngle = glm::orientedAngle(baseDir, normalizedLook, glm::vec3(0.f, 1.f, 0.f));
-		glm::mat4 rotateMat = glm::rotate(glm::mat4(1.f), radianAngle, glm::vec3(0.f, 1.f, 0.f));
-		glm::mat4 scaleMat = glm::scale(glm::mat4(1.f), scaleValue);
+	glm::vec3 baseDir{ 0.f, 0.f, 1.f };
+	glm::vec3 normalizedLook = glm::normalize(look);
+	float radianAngle = glm::orientedAngle(baseDir, normalizedLook, glm::vec3(0.f, 1.f, 0.f));
+	glm::mat4 rotateMat = glm::rotate(glm::mat4(1.f), radianAngle, glm::vec3(0.f, 1.f, 0.f));
+	glm::mat4 scaleMat = glm::scale(glm::mat4(1.f), scaleValue);
 
-		modelTransform = rotateMat * scaleMat;
-		setPosition(position);
-	}
+	modelTransform = rotateMat * scaleMat;
+	setPosition(position);
 }
 
 void GameObjectBase::setScale(glm::vec3 scale)
