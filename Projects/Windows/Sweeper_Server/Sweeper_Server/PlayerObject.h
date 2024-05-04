@@ -49,4 +49,7 @@ public:
 
 	void processKeyInput(unsigned int key, bool is_pressed);
 
+private:
+	void rotateAndMoveToDirection(const glm::vec3& direction, float elapsedTime);
+
 };
