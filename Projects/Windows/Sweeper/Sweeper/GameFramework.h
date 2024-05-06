@@ -50,6 +50,8 @@ public:
 	// 匙飘况农 菩哦 贸府
 	void processPacket(unsigned char* packet);
 
+	PLAYER_TYPE getPlayerType() const;
+
 private:
 	Timer gameTimer;
 

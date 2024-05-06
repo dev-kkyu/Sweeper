@@ -16,89 +16,14 @@ void Session::start(Room* parentRoom, int player_id)
 	this->parentRoom = parentRoom;
 	this->player_id = player_id;
 
-	player = std::make_shared<PlayerObject>(parentRoom, player_id);
-	//player->setPosition({ 90.f, 0.f, 90.f });			// 초기 위치 설정
-	//player->setLook({ 0.f, 0.f, -1.f });
-
+	in_use = false;
 	doRead();		// 수신하기를 시작한다.
-
-	// 로그인 패킷 - id를 보내준다.
-	{
-		SC_LOGIN_PACKET p;
-		p.size = sizeof(p);
-		p.type = SC_LOGIN;
-		p.room_id = parentRoom->room_id;
-		p.player_id = this->player_id;
-		auto pos = player->getPosition();
-		auto dir = player->getLook();
-		p.pos_x = pos.x;
-		p.pos_z = pos.z;
-		p.dir_x = dir.x;
-		p.dir_z = dir.z;
-		sendPacket(&p);
-		std::cout << "플레이어 [" << parentRoom->room_id << ":" << this->player_id << "] 접속\n";
-	}
-	// 나의 접속을 모든 플레이어에게 알린다.
-	{
-		SC_ADD_PLAYER_PACKET p;
-		p.size = sizeof(p);
-		p.type = SC_ADD_PLAYER;
-		p.player_id = this->player_id;
-		auto pos = player->getPosition();
-		auto dir = player->getLook();
-		p.pos_x = pos.x;
-		p.pos_z = pos.z;
-		p.dir_x = dir.x;
-		p.dir_z = dir.z;
-		for (int i = 0; i < parentRoom->sessions.size(); ++i) {		// Room에서 락 걸어주기 때문에 여기서는 X
-			if (i == this->player_id)		// 나는 알릴 필요 없다.
-				continue;
-			if (parentRoom->sessions[i])	// 존재하는 플레이어에게 전송
-				parentRoom->sessions[i]->sendPacket(&p);
-		}
-	}
-	// 접속된 모든 플레이어를 나에게 알린다.
-	{
-		SC_ADD_PLAYER_PACKET p;
-		p.size = sizeof(p);
-		p.type = SC_ADD_PLAYER;
-		for (int i = 0; i < parentRoom->sessions.size(); ++i) {		// Room에서 락 걸어주기 때문에 여기서는 X
-			if (i == this->player_id)		// 나는 알릴 필요 없다.
-				continue;
-			if (parentRoom->sessions[i]) {	// 존재하는 플레이어를 전송
-				p.player_id = i;
-				auto pos = parentRoom->sessions[i]->player->getPosition();
-				auto dir = parentRoom->sessions[i]->player->getLook();
-				p.pos_x = pos.x;
-				p.pos_z = pos.z;
-				p.dir_x = dir.x;
-				p.dir_z = dir.z;
-				sendPacket(&p);
-			}
-		}
-	}
-	// 모든 몬스터 추가 패킷을 보낸다
-	{
-		SC_ADD_MONSTER_PACKET p;
-		p.size = sizeof(p);
-		p.type = SC_ADD_MONSTER;
-		for (auto& m : parentRoom->monsters) {
-			p.monster_id = m.first;
-			auto pos = m.second->getPosition();
-			auto dir = m.second->getLook();
-			p.pos_x = pos.x;
-			p.pos_z = pos.z;
-			p.dir_x = dir.x;
-			p.dir_z = dir.z;
-			sendPacket(&p);
-		}
-	}
 }
 
 void Session::update(float elapsedTime)
 {
 	// 변화가 있을 때에만 데이터를 전송하는 것으로 최적화
-	if (player->update(elapsedTime)) {
+	if (player and player->update(elapsedTime)) {
 		// 프레임마다 내 위치를 모두에게 전송한다.
 		SC_MOVE_PLAYER_PACKET p;
 		p.size = sizeof(p);
@@ -112,7 +37,8 @@ void Session::update(float elapsedTime)
 		// 내 위치를 모두에게 보낸다.	// 룸에서 update 호출 시 락 걸어주기 때문에 여기서는 하지 않는다.
 		for (auto& s : parentRoom->sessions) {
 			if (s)
-				s->sendPacket(&p);
+				if (s->in_use)
+					s->sendPacket(&p);
 		}
 	}
 }
@@ -129,6 +55,100 @@ void Session::processPacket(unsigned char* packet)
 {
 	switch (packet[1])
 	{
+	case CS_LOGIN: {	// 클라에서 플레이어를 선택해 주면
+		{
+			CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(packet);
+			player_type = p->player_type;
+
+			// 플레이어 생성, 추후 타입에 따른 다른 자식클래스로 생성
+			player = std::make_shared<PlayerObject>(parentRoom, player_id);
+		}
+		// 로그인 패킷 - id를 보내준다.
+		{
+			SC_LOGIN_INFO_PACKET p;
+			p.size = sizeof(p);
+			p.type = SC_LOGIN_INFO;
+			p.room_id = parentRoom->room_id;
+			p.player_id = this->player_id;
+			auto pos = player->getPosition();
+			auto dir = player->getLook();
+			p.pos_x = pos.x;
+			p.pos_z = pos.z;
+			p.dir_x = dir.x;
+			p.dir_z = dir.z;
+			sendPacket(&p);
+			std::cout << "플레이어 [" << parentRoom->room_id << ":" << this->player_id << "] 접속\n";
+		}
+
+		parentRoom->room_mutex.lock();						// 이 구간은 락을 건다
+		// 나의 접속을 모든 플레이어에게 알린다.
+		{
+			SC_ADD_PLAYER_PACKET p;
+			p.size = sizeof(p);
+			p.type = SC_ADD_PLAYER;
+			p.player_type = player_type;
+			p.player_id = this->player_id;
+			auto pos = player->getPosition();
+			auto dir = player->getLook();
+			p.pos_x = pos.x;
+			p.pos_z = pos.z;
+			p.dir_x = dir.x;
+			p.dir_z = dir.z;
+			for (int i = 0; i < parentRoom->sessions.size(); ++i) {		// Room에서 락 걸어주기 때문에 여기서는 X
+				if (i == this->player_id)		// 나는 알릴 필요 없다.
+					continue;
+				if (parentRoom->sessions[i]) {	// 존재하는 플레이어에게 전송
+					if (parentRoom->sessions[i]->in_use)
+						parentRoom->sessions[i]->sendPacket(&p);
+				}
+			}
+		}
+		// 접속된 모든 플레이어를 나에게 알린다.
+		{
+			SC_ADD_PLAYER_PACKET p;
+			p.size = sizeof(p);
+			p.type = SC_ADD_PLAYER;
+			for (int i = 0; i < parentRoom->sessions.size(); ++i) {		// Room에서 락 걸어주기 때문에 여기서는 X
+				if (i == this->player_id)		// 나는 알릴 필요 없다.
+					continue;
+				if (parentRoom->sessions[i]) {	// 존재하는 플레이어를 전송
+					if (parentRoom->sessions[i]->in_use) {
+						p.player_id = i;
+						p.player_type = parentRoom->sessions[i]->player_type;
+						auto pos = parentRoom->sessions[i]->player->getPosition();
+						auto dir = parentRoom->sessions[i]->player->getLook();
+						p.pos_x = pos.x;
+						p.pos_z = pos.z;
+						p.dir_x = dir.x;
+						p.dir_z = dir.z;
+						sendPacket(&p);
+					}
+				}
+			}
+		}
+		// 이제 내 상태를 in_use로 변경
+		in_use = true;
+		// 락 해제
+		parentRoom->room_mutex.unlock();
+
+		// 모든 몬스터 추가 패킷을 보낸다
+		{
+			SC_ADD_MONSTER_PACKET p;
+			p.size = sizeof(p);
+			p.type = SC_ADD_MONSTER;
+			for (auto& m : parentRoom->monsters) {
+				p.monster_id = m.first;
+				auto pos = m.second->getPosition();
+				auto dir = m.second->getLook();
+				p.pos_x = pos.x;
+				p.pos_z = pos.z;
+				p.dir_x = dir.x;
+				p.dir_z = dir.z;
+				sendPacket(&p);
+			}
+		}
+		break;
+	}
 	case CS_KEY_EVENT: {
 		CS_KEY_EVENT_PACKET* p = reinterpret_cast<CS_KEY_EVENT_PACKET*>(packet);
 		switch (p->key)
@@ -174,7 +194,8 @@ void Session::processPacket(unsigned char* packet)
 			parentRoom->room_mutex.lock();
 			for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 변경된 플레이어 State를 보내준다.
 				if (s)
-					s->sendPacket(&p);
+					if (s->in_use)
+						s->sendPacket(&p);
 			}
 			parentRoom->room_mutex.unlock();
 			{
@@ -199,7 +220,8 @@ void Session::processPacket(unsigned char* packet)
 						parentRoom->room_mutex.lock();
 						for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 변경된 플레이어 State를 보내준다.
 							if (s)
-								s->sendPacket(&p);
+								if (s->in_use)
+									s->sendPacket(&p);
 						}
 						parentRoom->room_mutex.unlock();
 						player->setFixedState(false);
@@ -221,7 +243,8 @@ void Session::processPacket(unsigned char* packet)
 			parentRoom->room_mutex.lock();
 			for (auto& s : parentRoom->sessions) {			// 모든 플레이어에게 변경된 플레이어 State를 보내준다.
 				if (s)
-					s->sendPacket(&p);
+					if (s->in_use)
+						s->sendPacket(&p);
 			}
 			parentRoom->room_mutex.unlock();
 		}
@@ -253,7 +276,8 @@ void Session::doRead()
 					p.player_id = player_id;
 					for (int i = 0; i < parentRoom->sessions.size(); ++i) {
 						if (parentRoom->sessions[i]) {					// 존재하는 플레이어에게 전송
-							parentRoom->sessions[i]->sendPacket(&p);
+							if (parentRoom->sessions[i]->in_use)
+								parentRoom->sessions[i]->sendPacket(&p);
 						}
 					}
 				}

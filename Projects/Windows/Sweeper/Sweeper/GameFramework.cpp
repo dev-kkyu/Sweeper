@@ -220,7 +220,7 @@ void GameFramework::processPacket(unsigned char* packet)
 	// 이제 멀티스레드 동시성 고려하지 않아도 된다.
 	switch (packet[1])
 	{
-	case SC_LOGIN:
+	case SC_LOGIN_INFO:
 	case SC_LOGOUT:
 	case SC_ADD_PLAYER:
 	case SC_MOVE_PLAYER:
@@ -240,6 +240,11 @@ void GameFramework::processPacket(unsigned char* packet)
 		std::cout << "Type Error: " << static_cast<int>(packet[1]) << " Type is invalid\n";
 		break;
 	}
+}
+
+PLAYER_TYPE GameFramework::getPlayerType() const
+{
+	return pScene->getPlayerType();
 }
 
 void GameFramework::cleanupSwapChain()

@@ -39,7 +39,7 @@ public:
 
 public:
 	void connectServer(std::string ipAddress);
-	void start();
+	void start(PLAYER_TYPE player_type);
 	void poll();
 	void stop();
 	void sendPacket(void* packet);

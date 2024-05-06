@@ -31,9 +31,29 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 
 	// gltf skin모델 로드
 	mushroomModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/blue_mushroom.glb");
-	// 플레이어 모델 로드 (skin model)	// 일단은 두개만 로드한다.
-	playerModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Dragoon.glb");
-	playerModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Mage.glb");
+	// 플레이어 모델 로드 (skin model)
+	playerModel[static_cast<int>(PLAYER_TYPE::WARRIOR)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Dragoon.glb");
+	playerModel[static_cast<int>(PLAYER_TYPE::ARCHER)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Archer.glb");
+	playerModel[static_cast<int>(PLAYER_TYPE::MAGE)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Mage.glb");
+	playerModel[static_cast<int>(PLAYER_TYPE::HEALER)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Priest.glb");
+
+	// 플레이어 선택
+	{
+		int sel_type{};
+		std::cout << "플레이어 선택 (0~3): ";
+		std::cin >> sel_type;
+		if (std::cin.fail() or sel_type < 0 or sel_type > 3) {
+			std::cout << "잘못된 입력" << std::endl;
+			exit(-1);
+		}
+		player_type = static_cast<PLAYER_TYPE>(sel_type);
+
+		pMyPlayer = std::make_shared<PlayerObject>();		// Todo : 추후 타입에 따라 다르게 생성
+		pMyPlayer->initModel(playerModel[static_cast<int>(player_type)], descriptorSetLayout.ssbo);
+		pMyPlayer->setScale(glm::vec3(1.3f));
+		pMyPlayer->setAnimationClip(CLIP_IDLE);	// Idle
+		camera.setPlayer(pMyPlayer);
+	}
 
 	// 맵 생성
 	mapObject.setModel(mapModel);
@@ -55,7 +75,6 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 		warriorObject[i]->rotate(180.f);
 	}
 
-	// 플레이어 생성은 서버에서 로그인 정보 받을 때까지 미뤄준다.
 }
 
 Scene::~Scene()
@@ -313,18 +332,13 @@ void Scene::processPacket(unsigned char* packet)
 {
 	switch (packet[1])
 	{
-	case SC_LOGIN: {
-		auto p = reinterpret_cast<SC_LOGIN_PACKET*>(packet);
+	case SC_LOGIN_INFO: {
+		auto p = reinterpret_cast<SC_LOGIN_INFO_PACKET*>(packet);
 		std::cout << "로그인 패킷 수신, ROOM:ID->[" << int(p->room_id) << ":" << int(p->player_id) << "]\n";
+		// 룸 ID는 아직 사용하지 않음
 		my_id = p->player_id;
-		pMyPlayer = std::make_shared<PlayerObject>();
-		pMyPlayer->initModel(playerModel[0], descriptorSetLayout.ssbo);
-		pMyPlayer->setScale(glm::vec3(1.3f));
-		pMyPlayer->setAnimationClip(CLIP_IDLE);	// Idle
-		//pMyPlayer->setAnimateSpeed(1.f);	// Todo : 필요시 적절히 조절할 것
 		pMyPlayer->setPosition(glm::vec3(p->pos_x, 0.f, p->pos_z));
 		pMyPlayer->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
-		camera.setPlayer(pMyPlayer);
 		pPlayers[my_id] = pMyPlayer;
 		break;
 	}
@@ -338,8 +352,8 @@ void Scene::processPacket(unsigned char* packet)
 	case SC_ADD_PLAYER: {
 		auto p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
 		std::cout << "플레이어 추가 패킷 수신 ID:[" << int(p->player_id) << "]\n";
-		pPlayers[p->player_id] = std::make_shared<PlayerObject>();
-		pPlayers[p->player_id]->initModel(playerModel[1], descriptorSetLayout.ssbo);	// 일단 나 제외 1번모델로
+		pPlayers[p->player_id] = std::make_shared<PlayerObject>();		// Todo : 추후 타입에 따라 다르게 생성
+		pPlayers[p->player_id]->initModel(playerModel[static_cast<int>(p->player_type)], descriptorSetLayout.ssbo);
 		pPlayers[p->player_id]->setScale(glm::vec3(1.3f));
 		pPlayers[p->player_id]->setAnimationClip(CLIP_IDLE);
 		pPlayers[p->player_id]->setPosition(glm::vec3(p->pos_x, 0.f, p->pos_z));
@@ -406,6 +420,11 @@ void Scene::processPacket(unsigned char* packet)
 		break;
 	}
 	}
+}
+
+PLAYER_TYPE Scene::getPlayerType() const
+{
+	return player_type;
 }
 
 void Scene::createDescriptorSetLayout()

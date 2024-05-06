@@ -50,7 +50,8 @@ void Room::update(float elapsedTime)
 	std::lock_guard<std::mutex> l{ room_mutex };		// 플레이어 삽입 / 삭제 주의
 	for (auto& s : sessions) {
 		if (s) {
-			s->update(elapsedTime);
+			if (s->in_use)
+				s->update(elapsedTime);
 		}
 	}
 
@@ -68,7 +69,8 @@ void Room::update(float elapsedTime)
 			p.dir_z = look.z;
 			for (auto& s : sessions) {		// 모든 세션에게 변화된 몬스터 위치 정보를 보내준다
 				if (s) {
-					s->sendPacket(&p);
+					if (s->in_use)
+						s->sendPacket(&p);
 				}
 			}
 		}

@@ -4,7 +4,7 @@
 #define BUFF_SIZE		1024
 #define MAX_ROOM		500
 
-constexpr char SC_LOGIN = 1;
+constexpr char SC_LOGIN_INFO = 1;
 constexpr char SC_LOGOUT = 2;
 constexpr char SC_LOGIN_FAIL = 3;
 constexpr char SC_ADD_PLAYER = 4;
@@ -17,7 +17,16 @@ constexpr char SC_MONSTER_LOOK = 10;
 constexpr char SC_REMOVE_MONSTER = 11;
 constexpr char SC_MONSTER_STATE = 12;
 
-constexpr char CS_KEY_EVENT = 1;
+constexpr char CS_LOGIN = 1;
+constexpr char CS_KEY_EVENT = 2;
+
+enum class PLAYER_TYPE : char
+{
+	WARRIOR = 0,
+	ARCHER = 1,
+	MAGE = 2,
+	HEALER = 3,
+};
 
 enum class MY_KEY_EVENT : char
 {
@@ -47,7 +56,7 @@ enum class MONSTER_STATE : char
 
 #pragma pack(push, 1)
 
-struct SC_LOGIN_PACKET
+struct SC_LOGIN_INFO_PACKET
 {
 	unsigned char size;
 	char type;
@@ -77,6 +86,7 @@ struct SC_ADD_PLAYER_PACKET
 	unsigned char size;
 	char type;
 	char player_id;
+	PLAYER_TYPE player_type;
 	float pos_x;		// 현재 플레이어 위치
 	float pos_z;
 	float dir_x;		// 현재 보고있는 방향
@@ -156,6 +166,13 @@ struct SC_MONSTER_STATE_PACKET
 	char type;
 	char monster_id;
 	MONSTER_STATE state;
+};
+
+struct CS_LOGIN_PACKET
+{
+	unsigned char size;
+	char type;
+	PLAYER_TYPE player_type;
 };
 
 struct CS_KEY_EVENT_PACKET

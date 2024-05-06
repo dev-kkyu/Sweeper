@@ -8,6 +8,8 @@
 //#include "GLTFSkinModelObject.h"	// included PlayerObject
 #include "Camera.h"
 
+#include "NetworkManager.h"
+
 class Scene
 {
 private:
@@ -60,6 +62,7 @@ private:
 
 	// gltf skin 캐릭터 에셋
 	std::array<VulkanGLTFSkinModel, 4> playerModel;		// 캐릭터 종류는 총 4개이다.
+	PLAYER_TYPE player_type;							// 플레이어 타입 (4가지 종류, 서버의 protocol에 정의)
 	std::shared_ptr<PlayerObject> pMyPlayer;			// pPlayers[my_id] 와 같은 객체를 가리키도록 한다.
 	std::array<std::shared_ptr<PlayerObject>, 4> pPlayers;
 	int my_id = -1;
@@ -82,6 +85,8 @@ public:
 
 	// 네트워크 패킷 처리
 	void processPacket(unsigned char* packet);
+
+	PLAYER_TYPE getPlayerType() const;
 
 private:
 	void createDescriptorSetLayout();

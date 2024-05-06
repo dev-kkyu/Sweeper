@@ -13,6 +13,8 @@ class Session
 	: public std::enable_shared_from_this<Session>		// 비동기 콜백(주로 람다함수) 호출시까지 객체가 남아있기 위하여(스마트포인터) 설정해줘야 함
 {
 public:
+	bool in_use;
+	PLAYER_TYPE player_type;	// Todo: 추후 플레이어를 상속받는 각 플레이어 클래스로 아래 player를 생성할 것이다
 	std::shared_ptr<PlayerObject> player;
 
 private:

@@ -48,11 +48,17 @@ void NetworkManager::connectServer(std::string ipAddress)
 	}
 }
 
-void NetworkManager::start()
+void NetworkManager::start(PLAYER_TYPE player_type)
 {
+	// 로그인 패킷 전송
+	CS_LOGIN_PACKET p;
+	p.size = sizeof(p);
+	p.type = CS_LOGIN;
+	p.player_type = player_type;
+	sendPacket(&p);
+
 	doRead();		// 수신하기를 시작한다.
 
-	// Todo : 최초 접속시 할 일
 }
 
 void NetworkManager::poll()
