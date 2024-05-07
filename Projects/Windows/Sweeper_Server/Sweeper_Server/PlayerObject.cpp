@@ -89,7 +89,7 @@ bool PlayerObject::update(float elapsedTime)
 			for (int i = 0; i < 4; ++i) {
 				if (i == my_id)
 					continue;
-				if (parentRoom->sessions[i]) {
+				if (parentRoom->sessions[i] and parentRoom->sessions[i]->in_use) {
 					if (isCollide(*parentRoom->sessions[i]->player)) {
 						glm::vec3 myPos = getPosition();
 						glm::vec3 otherPos = parentRoom->sessions[i]->player->getPosition();
