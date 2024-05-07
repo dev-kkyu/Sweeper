@@ -41,21 +41,9 @@ private:
 
 	glm::vec3 lightPos = glm::vec3(10.f, 10.f, 10.f);
 
-	// obj 텍스처 로드에 사용할 DescriptorPool
-	VkDescriptorPool samplerDescriptorPool;
-
-	// obj 전사
-	vkf::MeshBuffer warriorBuffer;
-	vkf::Texture warriorTexture;
-	std::array<OBJModelObject*, 10> warriorObject;
-
 	// gltf 일반 맵
 	VulkanGLTFModel mapModel;
 	GLTFModelObject mapObject;
-
-	// gltf 일반 도깨비불
-	VulkanGLTFModel wispModel;
-	std::array<GLTFModelObject*, 10> wispObject;
 
 	VulkanGLTFSkinModel mushroomModel;
 	std::unordered_map<int, std::shared_ptr<GLTFSkinModelObject>> pMonsterObjects;	// 다형성을 위한 포인터 사용
@@ -91,8 +79,5 @@ public:
 private:
 	void createDescriptorSetLayout();
 	void createGraphicsPipeline();
-
-	// obj 모델은 직접 buffer와 texture를 넣어주도록 설계. 따라서 texture를 위한 descriptor pool을 만들어준다.
-	void createSamplerDescriptorPool(uint32_t setCount);
 
 };

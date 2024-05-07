@@ -19,15 +19,8 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 	uniformBufferObject.scene.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 	uniformBufferObject.offscreen.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 
-	createSamplerDescriptorPool(1);		// obj에 사용할 텍스처 별도로 불러올것
-
-	// obj와 텍스처 로드
-	warriorBuffer.loadFromObjFile(fDevice, "models/warrior.obj");
-	warriorTexture.loadFromFile(fDevice, "textures/warrior.png", samplerDescriptorPool, descriptorSetLayout.sampler);
-
 	// gltf 모델 로드
 	mapModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/map.glb");
-	wispModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/wisp.glb");
 
 	// gltf skin모델 로드
 	mushroomModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/blue_mushroom.glb");
@@ -37,7 +30,10 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 	playerModel[static_cast<int>(PLAYER_TYPE::MAGE)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Mage.glb");
 	playerModel[static_cast<int>(PLAYER_TYPE::HEALER)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Priest.glb");
 
-	// 플레이어 선택
+	// 맵 생성
+	mapObject.setModel(mapModel);
+
+	// 플레이어 선택 및 생성
 	{
 		int sel_type{};
 		std::cout << "플레이어 선택 (0~3): ";
@@ -55,26 +51,6 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 		camera.setPlayer(pMyPlayer);
 	}
 
-	// 맵 생성
-	mapObject.setModel(mapModel);
-
-	// 도깨비불 생성
-	for (int i = 0; i < wispObject.size(); ++i) {
-		wispObject[i] = new GLTFModelObject;
-		wispObject[i]->setModel(wispModel);
-		wispObject[i]->setPosition({ (i - 5) * 5.f - 2.5f, 0.f, 30.f });
-		wispObject[i]->rotate(180.f);
-	}
-
-	// 전사 생성
-	for (int i = 0; i < warriorObject.size(); ++i) {
-		warriorObject[i] = new OBJModelObject;
-		warriorObject[i]->setBuffer(warriorBuffer);
-		warriorObject[i]->setTexture(warriorTexture);
-		warriorObject[i]->setPosition({ (i - 5) * 5.f, 0.f, 25.f });
-		warriorObject[i]->rotate(180.f);
-	}
-
 }
 
 Scene::~Scene()
@@ -84,23 +60,12 @@ Scene::~Scene()
 		model.destroy();
 	}
 
-	for (auto& object : wispObject) {		// 도깨비불 객체
-		delete object;
-	}
-	wispModel.destroy();					// 도깨비불 모델
-
-	for (auto& object : warriorObject) {	// 전사 객체
-		delete object;
-	}
-	warriorTexture.destroy();				// 전사 모델
-	warriorBuffer.destroy();
-
 	pMonsterObjects.clear();				// 몬스터 객체들
 	mushroomModel.destroy();				// 몬스터-버섯 모델
 
-	mapModel.destroy();						// 맵 모델 // 오브젝트는 알아서 삭제
+	mapModel.destroy();						// 맵 모델
 
-	vkDestroyDescriptorPool(fDevice.logicalDevice, samplerDescriptorPool, nullptr);
+	// 플레이어와 맵 오브젝트는 알아서 삭제
 
 	uniformBufferObject.scene.destroy();
 	uniformBufferObject.offscreen.destroy();
@@ -150,14 +115,6 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 		m.second->update(elapsedTime, currentFrame);
 	}
 
-	for (auto& object : warriorObject) {
-		object->update(elapsedTime, currentFrame);
-	}
-
-	for (auto& object : wispObject) {
-		object->update(elapsedTime, currentFrame);
-	}
-
 	for (auto& player : pPlayers) {
 		if (player)
 			player->update(elapsedTime, currentFrame);
@@ -183,12 +140,6 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOf
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, line.model);
 
 	mapObject.draw(commandBuffer, pipelineLayout, currentFrame);
-	for (auto& object : warriorObject) {
-		object->draw(commandBuffer, pipelineLayout, currentFrame);
-	}
-	for (auto& object : wispObject) {				// 원래는 alpha 있는 것 따로 마지막에 그려야 한다.
-		object->draw(commandBuffer, pipelineLayout, currentFrame);
-	}
 
 	// skinModel Object들
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, line.skinModel);
@@ -650,21 +601,3 @@ void Scene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 }
-
-void Scene::createSamplerDescriptorPool(uint32_t setCount)
-{
-	std::array<VkDescriptorPoolSize, 1> poolSizes{};
-	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[0].descriptorCount = setCount;
-
-	VkDescriptorPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = setCount;
-
-	if (vkCreateDescriptorPool(fDevice.logicalDevice, &poolInfo, nullptr, &samplerDescriptorPool) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor pool!");
-	}
-}
-
