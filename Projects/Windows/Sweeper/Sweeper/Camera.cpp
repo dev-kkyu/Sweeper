@@ -9,7 +9,7 @@ Camera::Camera()
 	, pitchAngle{ 45.f }					// 카메라 각도
 {
 	viewTransform = glm::lookAt(glm::vec3(0.f, 3.f, 10.f), glm::vec3(0.f), glm::vec3(0.0f, 1.0f, 0.0f));
-	projectionTransform = glm::perspective(glm::radians(45.0f), 16.f / 9.f, 5.f, 100.0f);
+	projectionTransform = glm::perspective(glm::radians(45.0f), 16.f / 9.f, 1.f, 100.0f);
 }
 
 Camera::~Camera()

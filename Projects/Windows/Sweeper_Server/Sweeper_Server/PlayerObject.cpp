@@ -11,7 +11,7 @@
 PlayerObject::PlayerObject(Room* parentRoom, int p_id)
 	: GameObjectBase{ parentRoom, p_id }
 {
-	moveSpeed = 4.f;							// 초당 이동속도 4m
+	moveSpeed = 5.f;							// 초당 이동속도 5m
 
 	gravity = 25.f;								// 중력을 이것으로 조정해 준다.
 	jumpSpeed = glm::sqrt(2.f * gravity * 1.f);	// 최대 높이 1m
@@ -80,7 +80,7 @@ bool PlayerObject::update(float elapsedTime)
 				}
 			}
 
-			//move(direction, elapsedTime * moveSpeed);		// 초당 이동속도 4m
+			//move(direction, elapsedTime * moveSpeed);
 			// 입력된 방향으로 플레이어 방향을 점차 바꾸면서, 해당 방향으로 전진한다
 			rotateAndMoveToDirection(direction, elapsedTime);
 
