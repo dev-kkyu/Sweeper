@@ -45,8 +45,12 @@ private:
 	VulkanGLTFModel mapModel;
 	GLTFModelObject mapObject;
 
+	// gltf skin 몬스터 모델들
 	VulkanGLTFSkinModel mushroomModel;
 	std::unordered_map<int, std::shared_ptr<GLTFSkinModelObject>> pMonsterObjects;	// 다형성을 위한 포인터 사용
+
+	VulkanGLTFSkinModel bossModel;
+	GLTFSkinModelObject bossObject;
 
 	// gltf skin 캐릭터 에셋
 	std::array<VulkanGLTFSkinModel, 4> playerModel;		// 캐릭터 종류는 총 4개이다.

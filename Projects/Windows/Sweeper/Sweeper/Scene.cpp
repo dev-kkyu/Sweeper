@@ -24,6 +24,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 
 	// gltf skin모델 로드
 	mushroomModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/blue_mushroom.glb");
+	bossModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/boss_golem.glb");
 	// 플레이어 모델 로드 (skin model)
 	playerModel[static_cast<int>(PLAYER_TYPE::WARRIOR)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Dragoon.glb");
 	playerModel[static_cast<int>(PLAYER_TYPE::ARCHER)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Archer.glb");
@@ -32,6 +33,14 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 
 	// 맵 생성
 	mapObject.setModel(mapModel);
+
+	// 보스 모델 생성
+	bossObject.initModel(bossModel, descriptorSetLayout.ssbo);
+	bossObject.setAnimationClip(2);
+	bossObject.setPosition({ 12.25f, -0.8f, 115.f });
+	bossObject.setLook({ 0.f, 0.f, -1.f });
+	bossObject.setScale(glm::vec3{ 2.25f });
+	bossObject.setAnimateSpeed(0.7f);
 
 	// 플레이어 선택 및 생성
 	{
@@ -59,6 +68,8 @@ Scene::~Scene()
 	for (auto& model : playerModel) {		// 플레이어 모델들
 		model.destroy();
 	}
+
+	bossModel.destroy();
 
 	pMonsterObjects.clear();				// 몬스터 객체들
 	mushroomModel.destroy();				// 몬스터-버섯 모델
@@ -111,6 +122,8 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	// 맵은 업데이트 X
 
 	// 오브젝트 업데이트
+	bossObject.update(elapsedTime, currentFrame);
+
 	for (auto& m : pMonsterObjects) {
 		m.second->update(elapsedTime, currentFrame);
 	}
@@ -143,6 +156,8 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOf
 
 	// skinModel Object들
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, line.skinModel);
+
+	bossObject.draw(commandBuffer, pipelineLayout, currentFrame);
 
 	for (auto& m : pMonsterObjects) {
 		m.second->draw(commandBuffer, pipelineLayout, currentFrame);
