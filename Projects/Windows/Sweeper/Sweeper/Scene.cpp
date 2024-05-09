@@ -83,7 +83,7 @@ Scene::~Scene()
 void Scene::update(float elapsedTime, uint32_t currentFrame)
 {
 	glm::vec3 playerPos = pMyPlayer->getPosition();
-	lightPos = playerPos + glm::vec3(-2.f, 4.f, -2.f);		// light는 플레이어 위치에 따라서 바뀐다
+	lightPos = playerPos + glm::vec3(-2.f, 5.2f, -2.f);		// light는 플레이어 위치에 따라서 바뀐다
 
 	// 카메라 업데이트
 	camera.update(elapsedTime);
@@ -98,7 +98,7 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	// Scene을 드로우 할 때, 그림자 계산을 위한 빛 공간의 변환행렬을 알고 있어야 한다
 	glm::mat4 lightView = glm::lookAt(lightPos, playerPos + glm::vec3(2.f, 0.f, 2.f), glm::vec3(0.f, 1.f, 0.f));		// 빛은 플레이어를 비춘다 (그림자 연산)
 	//glm::mat4 lightProjection = glm::perspective(glm::radians(45.f), 1.f, 1.f, 100.f);		// 종횡비는 가로세로 같다. near 값은 1.f로 한다
-	glm::mat4 lightProjection = glm::ortho(-55.f, 55.f, -55.f, 55.f, -2.f, 50.f);				// 직교투영이 현재 게임에 적합... 종횡비는 같아야 한다
+	glm::mat4 lightProjection = glm::ortho(-50.f, 50.f, -50.f, 50.f, -2.3f, 50.f);				// 직교투영이 현재 게임에 적합... 종횡비는 같아야 한다
 	ubo.lightSpace = lightProjection * lightView;
 
 	uniformBufferObject.scene.updateUniformBuffer(ubo, currentFrame);
