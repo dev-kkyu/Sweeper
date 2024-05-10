@@ -95,6 +95,7 @@ bool PlayerObject::update(float elapsedTime)
 						glm::vec3 myPos = getPosition();
 						glm::vec3 otherPos = parentRoom->sessions[i]->player->getPosition();
 						glm::vec3 dir = myPos - otherPos;
+						dir.y = 0.f;
 						move(dir, elapsedTime * moveSpeed);	// 움직인 방향과 무관하게, 상대와 나의 방향벡터를 구하면 슬라이딩 벡터가 가능하다
 					}
 				}
@@ -105,6 +106,7 @@ bool PlayerObject::update(float elapsedTime)
 					glm::vec3 myPos = getPosition();
 					glm::vec3 otherPos = m.second->getPosition();
 					glm::vec3 dir = myPos - otherPos;
+					dir.y = 0.f;
 					move(dir, elapsedTime * moveSpeed);
 				}
 			}

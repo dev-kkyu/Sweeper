@@ -38,6 +38,7 @@ bool MonsterObject::update(float elapsedTime)
 				return false;
 			if (dist2 <= targetDist2) {		// 3.f 거리 내에 있으면
 				auto newDir = playerPos - myPos;
+				newDir.y = 0.f;
 				setLook(newDir);
 				moveForward(2.f * elapsedTime);		// 초당 2m 거리로 플레이어를 향해 간다
 
@@ -75,6 +76,7 @@ bool MonsterObject::update(float elapsedTime)
 					if (isCollide(*m.second)) {
 						glm::vec3 otherPos = m.second->getPosition();
 						glm::vec3 dir = myPos - otherPos;
+						dir.y = 0.f;
 						move(dir, elapsedTime * 2.f);
 					}
 				}
@@ -105,6 +107,7 @@ void MonsterObject::onHit(const GameObjectBase& other)
 	// player의 update에서 호출될 예정이므로, 락X (업데이트 전에 락 걸기 때문)
 	{
 		auto newDir = other.getPosition() - getPosition();
+		newDir.y = 0.f;
 		setLook(newDir);		// 플레이어 방향으로, look을 바꿔준다
 
 		SC_MONSTER_STATE_PACKET p1;
