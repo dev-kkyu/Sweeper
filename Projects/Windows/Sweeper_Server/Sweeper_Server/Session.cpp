@@ -16,6 +16,8 @@ void Session::start(Room* parentRoom, int player_id)
 	this->parentRoom = parentRoom;
 	this->player_id = player_id;
 
+	std::cout << "[" << parentRoom->room_id << ":" << player_id << "]: 접속" << std::endl;
+
 	doRead();		// 수신하기를 시작한다.
 }
 
@@ -75,7 +77,7 @@ void Session::processPacket(unsigned char* packet)
 			p.dir_x = dir.x;
 			p.dir_z = dir.z;
 			sendPacket(&p);
-			std::cout << "플레이어 [" << parentRoom->room_id << ":" << this->player_id << "] 접속\n";
+			std::cout << "플레이어 [" << parentRoom->room_id << ":" << this->player_id << "] 로그인 완료\n";
 		}
 
 		// 나의 접속을 모든 플레이어에게 알린다.
@@ -245,6 +247,16 @@ void Session::processPacket(unsigned char* packet)
 	}
 	default:
 		std::cout << "Type Error: " << static_cast<int>(packet[1]) << " Type is invalid, player id [" << parentRoom->room_id << ":" << player_id << "]\n";
+		
+		asio::ip::tcp::endpoint remote_endpoint = socket.remote_endpoint();
+		std::string remote_ip = remote_endpoint.address().to_string();
+		asio::ip::port_type remote_port = remote_endpoint.port();
+
+		std::cout << "INFO:ERROR [" << remote_ip << ":" << remote_port << "] 연결 종료 시도 중..." << std::endl;
+		
+		parentRoom->room_mutex.lock();
+		parentRoom->sessions[player_id] = nullptr;
+		parentRoom->room_mutex.unlock();
 		break;
 	}
 }
