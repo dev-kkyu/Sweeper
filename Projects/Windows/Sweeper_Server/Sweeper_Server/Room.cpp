@@ -49,10 +49,8 @@ void Room::update(float elapsedTime)
 {
 	std::lock_guard<std::mutex> l{ room_mutex };		// 플레이어 삽입 / 삭제 주의
 	for (auto& s : sessions) {
-		if (s) {
-			if (s->in_use)
-				s->update(elapsedTime);
-		}
+		if (isValidSession(s))
+			s->update(elapsedTime);
 	}
 
 	for (auto& m : monsters) {
@@ -68,11 +66,14 @@ void Room::update(float elapsedTime)
 			p.dir_x = look.x;
 			p.dir_z = look.z;
 			for (auto& s : sessions) {		// 모든 세션에게 변화된 몬스터 위치 정보를 보내준다
-				if (s) {
-					if (s->in_use)
-						s->sendPacket(&p);
-				}
+				if (isValidSession(s))
+					s->sendPacket(&p);
 			}
 		}
 	}
+}
+
+bool Room::isValidSession(const std::shared_ptr<Session>& session)
+{
+	return session and session->player;		// 세션이 접속된 상태이면서, 로그인 패킷이 날라왔는지
 }

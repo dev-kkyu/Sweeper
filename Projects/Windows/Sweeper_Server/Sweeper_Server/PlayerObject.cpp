@@ -30,6 +30,7 @@ void PlayerObject::initialize()
 
 bool PlayerObject::update(float elapsedTime)
 {
+	// Room의 Update에서 락 걸어준다
 	if (isAttack) {
 		auto now_time = std::chrono::steady_clock::now();
 		if (now_time > attackBeginTime + std::chrono::milliseconds{ 700 }) {
@@ -89,7 +90,7 @@ bool PlayerObject::update(float elapsedTime)
 			for (int i = 0; i < 4; ++i) {
 				if (i == my_id)
 					continue;
-				if (parentRoom->sessions[i] and parentRoom->sessions[i]->in_use) {
+				if (Room::isValidSession(parentRoom->sessions[i])) {
 					if (isCollide(*parentRoom->sessions[i]->player)) {
 						glm::vec3 myPos = getPosition();
 						glm::vec3 otherPos = parentRoom->sessions[i]->player->getPosition();

@@ -30,5 +30,7 @@ public:
 	void addSession(std::shared_ptr<Session> session);
 	void update(float elapsedTime);
 
+	static bool isValidSession(const std::shared_ptr<Session>& session);
+
 };
 

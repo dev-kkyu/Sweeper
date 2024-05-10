@@ -24,7 +24,7 @@ bool MonsterObject::update(float elapsedTime)
 {
 	// update 호출 전 lock이 걸려있다.
 	for (int i = 0; i < 4; ++i) {
-		if (parentRoom->sessions[i] and parentRoom->sessions[i]->in_use) {		// Todo: 0번 플레이어 대신, 제일 가까운 플레이어에게 가도록 해야한다
+		if (Room::isValidSession(parentRoom->sessions[i])) {		// Todo: 0번 플레이어 대신, 제일 가까운 플레이어에게 가도록 해야한다
 			auto playerPos = parentRoom->sessions[i]->player->getPosition();
 			auto myPos = getPosition();
 			float dist2 = (myPos.x - playerPos.x) * (myPos.x - playerPos.x) + (myPos.z - playerPos.z) * (myPos.z - playerPos.z);
@@ -85,11 +85,9 @@ void MonsterObject::onHit(const GameObjectBase& other)
 		p2.dir_z = newDir.z;
 
 		for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 변경된 플레이어 State와 Look을 보내준다.
-			if (s) {
-				if (s->in_use) {
-					s->sendPacket(&p1);
-					s->sendPacket(&p2);
-				}
+			if (Room::isValidSession(s)) {
+				s->sendPacket(&p1);
+				s->sendPacket(&p2);
 			}
 		}
 	}
@@ -110,9 +108,8 @@ void MonsterObject::onHit(const GameObjectBase& other)
 
 			parentRoom->room_mutex.lock();
 			for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 변경된 플레이어 State를 보내준다.
-				if (s)
-					if (s->in_use)
-						s->sendPacket(&p);
+				if (Room::isValidSession(s))
+					s->sendPacket(&p);
 			}
 			parentRoom->room_mutex.unlock();
 		});
