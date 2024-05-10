@@ -34,7 +34,7 @@ bool MonsterObject::update(float elapsedTime)
 			auto myPos = getPosition();
 			float dist2 = (myPos.x - playerPos.x) * (myPos.x - playerPos.x) + (myPos.z - playerPos.z) * (myPos.z - playerPos.z);
 			float targetDist2 = 3.f * 3.f;
-			if (dist2 < std::numeric_limits<float>::epsilon())	// 거리가 너무 작으면 처리하지 않는다, Todo: 나중에 삭제할수도 있다
+			if (dist2 <= std::numeric_limits<float>::epsilon())	// 거리가 너무 작으면 처리하지 않는다, Todo: 나중에 삭제할수도 있다
 				return false;
 			if (dist2 <= targetDist2) {		// 3.f 거리 내에 있으면
 				auto newDir = playerPos - myPos;
@@ -52,9 +52,9 @@ bool MonsterObject::update(float elapsedTime)
 						p.monster_id = my_id;
 						p.state = state;
 
-						for (int i = 0; i < 4; ++i) {
-							if (Room::isValidSession(parentRoom->sessions[i]))
-								parentRoom->sessions[i]->sendPacket(&p);
+						for (auto& s : parentRoom->sessions) {
+							if (Room::isValidSession(s))
+								s->sendPacket(&p);
 						}
 					}
 				}
