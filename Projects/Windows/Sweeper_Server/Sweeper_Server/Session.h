@@ -37,7 +37,7 @@ public:
 	void sendPacket(void* packet);
 
 private:
-	void processPacket(unsigned char* packet);
+	bool processPacket(unsigned char* packet);
 	void doRead();
 	void doWrite(unsigned char* packet, std::size_t length);
 

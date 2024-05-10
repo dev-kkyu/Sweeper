@@ -51,7 +51,7 @@ void Session::sendPacket(void* packet)
 	doWrite(buff, packet_size);
 }
 
-void Session::processPacket(unsigned char* packet)
+bool Session::processPacket(unsigned char* packet)
 {
 	switch (packet[1])
 	{
@@ -247,18 +247,21 @@ void Session::processPacket(unsigned char* packet)
 	}
 	default:
 		std::cout << "Type Error: " << static_cast<int>(packet[1]) << " Type is invalid, player id [" << parentRoom->room_id << ":" << player_id << "]\n";
-		
+
 		asio::ip::tcp::endpoint remote_endpoint = socket.remote_endpoint();
 		std::string remote_ip = remote_endpoint.address().to_string();
 		asio::ip::port_type remote_port = remote_endpoint.port();
 
-		std::cout << "INFO:ERROR [" << remote_ip << ":" << remote_port << "] 연결 종료 시도 중..." << std::endl;
-		
+		std::cout << "INFO:ERROR [" << remote_ip << ":" << remote_port << "] 연결 종료" << std::endl;
+
 		parentRoom->room_mutex.lock();
+		socket.close();
 		parentRoom->sessions[player_id] = nullptr;
 		parentRoom->room_mutex.unlock();
+		return false;
 		break;
 	}
+	return true;
 }
 
 void Session::doRead()
@@ -311,7 +314,8 @@ void Session::doRead()
 					memcpy(remain_data + remain_size, ptr, packet_size - remain_size);	// 처리할 데이터만큼 패킷을 만들어준다.
 					ptr += packet_size - remain_size;									// 다음에 처리할 데이터의 시작 위치로 미리 이동
 					received -= packet_size - remain_size;								// 다음에 남은 데이터 크기를 저장
-					processPacket(remain_data);											// 만든 패킷에 대한 처리하기
+					if (not processPacket(remain_data))									// 만든 패킷에 대한 처리하기
+						return;															// 잘못된 패킷이 오면 리턴해주기
 					remain_size = 0;													// remain_size는 received로 통합되었기 때문에 0으로 만들어준다.
 				}
 				else {
