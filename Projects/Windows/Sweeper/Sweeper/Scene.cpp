@@ -380,9 +380,12 @@ void Scene::processPacket(unsigned char* packet)
 			pMonsterObjects[p->monster_id]->setAnimationClip(0);
 		else if (p->state == MONSTER_STATE::HIT)
 			pMonsterObjects[p->monster_id]->setAnimationClip(2);
+		else if (p->state == MONSTER_STATE::MOVE)
+			pMonsterObjects[p->monster_id]->setAnimationClip(1);
 		else
 			std::cout << int(p->monster_id) << ": STATE 에러" << std::endl;
-		std::cout << int(p->monster_id) << "의 상태가 " << ((p->state == MONSTER_STATE::IDLE) ? "IDLE" : "HIT") << "로 변경" << std::endl;
+		std::cout << "몬스터 " << int(p->monster_id) << "의 상태가 "
+			<< ((p->state == MONSTER_STATE::IDLE) ? "IDLE" : ((p->state == MONSTER_STATE::MOVE) ? "MOVE" : "HIT")) << "로 변경" << std::endl;
 		break;
 	}
 	}

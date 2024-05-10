@@ -9,6 +9,8 @@
 MonsterObject::MonsterObject(Room* parentRoom, int m_id)
 	: GameObjectBase{ parentRoom, m_id }
 {
+	state = MONSTER_STATE::IDLE;
+
 	collisionRadius = 0.4f;
 }
 
@@ -23,6 +25,9 @@ void MonsterObject::initialize()
 bool MonsterObject::update(float elapsedTime)
 {
 	// update 호출 전 lock이 걸려있다.
+
+	auto bef_pos = getPosition();
+
 	for (int i = 0; i < 4; ++i) {
 		if (Room::isValidSession(parentRoom->sessions[i])) {		// Todo: 0번 플레이어 대신, 제일 가까운 플레이어에게 가도록 해야한다
 			auto playerPos = parentRoom->sessions[i]->player->getPosition();
@@ -35,6 +40,24 @@ bool MonsterObject::update(float elapsedTime)
 				auto newDir = playerPos - myPos;
 				setLook(newDir);
 				moveForward(2.f * elapsedTime);		// 초당 2m 거리로 플레이어를 향해 간다
+
+				{
+					// 움직이는 애니메이션으로 바꿔야 한다면
+					if (state == MONSTER_STATE::IDLE) {
+						state = MONSTER_STATE::MOVE;
+
+						SC_MONSTER_STATE_PACKET p;
+						p.size = sizeof(p);
+						p.type = SC_MONSTER_STATE;
+						p.monster_id = my_id;
+						p.state = state;
+
+						for (int i = 0; i < 4; ++i) {
+							if (Room::isValidSession(parentRoom->sessions[i]))
+								parentRoom->sessions[i]->sendPacket(&p);
+						}
+					}
+				}
 
 				// 이동 후 충돌처리
 				// 플레이어와 충돌
@@ -53,6 +76,25 @@ bool MonsterObject::update(float elapsedTime)
 				}
 
 				return true;
+			}
+		}
+	}
+
+	auto now_pos = getPosition();
+	// Move 상태인데 위치가 변하지 않았다면
+	if (state == MONSTER_STATE::MOVE) {
+		if (bef_pos == now_pos) {
+			state = MONSTER_STATE::IDLE;
+
+			SC_MONSTER_STATE_PACKET p;
+			p.size = sizeof(p);
+			p.type = SC_MONSTER_STATE;
+			p.monster_id = my_id;
+			p.state = state;
+
+			for (int i = 0; i < 4; ++i) {
+				if (Room::isValidSession(parentRoom->sessions[i]))
+					parentRoom->sessions[i]->sendPacket(&p);
 			}
 		}
 	}
@@ -104,7 +146,7 @@ void MonsterObject::onHit(const GameObjectBase& other)
 			p.monster_id = my_id;
 			p.size = sizeof(p);
 			p.type = SC_MONSTER_STATE;
-			p.state = MONSTER_STATE::IDLE;
+			p.state = state;			// 기존 상태
 
 			parentRoom->room_mutex.lock();
 			for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 변경된 플레이어 State를 보내준다.
