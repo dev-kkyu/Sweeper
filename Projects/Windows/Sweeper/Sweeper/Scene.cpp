@@ -376,16 +376,22 @@ void Scene::processPacket(unsigned char* packet)
 	}
 	case SC_MONSTER_STATE: {
 		auto p = reinterpret_cast<SC_MONSTER_STATE_PACKET*>(packet);
-		if (p->state == MONSTER_STATE::IDLE)
-			pMonsterObjects[p->monster_id]->setAnimationClip(0);
-		else if (p->state == MONSTER_STATE::HIT)
-			pMonsterObjects[p->monster_id]->setAnimationClip(2);
-		else if (p->state == MONSTER_STATE::MOVE)
-			pMonsterObjects[p->monster_id]->setAnimationClip(1);
-		else
+		switch (p->state)
+		{
+		case MONSTER_STATE::IDLE:
+		case MONSTER_STATE::MOVE:
+		case MONSTER_STATE::HIT:
+		case MONSTER_STATE::DIE:
+		case MONSTER_STATE::ATTACK:
+			pMonsterObjects[p->monster_id]->setAnimationClip(static_cast<int>(p->state));
+			break;
+		default:
 			std::cout << int(p->monster_id) << ": STATE 에러" << std::endl;
+			break;
+		}
+		std::string state_str[5]{ "IDLE", "MOVE", "HIT", "DIE", "ATTACK" };
 		std::cout << "몬스터 " << int(p->monster_id) << "의 상태가 "
-			<< ((p->state == MONSTER_STATE::IDLE) ? "IDLE" : ((p->state == MONSTER_STATE::MOVE) ? "MOVE" : "HIT")) << "로 변경" << std::endl;
+			<< state_str[static_cast<int>(p->state)] << "로 변경" << std::endl;
 		break;
 	}
 	}

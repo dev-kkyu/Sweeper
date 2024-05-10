@@ -45,24 +45,28 @@ bool MonsterObject::update(float elapsedTime)
 					// 움직이는 애니메이션으로 바꿔야 한다면
 					if (state == MONSTER_STATE::IDLE) {
 						state = MONSTER_STATE::MOVE;
-
-						SC_MONSTER_STATE_PACKET p;
-						p.size = sizeof(p);
-						p.type = SC_MONSTER_STATE;
-						p.monster_id = my_id;
-						p.state = state;
-
-						for (auto& s : parentRoom->sessions) {
-							if (Room::isValidSession(s))
-								s->sendPacket(&p);
-						}
+						sendMonsterStatePacket();
 					}
 				}
 
 				// 이동 후 충돌처리
 				// 플레이어와 충돌
-				if (isCollide(*parentRoom->sessions[i]->player))
+				if (isCollide(*parentRoom->sessions[i]->player)) {
+					// Attack이 아니면 Attack으로 변경
+					if (state != MONSTER_STATE::ATTACK) {
+						state = MONSTER_STATE::ATTACK;
+						sendMonsterStatePacket();
+					}
+					// 밀려나게 하기
 					move(-newDir, 2.f * elapsedTime);
+				}
+				else {
+					// Attack이면 MOVE로 변경
+					if (state == MONSTER_STATE::ATTACK) {
+						state = MONSTER_STATE::MOVE;
+						sendMonsterStatePacket();
+					}
+				}
 
 				// 타 몬스터와 충돌
 				for (auto& m : parentRoom->monsters) {
@@ -85,17 +89,7 @@ bool MonsterObject::update(float elapsedTime)
 	if (state == MONSTER_STATE::MOVE) {
 		if (bef_pos == now_pos) {
 			state = MONSTER_STATE::IDLE;
-
-			SC_MONSTER_STATE_PACKET p;
-			p.size = sizeof(p);
-			p.type = SC_MONSTER_STATE;
-			p.monster_id = my_id;
-			p.state = state;
-
-			for (int i = 0; i < 4; ++i) {
-				if (Room::isValidSession(parentRoom->sessions[i]))
-					parentRoom->sessions[i]->sendPacket(&p);
-			}
+			sendMonsterStatePacket();
 		}
 	}
 
@@ -155,4 +149,18 @@ void MonsterObject::onHit(const GameObjectBase& other)
 			}
 			parentRoom->room_mutex.unlock();
 		});
+}
+
+void MonsterObject::sendMonsterStatePacket()
+{
+	SC_MONSTER_STATE_PACKET p;
+	p.size = sizeof(p);
+	p.type = SC_MONSTER_STATE;
+	p.monster_id = my_id;
+	p.state = state;
+
+	for (auto& s : parentRoom->sessions) {
+		if (Room::isValidSession(s))
+			s->sendPacket(&p);
+	}
 }

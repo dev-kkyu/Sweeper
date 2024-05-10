@@ -18,5 +18,7 @@ public:
 	virtual void release() override;
 	virtual void onHit(const GameObjectBase& other) override;
 
+	void sendMonsterStatePacket();
+
 };
 
