@@ -356,7 +356,7 @@ void Scene::processPacket(unsigned char* packet)
 		pMonsterObjects[p->monster_id]->initModel(mushroomModel, descriptorSetLayout.ssbo);
 		pMonsterObjects[p->monster_id]->setPosition({ p->pos_x, 0.f, p->pos_z });
 		pMonsterObjects[p->monster_id]->setLook({ p->dir_x, 0.f, p->dir_z });
-		std::cout << int(p->monster_id) << ": 몬스터 추가" << std::endl;
+		std::cout << "몬스터 [" << int(p->monster_id) << "] 추가" << std::endl;
 		break;
 	}
 	case SC_MOVE_MONSTER: {
@@ -374,6 +374,7 @@ void Scene::processPacket(unsigned char* packet)
 		auto p = reinterpret_cast<SC_REMOVE_MONSTER_PACKET*>(packet);
 		vkDeviceWaitIdle(fDevice.logicalDevice);	// Vulkan 호출하는 오브젝트 삭제 전에는 무조건 해줘야 한다.
 		pMonsterObjects.erase(p->monster_id);
+		std::cout << "몬스터 [" << int(p->monster_id) << "] 제거" << std::endl;
 		break;
 	}
 	case SC_MONSTER_STATE: {
