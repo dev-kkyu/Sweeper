@@ -51,6 +51,12 @@ void Room::update(float elapsedTime)
 			s->update(elapsedTime);
 	}
 
+	// 삭제가 예약된 몬스터가 있다면 업데이트 전에 제거해 준다.
+	for (const int id : reserved_monster_ids)
+		monsters.erase(id);
+	reserved_monster_ids.clear();
+
+	// 몬스터 업데이트
 	for (auto& m : monsters) {
 		if (m.second->update(elapsedTime)) {			// 변화가 있을 시 정보를 보내준다
 			SC_MOVE_MONSTER_PACKET p;

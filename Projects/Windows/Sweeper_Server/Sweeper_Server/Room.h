@@ -22,6 +22,7 @@ public:
 	std::array<std::shared_ptr<Session>, 4> sessions;	// 한 방에는 4명이 있다
 
 	std::unordered_map<int, std::shared_ptr<MonsterObject>> monsters;
+	std::list<int> reserved_monster_ids;
 
 	std::mutex room_mutex;
 

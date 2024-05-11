@@ -12,6 +12,8 @@ private:
 	MONSTER_STATE state;
 	std::chrono::steady_clock::time_point attackBeginTime;
 
+	int hp;
+
 public:
 	MonsterObject(Room* parentRoom, int m_id);
 	virtual ~MonsterObject();

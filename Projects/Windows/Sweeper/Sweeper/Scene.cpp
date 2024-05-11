@@ -372,6 +372,8 @@ void Scene::processPacket(unsigned char* packet)
 	}
 	case SC_REMOVE_MONSTER: {
 		auto p = reinterpret_cast<SC_REMOVE_MONSTER_PACKET*>(packet);
+		vkDeviceWaitIdle(fDevice.logicalDevice);	// Vulkan 호출하는 오브젝트 삭제 전에는 무조건 해줘야 한다.
+		pMonsterObjects.erase(p->monster_id);
 		break;
 	}
 	case SC_MONSTER_STATE: {

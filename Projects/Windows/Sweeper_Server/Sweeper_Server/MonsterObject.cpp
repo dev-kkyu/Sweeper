@@ -10,6 +10,7 @@ MonsterObject::MonsterObject(Room* parentRoom, int m_id)
 	: GameObjectBase{ parentRoom, m_id }
 {
 	state = MONSTER_STATE::IDLE;
+	hp = 300;
 
 	collisionRadius = 0.4f;
 }
@@ -25,6 +26,30 @@ void MonsterObject::initialize()
 bool MonsterObject::update(float elapsedTime)
 {
 	// update 호출 전 lock이 걸려있다.
+	if (hp <= 0) {		// 죽었다면..
+		parentRoom->reserved_monster_ids.emplace_back(my_id);		// 컨테이너에서는 삭제를 예약하여 더이상의 접근을 막는다.
+		state = MONSTER_STATE::DIE;
+		sendMonsterStatePacket();						// DIE 애니메이션을 재생하도록 알려줌
+		auto timer = std::make_shared<asio::steady_timer>(parentRoom->io_context			// 3초 뒤에 동작하는 타이머
+			, std::chrono::steady_clock::now() + std::chrono::milliseconds(3000));
+		auto self = shared_from_this();
+		timer->async_wait(
+			[timer, self, this](asio::error_code ec) {	// 캡처에 shared_ptr 넣음으로써 살려준다.
+				if (!ec) {
+					SC_REMOVE_MONSTER_PACKET p;
+					p.size = sizeof(p);
+					p.type = SC_REMOVE_MONSTER;
+					p.monster_id = my_id;
+					parentRoom->room_mutex.lock();
+					for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 객체를 제거할 것을 명령
+						if (Room::isValidSession(s))
+							s->sendPacket(&p);
+					}
+					parentRoom->room_mutex.unlock();
+				}
+			});
+		return false;
+	}
 
 	// 공격받고 있을 때는 별도 처리를 하지 않는다
 	if (state == MONSTER_STATE::HIT) {
@@ -103,6 +128,7 @@ void MonsterObject::onHit(const GameObjectBase& other)
 {
 	// player의 update에서 호출될 예정이므로, 락X (업데이트 전에 락 걸기 때문)
 	{
+		hp -= 100;
 		attackBeginTime = std::chrono::steady_clock::now();
 		state = MONSTER_STATE::HIT;
 		sendMonsterStatePacket();
