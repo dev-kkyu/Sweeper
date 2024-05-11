@@ -26,7 +26,16 @@ bool MonsterObject::update(float elapsedTime)
 {
 	// update 호출 전 lock이 걸려있다.
 
-	auto bef_pos = getPosition();
+	// 공격받고 있을 때는 별도 처리를 하지 않는다
+	if (state == MONSTER_STATE::HIT) {
+		if (attackBeginTime + std::chrono::milliseconds{ 1300 } < std::chrono::steady_clock::now()) {
+			state = MONSTER_STATE::IDLE;
+			sendMonsterStatePacket();
+		}
+		else {
+			return false;
+		}
+	}
 
 	for (int i = 0; i < 4; ++i) {
 		if (Room::isValidSession(parentRoom->sessions[i])) {		// Todo: 0번 플레이어 대신, 제일 가까운 플레이어에게 가도록 해야한다
@@ -42,31 +51,22 @@ bool MonsterObject::update(float elapsedTime)
 				setLook(newDir);
 				moveForward(2.f * elapsedTime);		// 초당 2m 거리로 플레이어를 향해 간다
 
-				{
-					// 움직이는 애니메이션으로 바꿔야 한다면
-					if (state == MONSTER_STATE::IDLE) {
-						state = MONSTER_STATE::MOVE;
-						sendMonsterStatePacket();
-					}
-				}
+				auto bef_state = state;
+				// 기본은 Move
+				state = MONSTER_STATE::MOVE;
 
 				// 이동 후 충돌처리
 				// 플레이어와 충돌
 				if (isCollide(*parentRoom->sessions[i]->player)) {
-					// Attack이 아니면 Attack으로 변경
-					if (state != MONSTER_STATE::ATTACK) {
-						state = MONSTER_STATE::ATTACK;
-						sendMonsterStatePacket();
-					}
+					// 충돌 상태이면 attack
+					state = MONSTER_STATE::ATTACK;
 					// 밀려나게 하기
 					move(-newDir, 2.f * elapsedTime);
 				}
-				else {
-					// Attack이면 MOVE로 변경
-					if (state == MONSTER_STATE::ATTACK) {
-						state = MONSTER_STATE::MOVE;
-						sendMonsterStatePacket();
-					}
+
+				// 상태에 변화가 생겼으면 보내주기
+				if (bef_state != state) {
+					sendMonsterStatePacket();
 				}
 
 				// 타 몬스터와 충돌
@@ -86,13 +86,10 @@ bool MonsterObject::update(float elapsedTime)
 		}
 	}
 
-	auto now_pos = getPosition();
-	// Move 상태인데 위치가 변하지 않았다면
+	// Move 상태인데 타겟 플레이어가 없다면
 	if (state == MONSTER_STATE::MOVE) {
-		if (bef_pos == now_pos) {
-			state = MONSTER_STATE::IDLE;
-			sendMonsterStatePacket();
-		}
+		state = MONSTER_STATE::IDLE;
+		sendMonsterStatePacket();
 	}
 
 	return false;
@@ -106,52 +103,27 @@ void MonsterObject::onHit(const GameObjectBase& other)
 {
 	// player의 update에서 호출될 예정이므로, 락X (업데이트 전에 락 걸기 때문)
 	{
+		attackBeginTime = std::chrono::steady_clock::now();
+		state = MONSTER_STATE::HIT;
+		sendMonsterStatePacket();
+
 		auto newDir = other.getPosition() - getPosition();
 		newDir.y = 0.f;
 		setLook(newDir);		// 플레이어 방향으로, look을 바꿔준다
 
-		SC_MONSTER_STATE_PACKET p1;
-		p1.size = sizeof(p1);
-		p1.type = SC_MONSTER_STATE;
-		p1.monster_id = my_id;
-		p1.state = MONSTER_STATE::HIT;
+		SC_MONSTER_LOOK_PACKET p;
+		p.size = sizeof(p);
+		p.type = SC_MONSTER_LOOK;
+		p.monster_id = my_id;
+		p.dir_x = newDir.x;
+		p.dir_z = newDir.z;
 
-		SC_MONSTER_LOOK_PACKET p2;
-		p2.size = sizeof(p2);
-		p2.type = SC_MONSTER_LOOK;
-		p2.monster_id = my_id;
-		p2.dir_x = newDir.x;
-		p2.dir_z = newDir.z;
-
-		for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 변경된 플레이어 State와 Look을 보내준다.
+		for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 변경된 몬스터의  Look을 보내준다.
 			if (Room::isValidSession(s)) {
-				s->sendPacket(&p1);
-				s->sendPacket(&p2);
+				s->sendPacket(&p);
 			}
 		}
 	}
-
-	auto timer = std::make_shared<asio::steady_timer>(parentRoom->io_context
-		, std::chrono::steady_clock::now() + std::chrono::milliseconds(1300));
-	auto self = shared_from_this();
-	timer->async_wait(
-		[timer, self, this](asio::error_code ec) {	// 캡처에 shared_ptr 넣음으로써 살려준다.
-			if (self.use_count() < 2)	// 내가 삭제된 상태라면 이벤트를 보내지 않는다
-				return;
-
-			SC_MONSTER_STATE_PACKET p;
-			p.monster_id = my_id;
-			p.size = sizeof(p);
-			p.type = SC_MONSTER_STATE;
-			p.state = state;			// 기존 상태
-
-			parentRoom->room_mutex.lock();
-			for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 변경된 플레이어 State를 보내준다.
-				if (Room::isValidSession(s))
-					s->sendPacket(&p);
-			}
-			parentRoom->room_mutex.unlock();
-		});
 }
 
 void MonsterObject::sendMonsterStatePacket()

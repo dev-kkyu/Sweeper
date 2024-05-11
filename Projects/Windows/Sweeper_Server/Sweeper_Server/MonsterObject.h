@@ -4,10 +4,13 @@
 
 #include "protocol.h"
 
+#include <chrono>
+
 class MonsterObject : public GameObjectBase
 {
 private:
 	MONSTER_STATE state;
+	std::chrono::steady_clock::time_point attackBeginTime;
 
 public:
 	MonsterObject(Room* parentRoom, int m_id);
