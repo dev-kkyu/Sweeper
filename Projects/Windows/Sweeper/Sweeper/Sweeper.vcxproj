@@ -141,6 +141,7 @@
     <ClCompile Include="GLTFModelObject.cpp" />
     <ClCompile Include="GLTFSkinModelObject.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="OBJModelObject.cpp" />
     <ClCompile Include="PlayerObject.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="GameObjectBase.h" />
     <ClInclude Include="GLTFModelObject.h" />
     <ClInclude Include="GLTFSkinModelObject.h" />
+    <ClInclude Include="NetworkManager.h" />
     <ClInclude Include="OBJModelObject.h" />
     <ClInclude Include="PlayerObject.h" />
     <ClInclude Include="Scene.h" />
@@ -164,9 +166,8 @@
     <ClInclude Include="VulkanGLTFSkinModel.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\model.frag" />
+    <None Include="shaders\fragment.frag" />
     <None Include="shaders\model.vert" />
-    <None Include="shaders\skinnedmodel.frag" />
     <None Include="shaders\skinnedmodel.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

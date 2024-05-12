@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="GameObjectBase">
+      <UniqueIdentifier>{2e82a6cc-0c25-4c3d-b04f-6635f1a24ce3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Shader">
+      <UniqueIdentifier>{0ac55032-1fa0-4d4e-b61a-7757d1e32253}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Camera.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="GameFramework.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanFramework.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanGLTFModel.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanGLTFSkinModel.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjectBase.cpp">
+      <Filter>GameObjectBase</Filter>
+    </ClCompile>
+    <ClCompile Include="GLTFModelObject.cpp">
+      <Filter>GameObjectBase</Filter>
+    </ClCompile>
+    <ClCompile Include="GLTFSkinModelObject.cpp">
+      <Filter>GameObjectBase</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerObject.cpp">
+      <Filter>GameObjectBase</Filter>
+    </ClCompile>
+    <ClCompile Include="OBJModelObject.cpp">
+      <Filter>GameObjectBase</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Camera.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="GameFramework.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanFramework.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanGLTFModel.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanGLTFSkinModel.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="GLTFModelObject.h">
+      <Filter>GameObjectBase</Filter>
+    </ClInclude>
+    <ClInclude Include="GLTFSkinModelObject.h">
+      <Filter>GameObjectBase</Filter>
+    </ClInclude>
+    <ClInclude Include="OBJModelObject.h">
+      <Filter>GameObjectBase</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerObject.h">
+      <Filter>GameObjectBase</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjectBase.h">
+      <Filter>GameObjectBase</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\model.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\skinnedmodel.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\skinnedmodel.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\model.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\particle.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\particle.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+  </ItemGroup>
+</Project>

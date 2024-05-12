@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 
 #include "GameFramework.h"
+#include "NetworkManager.h"
 
 // 전역 변수
 static int g_Width = 1600;
@@ -16,6 +17,9 @@ static void keyCallback(GLFWwindow* window, int key, int scancode, int action, i
 static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 static void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
+
+// 네트워크 패킷 처리 콜백함수
+static void packetCallback(unsigned char* packet);
 
 static void vulkanMain()
 {
@@ -36,13 +40,25 @@ static void vulkanMain()
 	// vulkan 생성
 	g_GameFramework.initVulkan(window);
 
+	// 네트워크 연결
+	NetworkManager::getInstance().connectServer("127.0.0.1");
+	NetworkManager::getInstance().setPacketReceivedCallback(packetCallback);	// Recv된 데이터 처리할 함수 설정
+	NetworkManager::getInstance().start(g_GameFramework.getPlayerType());		// 로그인 및 Recv 시작
+
 	// 메인루프
 	while (!glfwWindowShouldClose(window)) {
+		// window 이벤트 받기
 		glfwPollEvents();
+
+		// 비동기 서버의 완료된 작업 실행
+		NetworkManager::getInstance().poll();
 
 		// frame 그리기
 		g_GameFramework.drawFrame();
 	}
+
+	// 네트워크 연결 해제
+	NetworkManager::getInstance().stop();
 
 	// vulkan 파괴
 	g_GameFramework.cleanup();
@@ -103,7 +119,7 @@ void fullScreenToggle(GLFWwindow* window)
 				std::cerr << "Can't find any available monitor modes." << std::endl;
 				return;
 			}
-			int selectIdx = *std::ranges::max_element(candidateIdx, [&modes](const int a, const int b) {
+			int selectIdx = *std::max_element(candidateIdx.begin(), candidateIdx.end(), [&modes](const int a, const int b) {
 				if (modes[a].width != modes[b].width)
 					return modes[a].width < modes[b].width;							// 가능한 모드중에 제일 높은 해상도 선택
 				return modes[a].refreshRate < modes[b].refreshRate;					// 같은 해상도 중에서는 높은 주사율 선택
@@ -201,4 +217,9 @@ void cursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 	xpos = xpos / g_Width * 2. - 1.;
 	ypos = static_cast<double>(g_Height - ypos) / g_Height * 2. - 1.;
 	g_GameFramework.processMouseCursor(float(xpos), float(ypos));
+}
+
+void packetCallback(unsigned char* packet)
+{
+	g_GameFramework.processPacket(packet);
 }

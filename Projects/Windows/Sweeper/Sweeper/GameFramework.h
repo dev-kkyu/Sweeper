@@ -47,6 +47,11 @@ public:
 	void processMouseButton(int button, int action, int mods, float xpos, float ypos);
 	void processMouseCursor(float xpos, float ypos);
 
+	// 네트워크 패킷 처리
+	void processPacket(unsigned char* packet);
+
+	PLAYER_TYPE getPlayerType() const;
+
 private:
 	Timer gameTimer;
 
@@ -72,7 +77,22 @@ private:
 	std::vector<VkImageView> swapChainImageViews;
 	std::vector<VkFramebuffer> swapChainFramebuffers;
 
-	VkRenderPass renderPass;
+	vkf::RenderPass renderPass;
+
+	// 쉐도우 매핑을 위한 offScreen 정보들
+	const uint32_t shadowMapize{ 8192 };						// 가로 X 세로 사이즈
+	const VkFormat offscreenDepthFormat{ VK_FORMAT_D16_UNORM };	// 16비트면 충분
+	struct OffscreenPass {
+		VkFramebuffer frameBuffer;
+		VkImage depthImage;
+		VkDeviceMemory depthImageMemory;
+		VkImageView depthImageView;
+		//VkRenderPass renderPass;		// vkf::RenderPass 에 존재
+		VkSampler depthSampler;
+		VkDescriptorSetLayout samplerDescriptorSetLayout;
+		VkDescriptorPool samplerDescriptorPool;
+		VkDescriptorSet samplerDescriptorSet;
+	} offscreenPass{};
 
 	VkImage colorImage;
 	VkDeviceMemory colorImageMemory;
@@ -107,6 +127,9 @@ private:
 	void createColorResources();
 	void createDepthResources();
 	void createFramebuffers();
+	void createOffscreenRenderPass();
+	void createOffscreenFramebuffer();
+	void createOffscreenDescriptors();
 	void createCommandBuffers();
 	void createSyncObjects();
 
@@ -123,6 +146,7 @@ private:
 	std::vector<const char*> getRequiredExtensions();
 	bool checkValidationLayerSupport();
 
+	VkBool32 formatIsFilterable(VkPhysicalDevice device, VkFormat format, VkImageTiling tiling);	// 쉐도우 맵 샘플러 생성시 필요
 	VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 	VkFormat findDepthFormat();
 	bool hasStencilComponent(VkFormat format);

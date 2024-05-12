@@ -8,17 +8,19 @@
 
 void VulkanGLTFModel::destroy()
 {
-	for (auto node : nodes) {
-		delete node;
-	}
-	// Release all Vulkan resources allocated for the model
-	buffer.destroy();
+	if (fDevice) {
+		for (auto node : nodes) {
+			delete node;
+		}
+		// Release all Vulkan resources allocated for the model
+		buffer.destroy();
 
-	for (Image image : images) {
-		image.texture.destroy();
-	}
+		for (Image image : images) {
+			image.texture.destroy();
+		}
 
-	vkDestroyDescriptorPool(fDevice->logicalDevice, samplerDescriptorPool, nullptr);
+		vkDestroyDescriptorPool(fDevice->logicalDevice, samplerDescriptorPool, nullptr);
+	}
 }
 
 void VulkanGLTFModel::loadModel(vkf::Device& fDevice, VkDescriptorSetLayout samplerDescriptorSetLayout, std::string filename)

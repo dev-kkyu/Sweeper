@@ -13,12 +13,18 @@
 #include <set>
 #include <map>
 
+#include "NetworkManager.h"
+
 const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
 
 const std::vector<const char*> deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
+#ifdef __APPLE__
+	, "VK_KHR_portability_subset"
+#endif // __APPLE__
+
 };
 
 #ifdef NDEBUG
@@ -70,10 +76,14 @@ void GameFramework::initVulkan(GLFWwindow* window)
 	createColorResources();
 	createDepthResources();
 	createFramebuffers();
+	createOffscreenRenderPass();
+	createOffscreenFramebuffer();
+	createOffscreenDescriptors();
 	createCommandBuffers();
 	createSyncObjects();
 
-	pScene = std::make_unique<Scene>(fDevice, msaaSamples, renderPass);
+	pScene = std::make_unique<Scene>(fDevice, msaaSamples, renderPass,
+		offscreenPass.samplerDescriptorSetLayout, offscreenPass.samplerDescriptorSet);
 	gameTimer.SetWindow(window);
 	gameTimer.SetGpuName(fDevice.physicalDeviceProperties.deviceName);
 }
@@ -86,9 +96,19 @@ void GameFramework::cleanup()
 	// 씬 소멸
 	pScene.reset(nullptr);
 
+	// 오프스크린 정보 Destroy
+	vkDestroyDescriptorPool(fDevice.logicalDevice, offscreenPass.samplerDescriptorPool, nullptr);
+	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, offscreenPass.samplerDescriptorSetLayout, nullptr);
+	vkDestroyFramebuffer(fDevice.logicalDevice, offscreenPass.frameBuffer, nullptr);
+	vkDestroySampler(fDevice.logicalDevice, offscreenPass.depthSampler, nullptr);
+	vkDestroyImageView(fDevice.logicalDevice, offscreenPass.depthImageView, nullptr);
+	vkDestroyImage(fDevice.logicalDevice, offscreenPass.depthImage, nullptr);
+	vkFreeMemory(fDevice.logicalDevice, offscreenPass.depthImageMemory, nullptr);
+
 	cleanupSwapChain();
 
-	vkDestroyRenderPass(fDevice.logicalDevice, renderPass, nullptr);
+	vkDestroyRenderPass(fDevice.logicalDevice, renderPass.scene, nullptr);
+	vkDestroyRenderPass(fDevice.logicalDevice, renderPass.offscreen, nullptr);
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		vkDestroySemaphore(fDevice.logicalDevice, renderFinishedSemaphores[i], nullptr);
@@ -195,6 +215,38 @@ void GameFramework::processMouseCursor(float xpos, float ypos)
 		pScene->processMouseCursor(xpos, ypos);
 }
 
+void GameFramework::processPacket(unsigned char* packet)
+{
+	// 이제 멀티스레드 동시성 고려하지 않아도 된다.
+	switch (packet[1])
+	{
+	case SC_LOGIN_INFO:
+	case SC_LOGOUT:
+	case SC_ADD_PLAYER:
+	case SC_MOVE_PLAYER:
+	case SC_PLAYER_LOOK:
+	case SC_PLAYER_STATE:
+	case SC_ADD_MONSTER:
+	case SC_MOVE_MONSTER:
+	case SC_MONSTER_LOOK:
+	case SC_REMOVE_MONSTER:
+	case SC_MONSTER_STATE:
+		pScene->processPacket(packet);
+		break;
+	case SC_LOGIN_FAIL:
+		std::cout << "Login Failed : 방이 가득 찼습니다." << std::endl;
+		break;
+	default:
+		std::cout << "Type Error: " << static_cast<int>(packet[1]) << " Type is invalid\n";
+		break;
+	}
+}
+
+PLAYER_TYPE GameFramework::getPlayerType() const
+{
+	return pScene->getPlayerType();
+}
+
 void GameFramework::cleanupSwapChain()
 {
 	vkDestroyImageView(fDevice.logicalDevice, depthImageView, nullptr);
@@ -245,13 +297,20 @@ void GameFramework::createInstance()
 	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 	appInfo.pEngineName = "No Engine";
 	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-	appInfo.apiVersion = VK_API_VERSION_1_0;
+	appInfo.apiVersion = VK_API_VERSION_1_3;
 
 	VkInstanceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 
 	auto extensions = getRequiredExtensions();
+
+#ifdef __APPLE__
+	extensions.emplace_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+	extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+	createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#endif // __APPLE__
+
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
 
@@ -525,7 +584,7 @@ void GameFramework::createRenderPass()
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &dependency;
 
-	if (vkCreateRenderPass(fDevice.logicalDevice, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+	if (vkCreateRenderPass(fDevice.logicalDevice, &renderPassInfo, nullptr, &renderPass.scene) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create render pass!");
 	}
 }
@@ -573,7 +632,7 @@ void GameFramework::createFramebuffers()
 
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = renderPass;
+		framebufferInfo.renderPass = renderPass.scene;
 		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 		framebufferInfo.pAttachments = attachments.data();
 		framebufferInfo.width = swapChainExtent.width;
@@ -584,6 +643,180 @@ void GameFramework::createFramebuffers()
 			throw std::runtime_error("failed to create framebuffer!");
 		}
 	}
+}
+
+void GameFramework::createOffscreenRenderPass()
+{
+	VkAttachmentDescription attachmentDescription{};
+	attachmentDescription.format = offscreenDepthFormat;
+	attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+	attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;							// Clear depth at beginning of the render pass
+	attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;						// We will read from depth, so it's important to store the depth attachment results
+	attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;					// We don't care about initial layout of the attachment
+	attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;// Attachment will be transitioned to shader read at render pass end
+
+	VkAttachmentReference depthReference = {};
+	depthReference.attachment = 0;
+	depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;			// Attachment will be used as depth/stencil during render pass
+
+	VkSubpassDescription subpass = {};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 0;													// No color attachments
+	subpass.pDepthStencilAttachment = &depthReference;									// Reference to our depth attachment
+
+	// Use subpass dependencies for layout transitions
+	std::array<VkSubpassDependency, 2> dependencies;
+
+	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[0].dstSubpass = 0;
+	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	dependencies[0].dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+	dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	dependencies[0].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+	dependencies[1].srcSubpass = 0;
+	dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[1].srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+	dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	dependencies[1].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+	VkRenderPassCreateInfo renderPassCreateInfo{};
+	renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassCreateInfo.attachmentCount = 1;
+	renderPassCreateInfo.pAttachments = &attachmentDescription;
+	renderPassCreateInfo.subpassCount = 1;
+	renderPassCreateInfo.pSubpasses = &subpass;
+	renderPassCreateInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+	renderPassCreateInfo.pDependencies = dependencies.data();
+
+	if (vkCreateRenderPass(fDevice.logicalDevice, &renderPassCreateInfo, nullptr, &renderPass.offscreen) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create offscreen render pass!");
+	}
+}
+
+void GameFramework::createOffscreenFramebuffer()
+{
+	// 쉐도우 맵 이미지 리소스 만들기
+	// usage : 그림자 매핑을 위해 깊이 attachment에서 직접 샘플링
+	vkf::createImage(fDevice, shadowMapize, shadowMapize, 1, VK_SAMPLE_COUNT_1_BIT, offscreenDepthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, offscreenPass.depthImage, offscreenPass.depthImageMemory);
+	offscreenPass.depthImageView = vkf::createImageView(fDevice, offscreenPass.depthImage, offscreenDepthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
+
+	// 샘플러 생성
+	VkFilter shadowmap_filter = formatIsFilterable(fDevice.physicalDevice, offscreenDepthFormat, VK_IMAGE_TILING_OPTIMAL) ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
+	VkSamplerCreateInfo sampler{};
+	sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	sampler.magFilter = shadowmap_filter;
+	sampler.minFilter = shadowmap_filter;
+	sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	sampler.addressModeV = sampler.addressModeU;
+	sampler.addressModeW = sampler.addressModeU;
+	sampler.mipLodBias = 0.0f;
+	sampler.maxAnisotropy = 1.0f;
+	sampler.minLod = 0.0f;
+	sampler.maxLod = 1.0f;
+	sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+	if (vkCreateSampler(fDevice.logicalDevice, &sampler, nullptr, &offscreenPass.depthSampler) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create depth texture sampler!");
+	}
+
+	// 프레임버퍼 생성
+	VkFramebufferCreateInfo framebufferInfo{};
+	framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	framebufferInfo.renderPass = renderPass.offscreen;
+	framebufferInfo.attachmentCount = 1;
+	framebufferInfo.pAttachments = &offscreenPass.depthImageView;
+	framebufferInfo.width = shadowMapize;
+	framebufferInfo.height = shadowMapize;
+	framebufferInfo.layers = 1;
+
+	if (vkCreateFramebuffer(fDevice.logicalDevice, &framebufferInfo, nullptr, &offscreenPass.frameBuffer) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create offscreen framebuffer!");
+	}
+}
+
+void GameFramework::createOffscreenDescriptors()
+{
+	// Pool 생성
+	std::array<VkDescriptorPoolSize, 1> poolSizes{};
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[0].descriptorCount = 1;	// 한개만 생성
+
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
+	poolInfo.maxSets = 1;	// 한개만 생성
+
+	if (vkCreateDescriptorPool(fDevice.logicalDevice, &poolInfo, nullptr, &offscreenPass.samplerDescriptorPool) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create offscreen descriptor pool!");
+	}
+
+	// Layout 생성
+	std::array<VkDescriptorSetLayoutBinding, 1> samplerLayoutBinding{};
+	samplerLayoutBinding[0].binding = 0;		// shader의 binding
+	samplerLayoutBinding[0].descriptorCount = 1;
+	samplerLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	samplerLayoutBinding[0].pImmutableSamplers = nullptr;
+	samplerLayoutBinding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	VkDescriptorSetLayoutCreateInfo layoutInfo{};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = static_cast<uint32_t>(samplerLayoutBinding.size());
+	layoutInfo.pBindings = samplerLayoutBinding.data();
+
+	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &offscreenPass.samplerDescriptorSetLayout) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create offscreen descriptor set layout!");
+	}
+
+	// Set 생성 -> shadow map image의 view, image sampler를 연결한 set, 추후 set = 0 에 할당할 set이다.
+	// Set 할당 (Pool로부터, Layout을 참조하여)
+	VkDescriptorSetAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = offscreenPass.samplerDescriptorPool;
+	allocInfo.descriptorSetCount = 1;
+	allocInfo.pSetLayouts = &offscreenPass.samplerDescriptorSetLayout;
+
+	if (vkAllocateDescriptorSets(fDevice.logicalDevice, &allocInfo, &offscreenPass.samplerDescriptorSet) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate offscreen descriptor set!");
+	}
+
+	// Set에 쓰기
+	VkDescriptorImageInfo imageInfo{};
+	imageInfo.sampler = offscreenPass.depthSampler;
+	imageInfo.imageView = offscreenPass.depthImageView;
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;	// Depth Image 이다.
+
+	std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
+	descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrites[0].dstSet = offscreenPass.samplerDescriptorSet;
+	descriptorWrites[0].dstBinding = 0;
+	descriptorWrites[0].dstArrayElement = 0;
+	descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	descriptorWrites[0].descriptorCount = 1;
+	descriptorWrites[0].pImageInfo = &imageInfo;
+
+	vkUpdateDescriptorSets(fDevice.logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+}
+
+VkBool32 GameFramework::formatIsFilterable(VkPhysicalDevice device, VkFormat format, VkImageTiling tiling)
+{
+	// 주어진 format이 LINEAR 필터링을 지원하는지 확인한다
+	VkFormatProperties formatProps;
+	vkGetPhysicalDeviceFormatProperties(device, format, &formatProps);
+
+	if (tiling == VK_IMAGE_TILING_OPTIMAL)
+		return formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+
+	if (tiling == VK_IMAGE_TILING_LINEAR)
+		return formatProps.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+
+	return false;
 }
 
 VkFormat GameFramework::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
@@ -670,40 +903,90 @@ void GameFramework::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 		throw std::runtime_error("failed to begin recording command buffer!");
 	}
 
-	VkRenderPassBeginInfo renderPassInfo{};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = renderPass;
-	renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
-	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = swapChainExtent;
+	// 첫 번째 렌더 패스 : 조명의 POV에서 장면을 렌더링하여 그림자 맵을 생성합니다.
+	{
+		VkRenderPassBeginInfo renderPassInfo{};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = renderPass.offscreen;
+		renderPassInfo.framebuffer = offscreenPass.frameBuffer;
+		renderPassInfo.renderArea.offset = { 0, 0 };
+		renderPassInfo.renderArea.extent = { shadowMapize, shadowMapize };
 
-	std::array<VkClearValue, 2> clearValues{};
-	clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-	clearValues[1].depthStencil = { 1.0f, 0 };
+		std::array<VkClearValue, 1> clearValues{};
+		clearValues[0].depthStencil = { 1.0f, 0 };
 
-	renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-	renderPassInfo.pClearValues = clearValues.data();
+		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues = clearValues.data();
 
-	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	// 뷰포트 뒤집음으로써, NDC 좌표계를 바꿔준다. -> OpenGL과 유사하게, glm에서 사용하는 방식. Vulkan 1.1이후 지원
-	VkViewport viewport{};
-	viewport.x = 0.0f;
-	viewport.y = (float)swapChainExtent.height;
-	viewport.width = (float)swapChainExtent.width;
-	viewport.height = -(float)swapChainExtent.height;
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+		// Offscreen 렌더시에는 NDC 좌표 뒤집지 않는다
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = (float)shadowMapize;
+		viewport.height = (float)shadowMapize;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-	VkRect2D scissor{};
-	scissor.offset = { 0, 0 };
-	scissor.extent = swapChainExtent;
-	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+		VkRect2D scissor{};
+		scissor.offset = { 0, 0 };
+		scissor.extent = { shadowMapize, shadowMapize };
+		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	pScene->draw(commandBuffer, currentFrame);
+		// 그림자 아티팩트를 방지하기 위해 Depth bias(and slope)가 사용됩니다.
+		// constant 깊이 바이어스 factor (항상 적용됨)
+		float depthBiasConstant = 1.25f;
+		// 폴리곤의 slope에 따라 적용되는 slope depth bias factor
+		float depthBiasSlope = 1.75f;
 
-	vkCmdEndRenderPass(commandBuffer);
+		// 깊이 바이어스 설정("다각형 오프셋"이라고도 함)
+		// 그림자 매핑 아티팩트를 방지하는 데 필요합니다.
+		vkCmdSetDepthBias(commandBuffer, depthBiasConstant, 0.0f, depthBiasSlope);
+
+		pScene->draw(commandBuffer, currentFrame, true);
+
+		vkCmdEndRenderPass(commandBuffer);
+	}
+
+	// 두 번째 패스 : 그림자 맵이 적용된 장면 렌더링
+	{
+		VkRenderPassBeginInfo renderPassInfo{};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = renderPass.scene;
+		renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
+		renderPassInfo.renderArea.offset = { 0, 0 };
+		renderPassInfo.renderArea.extent = swapChainExtent;
+
+		std::array<VkClearValue, 2> clearValues{};
+		clearValues[0].color = { {30.f / 255 / 10.f, 10.f / 255 / 10.f, 0.f, 1.0f} };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
+		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues = clearValues.data();
+
+		vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		// 뷰포트 뒤집음으로써, NDC 좌표계를 바꿔준다. -> OpenGL과 유사하게, glm에서 사용하는 방식. Vulkan 1.1이후 지원
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = (float)swapChainExtent.height;
+		viewport.width = (float)swapChainExtent.width;
+		viewport.height = -(float)swapChainExtent.height;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+		VkRect2D scissor{};
+		scissor.offset = { 0, 0 };
+		scissor.extent = swapChainExtent;
+		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+		pScene->draw(commandBuffer, currentFrame, false);
+
+		vkCmdEndRenderPass(commandBuffer);
+	}
 
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
 		throw std::runtime_error("failed to record command buffer!");
