@@ -1,19 +1,19 @@
-ï»¿#include "VulkanFramework.h"
+#include "VulkanFramework.h"
 #include <stdexcept>
 #include <fstream>
 #include <unordered_map>
 
 #include <glm/gtx/hash.hpp>
 
-#define TINYGLTF_IMPLEMENTATION				// ì´ ì„ ì–¸ ì´í›„ tiny_gltf.h include í•˜ë©´ ì»´íŒŒì¼ì´ ë¨ -> í”„ë¡œì íŠ¸ì—ì„œ ë‹¨ í•œê³³ì—ì„œë§Œ ì»´íŒŒì¼ í•´ì•¼í•¨ (cpp)
-#define TINYGLTF_NO_STB_IMAGE_WRITE			// image_write í•  ì¼ì´ ì—†ìœ¼ë©´ stb_image_write.h íŒŒì¼ì´ ì—†ì–´ë„ ë˜ëŠ”ë°, ê·¸ëŸ¬ë ¤ë©´ ì´ ì„ ì–¸ì„ í•´ì•¼í•¨
-#include <tiny_gltf.h>						// stb_image.h, json.hpp í•„ìš”í•¨ (stb_image_write.h ë„ ì›ë˜ëŠ” í•„ìš”)
+#define TINYGLTF_IMPLEMENTATION				// ÀÌ ¼±¾ğ ÀÌÈÄ tiny_gltf.h include ÇÏ¸é ÄÄÆÄÀÏÀÌ µÊ -> ÇÁ·ÎÁ§Æ®¿¡¼­ ´Ü ÇÑ°÷¿¡¼­¸¸ ÄÄÆÄÀÏ ÇØ¾ßÇÔ (cpp)
+#define TINYGLTF_NO_STB_IMAGE_WRITE			// image_write ÇÒ ÀÏÀÌ ¾øÀ¸¸é stb_image_write.h ÆÄÀÏÀÌ ¾ø¾îµµ µÇ´Âµ¥, ±×·¯·Á¸é ÀÌ ¼±¾ğÀ» ÇØ¾ßÇÔ
+#include <tiny_gltf.h>						// stb_image.h, json.hpp ÇÊ¿äÇÔ (stb_image_write.h µµ ¿ø·¡´Â ÇÊ¿ä)
 
-#define TINYOBJLOADER_IMPLEMENTATION		// ì´ ì„ ì–¸ ì´í›„ tiny_obj_loader.h include í•˜ë©´ ì»´íŒŒì¼ì´ ë¨ -> í”„ë¡œì íŠ¸ì—ì„œ ë‹¨ í•œë²ˆë§Œ í•´ì•¼í•¨ (cpp)
+#define TINYOBJLOADER_IMPLEMENTATION		// ÀÌ ¼±¾ğ ÀÌÈÄ tiny_obj_loader.h include ÇÏ¸é ÄÄÆÄÀÏÀÌ µÊ -> ÇÁ·ÎÁ§Æ®¿¡¼­ ´Ü ÇÑ¹ø¸¸ ÇØ¾ßÇÔ (cpp)
 #include <tiny_obj_loader.h>
 
-#define STB_IMAGE_IMPLEMENTATION			// tiny_gltf ë‚´ì— include stb_image.h ë“¤ì–´ìˆë‹¤. ë”°ë¼ì„œ tiny_gltf.h ë³´ë‹¤ ì•„ë˜ì— ìˆì–´ì•¼í•¨ -> ì¤‘ë³µ ì •ì˜ ë¬¸ì œ
-#include <stb_image.h>						// í˜¹ì€ tiny_gltf ìœ„ì— defineì„ í•˜ê³ , include stb_imageë¥¼ ìƒëµ
+#define STB_IMAGE_IMPLEMENTATION			// tiny_gltf ³»¿¡ include stb_image.h µé¾îÀÖ´Ù. µû¶ó¼­ tiny_gltf.h º¸´Ù ¾Æ·¡¿¡ ÀÖ¾î¾ßÇÔ -> Áßº¹ Á¤ÀÇ ¹®Á¦
+#include <stb_image.h>						// È¤Àº tiny_gltf À§¿¡ defineÀ» ÇÏ°í, include stb_image¸¦ »ı·«
 
 namespace std {
 	template<> struct hash<vkf::Vertex> {
@@ -145,7 +145,7 @@ namespace vkf
 		fragShaderStageInfo.module = fragShaderModule;
 		fragShaderStageInfo.pName = "main";
 
-		// shaderStagesë¥¼ ë§Œë“¤ì–´ ì¤€ë‹¤.
+		// shaderStages¸¦ ¸¸µé¾î ÁØ´Ù.
 		shaderStages[0] = vertShaderStageInfo;
 		shaderStages[1] = fragShaderStageInfo;
 	}
@@ -342,15 +342,6 @@ namespace vkf
 		createDescriptorSets(descriptorSetLayout, bufferSize, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 	}
 
-	void BufferObject::createShadowUniformBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout)
-	{
-		this->fDevice = &fDevice;
-
-		createBuffers(sizeof(ShadowUniformBufferObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-		createDescriptorPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		createDescriptorSets(descriptorSetLayout, sizeof(ShadowUniformBufferObject), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-	}
-
 	void BufferObject::destroy()
 	{
 		if (fDevice) {
@@ -373,21 +364,6 @@ namespace vkf
 	void BufferObject::updateUniformBuffer(const UniformBufferObject& ubo, uint32_t currentFrame)
 	{
 		copyTo(&ubo, sizeof(ubo), currentFrame);
-	}
-
-	void BufferObject::updateShadowUniformBuffer(const ShadowUniformBufferObject& ubo, uint32_t currentFrame)
-	{
-		copyTo(&ubo, sizeof(ubo), currentFrame);
-	}
-
-	VkDescriptorPool BufferObject::getDescriptorPool()
-	{
-		return descriptorPool;
-	}
-
-	VkDescriptorSet BufferObject::getDescriptorSet(uint32_t currentFrame)
-	{
-		return descriptorSets[currentFrame];
 	}
 
 	void BufferObject::createBuffers(VkDeviceSize bufferSize, VkBufferUsageFlags usage)
@@ -921,26 +897,5 @@ namespace vkf
 		file.close();
 
 		return buffer;
-	}
-
-	VkVertexInputBindingDescription ShadowMapVertex::getBindingDescription()
-	{
-		VkVertexInputBindingDescription bindingDescription{};
-		bindingDescription.binding = 0;
-		bindingDescription.stride = sizeof(ShadowMapVertex);
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-		return bindingDescription;
-	}
-	std::array<VkVertexInputAttributeDescription, 1> ShadowMapVertex::getAttributeDescriptions()
-	{
-		std::array<VkVertexInputAttributeDescription, 1> attributeDescriptions{};
-
-		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[0].offset = offsetof(SkinVertex, pos);
-
-		return attributeDescriptions;
 	}
 }

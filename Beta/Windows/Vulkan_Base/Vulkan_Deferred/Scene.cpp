@@ -1,182 +1,152 @@
-Ôªø#include "Scene.h"
+#include "Scene.h"
 #include <stdexcept>
 
 #include <GLFW/glfw3.h>
 
-Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass, vkf::OffscreenPass& off)
-	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, offscreenPass { off }
+Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet)
+	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }
 {
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
 
-	setDescriptors();
+	uniformBufferObject.scene.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
+	uniformBufferObject.offscreen.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 
-	createSamplerDescriptorPool(2);		// objÏóê ÏÇ¨Ïö©Ìï† ÌÖçÏä§Ï≤ò Î≥ÑÎèÑÎ°ú Î∂àÎü¨Ïò¨Í≤É
+	createSamplerDescriptorPool(2);
 
-	uniformBufferObject.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
-	shadowUniformBufferObject.createShadowUniformBufferObjects(fDevice, descriptorSetLayout.shadowUbo);
+	plainBuffer.loadFromObjFile(fDevice, "models/tile.obj");
+	plainTexture.loadFromFile(fDevice, "textures/tile.jpg", samplerDescriptorPool, descriptorSetLayout.sampler);
+	boxBuffer.loadFromObjFile(fDevice, "models/box.obj");
+	boxTexture.loadFromFile(fDevice, "textures/wood.jpg", samplerDescriptorPool, descriptorSetLayout.sampler);
 
-	// objÏôÄ ÌÖçÏä§Ï≤ò Î°úÎìú
-	mapBuffer.loadFromObjFile(fDevice, "models/map.obj");
-	mapTexture.loadFromFile(fDevice, "textures/map.png", samplerDescriptorPool, descriptorSetLayout.sampler);
-	warriorBuffer.loadFromObjFile(fDevice, "models/warrior.obj");
-	warriorTexture.loadFromFile(fDevice, "textures/warrior.png", samplerDescriptorPool, descriptorSetLayout.sampler);
+	plainObject = new OBJModelObject;
+	plainObject->setBuffer(plainBuffer);
+	plainObject->setTexture(plainTexture);
 
-	// gltf skinÎ™®Îç∏ Î°úÎìú
-	mushroomModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/mushroom.glb");
-	playerModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Binary/CesiumMan.glb");
-
-	// Îßµ ÏÉùÏÑ±
-	mapObject = new OBJModelObject;
-	mapObject->setBuffer(mapBuffer);
-	mapObject->setTexture(mapTexture);
-
-	// Î≤ÑÏÑØ ÏÉùÏÑ±
-	for (int i = 0; i < mushroomObject.size(); ++i) {
-		mushroomObject[i] = new GLTFSkinModelObject;
-		mushroomObject[i]->initModel(mushroomModel, descriptorSetLayout.ssbo);
-		int x = i / 10 - 5;
-		int z = i % 10 - 5;
-		mushroomObject[i]->setPosition({ x * 5.f, 0.f, z * 5.f });
-		mushroomObject[i]->setAnimateSpeed(float(rand()) / RAND_MAX + 0.5f);
-	}
-
-	// Ï†ÑÏÇ¨ ÏÉùÏÑ±
-	for (int i = 0; i < warriorObject.size(); ++i) {
-		warriorObject[i] = new OBJModelObject;
-		warriorObject[i]->setBuffer(warriorBuffer);
-		warriorObject[i]->setTexture(warriorTexture);
-		warriorObject[i]->setPosition({ (i - 5) * 5.f, 0.f, 25.f });
-		warriorObject[i]->rotate(180.f);
-	}
-
-	// ÌîåÎ†àÏù¥Ïñ¥ ÏÉùÏÑ±
 	pPlayer = new PlayerObject;
-	pPlayer->initModel(playerModel, descriptorSetLayout.ssbo);
+	pPlayer->setBuffer(boxBuffer);
+	pPlayer->setTexture(boxTexture);
 	pPlayer->setPosition({ 1.f, 0.f, 1.f });
-	pPlayer->setAnimateSpeed(2.f);
+	pPlayer->setLook({ 0.f, 0.f, -1.f });
 
 	camera.setPlayer(pPlayer);
+
+	gltfModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/deer.gltf");
+
+	skinModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Binary/CesiumMan.glb");
+	//skinModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF/CesiumMan.gltf");
+	//skinModel[0].loadModel(fDevice, descriptorSetLayout.sampler, "models/CesiumMan/glTF-Embedded/CesiumMan.gltf");
+	skinModel[1].loadModel(fDevice, descriptorSetLayout.sampler, "models/mushroom.glb");
+
+	gltfModelObject = new GLTFModelObject;
+	gltfModelObject->setModel(gltfModel);
+	gltfModelObject->setPosition({ 0.f, 1.5f, 0.f });
+	gltfModelObject->setScale(glm::vec3{ 1.f });
+
+	skinModelObject[0] = new GLTFSkinModelObject;
+	skinModelObject[0]->initModel(skinModel[0], descriptorSetLayout.ssbo);
+	skinModelObject[0]->setPosition({ 2.f, 0.f, 0.f });
+	skinModelObject[0]->setScale(glm::vec3{ 2.f });
+	skinModelObject[0]->setAnimateSpeed(1.5f);
+	skinModelObject[1] = new GLTFSkinModelObject;
+	skinModelObject[1]->initModel(skinModel[1], descriptorSetLayout.ssbo);
+	skinModelObject[1]->setPosition({ -2.f, 0.f, 0.f });
+	skinModelObject[1]->setScale(glm::vec3{ 2.f });
 }
 
 Scene::~Scene()
 {
+	delete skinModelObject[0];
+	delete skinModelObject[1];
+	skinModel[0].destroy();
+	skinModel[1].destroy();
+
+	delete gltfModelObject;
+	gltfModel.destroy();
+
 	delete pPlayer;
-	playerModel.destroy();
+	boxTexture.destroy();
+	boxBuffer.destroy();
 
-	for (auto& object : warriorObject) {
-		delete object;
-	}
-	warriorTexture.destroy();
-	warriorBuffer.destroy();
-
-	for (auto& object : mushroomObject) {
-		delete object;
-	}
-	mushroomModel.destroy();
-
-	delete mapObject;
-	mapTexture.destroy();
-	mapBuffer.destroy();
+	delete plainObject;
+	plainTexture.destroy();
+	plainBuffer.destroy();
 
 	vkDestroyDescriptorPool(fDevice.logicalDevice, samplerDescriptorPool, nullptr);
 
-	vkDestroyDescriptorPool(fDevice.logicalDevice, offscreenPass.descriptorPool, nullptr);
-	vkDestroySampler(fDevice.logicalDevice, offscreenPass.depthSampler, nullptr);
-	vkDestroyImageView(fDevice.logicalDevice, offscreenPass.shadowImageView, nullptr);
-	vkDestroyImage(fDevice.logicalDevice, offscreenPass.shadowImage, nullptr);
-	vkFreeMemory(fDevice.logicalDevice, offscreenPass.shadowMemory, nullptr);
+	uniformBufferObject.scene.destroy();
+	uniformBufferObject.offscreen.destroy();
 
-	vkDestroyFramebuffer(fDevice.logicalDevice, offscreenPass.frameBuffer, nullptr);
-
-	uniformBufferObject.destroy();
-	shadowUniformBufferObject.destroy();
-
-	vkDestroyPipeline(fDevice.logicalDevice, pipeline.model, nullptr);
-	vkDestroyPipeline(fDevice.logicalDevice, pipeline.skinModel, nullptr);
-	vkDestroyPipeline(fDevice.logicalDevice, pipeline.offscreen, nullptr);
-	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout.model, nullptr);
-	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout.skinModel, nullptr);
-	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout.offscreen, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.model, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.skinModel, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.offscreen.model, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.offscreen.skinModel, nullptr);
+	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout, nullptr);
 	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.ssbo, nullptr);
-	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.shadowMap, nullptr);
-	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.shadowUbo, nullptr);
 	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.sampler, nullptr);
 	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.ubo, nullptr);
 }
 
 void Scene::update(float elapsedTime, uint32_t currentFrame)
 {
+	// ƒ´∏ﬁ∂Û æ˜µ•¿Ã∆Æ
 	camera.update(elapsedTime);
 
-	vkf::ShadowUniformBufferObject subo{};
-	glm::mat4 depthViewMatrix = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0, 1, 0));
-	subo.depthMVP =depthViewMatrix;                   // model * view * project - Î™®Îç∏, Ìà¨ÏòÅ Îã®ÏúÑÌñâÎ†¨
-
-	//updateLight(elapsedTime);
-
+	// UBO æ˜µ•¿Ã∆Æ
 	vkf::UniformBufferObject ubo{};
+	// Scene¿« ∫Ø»Ø«‡∑ƒ ∞ËªÍ
 	ubo.view = camera.getView();
-	ubo.proj = camera.getProjection();
-	ubo.lightPos = glm::vec4(lightPos, 1.0f);
-	ubo.lightSpace = subo.depthMVP;
+	ubo.projection = camera.getProjection();
+	ubo.lightPos = lightPos;
 
-	uniformBufferObject.updateUniformBuffer(ubo, currentFrame);
-	shadowUniformBufferObject.updateShadowUniformBuffer(subo, currentFrame);
+	// Scene¿ª µÂ∑ŒøÏ «“ ∂ß, ±◊∏≤¿⁄ ∞ËªÍ¿ª ¿ß«— ∫˚ ∞¯∞£¿« ∫Ø»Ø«‡∑ƒ¿ª æÀ∞Ì ¿÷æÓæﬂ «—¥Ÿ
+	glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
+	glm::mat4 lightProjection = glm::perspective(glm::radians(45.f), 1.f, 1.f, 100.f);		// ¡æ»æ∫Ò¥¬ ∞°∑Œºº∑Œ ∞∞¥Ÿ. near ∞™¿∫ 1.f∑Œ «—¥Ÿ
+	ubo.lightSpace = lightProjection * lightView;
 
-	// Î™®Îç∏Îì§ ÏóÖÎç∞Ïù¥Ìä∏
-	mapObject->update(elapsedTime, currentFrame);
+	uniformBufferObject.scene.updateUniformBuffer(ubo, currentFrame);
 
-	for (int i = 0; i < mushroomObject.size(); ++i) {
-		mushroomObject[i]->update(elapsedTime, currentFrame);
-	}
+	// ø¿«¡Ω∫≈©∏∞ø° draw «“ ∂ß¥¬, ∫˚¿« Ω√¡°ø°º≠ ¿Â∏È¿ª ±◊∏∞¥Ÿ
+	ubo.view = lightView;
+	ubo.projection = lightProjection;
+	uniformBufferObject.offscreen.updateUniformBuffer(ubo, currentFrame);
 
-	for (auto& object : warriorObject) {
-		object->update(elapsedTime, currentFrame);
-	}
+	// ø¿∫Í¡ß∆Æ æ˜µ•¿Ã∆Æ
+	plainObject->update(elapsedTime, currentFrame);
 
 	pPlayer->update(elapsedTime, currentFrame);
+
+	gltfModelObject->update(elapsedTime, currentFrame);
+
+	skinModelObject[0]->update(elapsedTime, currentFrame);
+	skinModelObject[1]->update(elapsedTime, currentFrame);
 }
 
-void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen)
 {
-	// non-skinModel
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.model);
-	// firstSetÏùÄ setÏùò ÏãúÏûëÏù∏Îç±Ïä§
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.model, 2, 1, &offscreenPass.descriptorSet, 0, nullptr);
+	// ifπÆ¿ª æ≤¡ˆ æ ±‚ ¿ß«— ƒ⁄µÂ..
+	Pipeline::Type* lineType[2]{ &pipeline.scene, &pipeline.offscreen };
+	vkf::BufferObject* uboType[2]{ &uniformBufferObject.scene, &uniformBufferObject.offscreen };
+	int idx = !!static_cast<int>(isOffscreen);
+	Pipeline::Type& line = *lineType[idx];
+	vkf::BufferObject& ubo = *uboType[idx];
 
-	mapObject->draw(commandBuffer, pipelineLayout.model, currentFrame);
-	for (auto& object : warriorObject) {
-		object->draw(commandBuffer, pipelineLayout.model, currentFrame);
-	}
+	// shadow map bind (offscreen drawΩ√ø°¥¬ ªÁøÎ«œ¡ˆ æ ¥¬¥Ÿ)
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowSet, 0, nullptr);
 
-	// skinModel
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.skinModel);
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.skinModel, 0, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.skinModel, 2, 1, &offscreenPass.descriptorSet, 0, nullptr);
+	// UBO πŸ¿ŒµÂ, firstSet¿∫ set¿« Ω√¿€¿Œµ¶Ω∫
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &ubo.descriptorSets[currentFrame], 0, nullptr);
 
-	for (int i = 0; i < mushroomObject.size(); ++i) {
-		mushroomObject[i]->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
-	}
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, line.model);
 
-	pPlayer->draw(commandBuffer, pipelineLayout.skinModel, currentFrame);
+	plainObject->draw(commandBuffer, pipelineLayout, currentFrame);
+	pPlayer->draw(commandBuffer, pipelineLayout, currentFrame);
+	gltfModelObject->draw(commandBuffer, pipelineLayout, currentFrame);
 
-}
-
-void Scene::offscreenDraw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
-{
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.offscreen);
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout.offscreen, 0, 1, &shadowUniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
-
-	mapObject->drawPos(commandBuffer, pipelineLayout.offscreen, currentFrame);
-	for (auto& object : warriorObject) {
-		object->drawPos(commandBuffer, pipelineLayout.offscreen, currentFrame);
-	}
-	for (int i = 0; i < mushroomObject.size(); ++i) {
-		mushroomObject[i]->drawPos(commandBuffer, pipelineLayout.offscreen, currentFrame);
-	}
-	pPlayer->drawPos(commandBuffer, pipelineLayout.offscreen, currentFrame);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, line.skinModel);
+	// ubo¥¬ ∞¯øÎ¿Ã±‚ ∂ßπÆø°, ¥ŸΩ√ bind «œ¡ˆ æ ¥¬¥Ÿ
+	skinModelObject[0]->draw(commandBuffer, pipelineLayout, currentFrame);
+	skinModelObject[1]->draw(commandBuffer, pipelineLayout, currentFrame);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)
@@ -232,6 +202,7 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 		case GLFW_MOUSE_BUTTON_LEFT:
 			leftButtonPressed = true;
 			pPlayer->setStartMousePos(xpos, ypos);
+			camera.setStartMousePos(xpos, ypos);			// ¿ßæ∆∑° »∏¿¸øÎ (¿ßæ∆∑° »∏¿¸¿∫ «√∑π¿ÃæÓ πÊ«‚ø° øµ«‚¿ª ¡÷¡ˆ æ ¥¬¥Ÿ)
 			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
 			break;
@@ -266,6 +237,7 @@ void Scene::processMouseCursor(float xpos, float ypos)
 {
 	if (leftButtonPressed) {
 		pPlayer->processMouseCursor(xpos, ypos);
+		camera.processMouseCursor(xpos, ypos);
 	}
 }
 
@@ -284,20 +256,6 @@ void Scene::createDescriptorSetLayout()
 	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	samplerLayoutBinding.pImmutableSamplers = nullptr;
 	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	VkDescriptorSetLayoutBinding shadowUboLayoutBinding{};
-	shadowUboLayoutBinding.binding = 0;
-	shadowUboLayoutBinding.descriptorCount = 1;
-	shadowUboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	shadowUboLayoutBinding.pImmutableSamplers = nullptr;
-	shadowUboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-	VkDescriptorSetLayoutBinding shadowMapLayoutBinding{};
-	shadowMapLayoutBinding.binding = 0;
-	shadowMapLayoutBinding.descriptorCount = 1;
-	shadowMapLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	shadowMapLayoutBinding.pImmutableSamplers = nullptr;
-	shadowMapLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
 	VkDescriptorSetLayoutBinding ssboLayoutBinding{};
 	ssboLayoutBinding.binding = 0;
@@ -320,69 +278,15 @@ void Scene::createDescriptorSetLayout()
 		throw std::runtime_error("failed to create descriptor set layout!");
 	}
 
-	layoutInfo.pBindings = &shadowUboLayoutBinding;
-	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.shadowUbo) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor set layout!");
-	}
-
-	layoutInfo.pBindings = &shadowMapLayoutBinding;
-	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.shadowMap) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor set layout!");
-	}
-
 	layoutInfo.pBindings = &ssboLayoutBinding;
 	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.ssbo) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor set layout!");
 	}
 }
 
-void Scene::setDescriptors()
-{
-	std::array<VkDescriptorPoolSize, 1> poolSizes{};
-	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[0].descriptorCount = 1;
-
-	VkDescriptorPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = 1;
-
-	if (vkCreateDescriptorPool(fDevice.logicalDevice, &poolInfo, nullptr, &offscreenPass.descriptorPool) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor pool!");
-	}
-
-	VkDescriptorSetAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = offscreenPass.descriptorPool;
-	allocInfo.descriptorSetCount = 1;
-	allocInfo.pSetLayouts = &descriptorSetLayout.shadowMap;
-
-	if (vkAllocateDescriptorSets(fDevice.logicalDevice, &allocInfo, &offscreenPass.descriptorSet) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor pool!");
-	}
-
-	VkDescriptorImageInfo shadowMapDescriptor{};
-	shadowMapDescriptor.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-	shadowMapDescriptor.imageView = offscreenPass.shadowImageView;
-	shadowMapDescriptor.sampler = offscreenPass.depthSampler;
-
-	std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
-
-	descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrites[0].dstSet = offscreenPass.descriptorSet;
-	descriptorWrites[0].dstBinding = 0;
-	descriptorWrites[0].dstArrayElement = 0;
-	descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptorWrites[0].descriptorCount = 1;
-	descriptorWrites[0].pImageInfo = &shadowMapDescriptor;
-
-	vkUpdateDescriptorSets(fDevice.logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-}
-
 void Scene::createGraphicsPipeline()
 {
-	vkf::Shader modelShader{ fDevice, "shaders/model.vert.spv", "shaders/model.frag.spv" };
+	vkf::Shader modelShader{ fDevice, "shaders/model.vert.spv", "shaders/fragment.frag.spv" };
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -430,7 +334,16 @@ void Scene::createGraphicsPipeline()
 
 	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	colorBlendAttachment.blendEnable = VK_FALSE;
+	colorBlendAttachment.blendEnable = VK_TRUE; // ∫Ì∑ªµ˘ »∞º∫»≠
+
+	// æÀ∆ƒ ∫Ì∑ªµ˘ º≥¡§
+	colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;				// º“Ω∫ æÀ∆ƒ
+	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;		// ¥ÎªÛ æÀ∆ƒ
+	colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;								// ∫Ì∑ªµ˘ ø¨ªÍ
+
+	colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;						// º“Ω∫ æÀ∆ƒ ∞™ ¿Ø¡ˆ
+	colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;					// ¥ÎªÛ æÀ∆ƒø° øµ«‚¿ª ¡÷¡ˆ æ ¿Ω
+	colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;								// æÀ∆ƒ ∫Ì∑ªµ˘ ø¨ªÍ
 
 	VkPipelineColorBlendStateCreateInfo colorBlending{};
 	colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -452,13 +365,12 @@ void Scene::createGraphicsPipeline()
 	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 	dynamicState.pDynamicStates = dynamicStates.data();
 
-
-// Ïó¨Îü¨ Í∞úÏùò ÎîîÏä§ÌÅ¨Î¶ΩÌÑ∞ ÏÖãÏùÑ ÏÇ¨Ïö©Ìï† Îïå, setÏùò indexÎ•º pSetLayoutsÏùò indexÏôÄ ÎßûÏ∂∞Ï§òÏïº ÌïúÎã§.
+	// ø©∑Ø ∞≥¿« µΩ∫≈©∏≥≈Õ º¬¿ª ªÁøÎ«“ ∂ß, set¿« index∏¶ pSetLayouts¿« indexøÕ ∏¬√Á¡‡æﬂ «—¥Ÿ.
 	std::vector<VkDescriptorSetLayout> setLayout{ 4 };
-	setLayout[0] = descriptorSetLayout.ubo;
+	setLayout[0] = shadowSetLayout;
 	setLayout[1] = descriptorSetLayout.sampler;
-	setLayout[2] = descriptorSetLayout.shadowMap;
-	setLayout[3] = descriptorSetLayout.ssbo;									// skinModelÏóêÏÑúÎßå ÏÇ¨Ïö©
+	setLayout[2] = descriptorSetLayout.ubo;
+	setLayout[3] = descriptorSetLayout.ssbo;										// skinModelø°º≠∏∏ ªÁøÎ
 
 	// push constant
 	VkPushConstantRange pushConstantRange{};
@@ -468,25 +380,12 @@ void Scene::createGraphicsPipeline()
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 3;										// modelÏóêÏÑúÎäî 2Î≤à Ïù∏Îç±Ïä§ÍπåÏßÄÎßå ÏÇ¨Ïö©
+	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayout.size());	//modelø°º≠¥¬ (0, 1, 2) ªÁøÎ, offscreen¿∫ 0π¯ X
 	pipelineLayoutInfo.pSetLayouts = setLayout.data();
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
-	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout.model) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create pipeline layout!");
-	}
-
-	pipelineLayoutInfo.setLayoutCount = 4;										// skinModelÏóêÏÑúÎäî 3Î≤à Ïù∏Îç±Ïä§ÍπåÏßÄ ÏÇ¨Ïö©
-	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout.skinModel) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create pipeline layout!");
-	}
-
-	pipelineLayoutInfo.setLayoutCount = 1;
-	pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout.shadowUbo;
-	pipelineLayoutInfo.pushConstantRangeCount = 0;
-	pipelineLayoutInfo.pPushConstantRanges = nullptr;
-	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout.offscreen) != VK_SUCCESS) {
+	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
@@ -502,19 +401,17 @@ void Scene::createGraphicsPipeline()
 	pipelineInfo.pDepthStencilState = &depthStencil;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.layout = pipelineLayout.model;
-	pipelineInfo.renderPass = renderPass;
+	pipelineInfo.layout = pipelineLayout;
+	pipelineInfo.renderPass = renderPass.scene;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.model) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.scene.model) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	// skinModelÏö© pipeline ÏÉùÏÑ±
-	pipelineInfo.layout = pipelineLayout.skinModel;
-
-	vkf::Shader skinModelShader{ fDevice, "shaders/skinnedmodel.vert.spv", "shaders/skinnedmodel.frag.spv" };
+	// skinModeløÎ pipeline ª˝º∫
+	vkf::Shader skinModelShader{ fDevice, "shaders/skinnedmodel.vert.spv", "shaders/fragment.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(skinModelShader.shaderStages.size());
 	pipelineInfo.pStages = skinModelShader.shaderStages.data();
 
@@ -525,31 +422,45 @@ void Scene::createGraphicsPipeline()
 	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(skinAttributeDescriptions.size());
 	vertexInputInfo.pVertexAttributeDescriptions = skinAttributeDescriptions.data();
 
-	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.skinModel) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.scene.skinModel) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	pipelineInfo.layout = pipelineLayout.offscreen;
+	// offscreen ∆ƒ¿Ã«¡∂Û¿Œ ª˝º∫
+	{
+		// ±◊∏≤¿⁄ ª˝º∫Ω√ø°¥¬ ∏÷∆ºª˘«√∏µ Off
+		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-	vkf::Shader shadowMapShader{ fDevice, "shaders/offscreen.vert.spv", "shaders/model.frag.spv" };
-	auto shadowBindingDescription = vkf::ShadowMapVertex::getBindingDescription();
-	auto shadowAttributeDescriptions = vkf::ShadowMapVertex::getAttributeDescriptions();
+		// No blend attachment states (no color attachments used)
+		colorBlending.attachmentCount = 0;
+		// Disable culling, so all faces contribute to shadows
+		rasterizer.cullMode = VK_CULL_MODE_NONE;
+		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;			// ±◊∏≤¿⁄ ª˘«√ø°º≠¥¬ ±‚∫ª OPµµ ¿Ã∞…∑Œ µ«æÓ¿÷¥Ÿ
+		// Enable depth bias
+		rasterizer.depthBiasEnable = VK_TRUE;
+		// Add depth bias to dynamic state, so we can change it at runtime
+		dynamicStates.push_back(VK_DYNAMIC_STATE_DEPTH_BIAS);
+		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+		dynamicState.pDynamicStates = dynamicStates.data();
+
+		pipelineInfo.renderPass = renderPass.offscreen;
+	}
+	// skinModel, ¿ßø°º≠ pStages¥¬ skinModel Shader∑Œ ø¨∞·µ«æÓ ¿÷¥Ÿ
+	pipelineInfo.stageCount = 1;		// vertex shader∏∏ ªÁøÎ
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.offscreen.skinModel) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+	// Model
+	pipelineInfo.pStages = modelShader.shaderStages.data();
+
 	vertexInputInfo.vertexBindingDescriptionCount = 1;
-	vertexInputInfo.pVertexBindingDescriptions = &shadowBindingDescription;
-	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(shadowAttributeDescriptions.size());
-	vertexInputInfo.pVertexAttributeDescriptions = shadowAttributeDescriptions.data();
-	pipelineInfo.stageCount = 1;
-	pipelineInfo.pStages = &shadowMapShader.shaderStages[0];
-	colorBlending.attachmentCount = 0;
-	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-	rasterizer.depthBiasEnable = VK_TRUE;
-	rasterizer.cullMode = VK_CULL_MODE_NONE;
-	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-	dynamicStates.push_back(VK_DYNAMIC_STATE_DEPTH_BIAS);
-	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
-	dynamicState.pDynamicStates = dynamicStates.data();
-	pipelineInfo.renderPass = offscreenPass.renderPass;
-	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.offscreen) != VK_SUCCESS) {
+	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.offscreen.model) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 }
@@ -571,10 +482,3 @@ void Scene::createSamplerDescriptorPool(uint32_t setCount)
 	}
 }
 
-void Scene::updateLight(float elapsedTime)
-{
-	// Animate the light source
-	lightPos.x = cos(glm::radians(elapsedTime * 360.0f)) * 40.0f;
-	lightPos.y = -50.0f + sin(glm::radians(elapsedTime * 360.0f)) * 20.0f;
-	lightPos.z = 25.0f + sin(glm::radians(elapsedTime * 360.0f)) * 5.0f;
-}

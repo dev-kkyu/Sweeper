@@ -1,9 +1,8 @@
-Ôªø#pragma once
+#pragma once
 
-#include "OBJModelObject.h"
 #include "PlayerObject.h"
-//#include "GLTFModelObject.h"
-//#include "GLTFSkinModelObject.h"	// included PlayerObject
+#include "GLTFModelObject.h"
+#include "GLTFSkinModelObject.h"
 #include "Camera.h"
 
 class Scene
@@ -11,67 +10,59 @@ class Scene
 private:
 	vkf::Device& fDevice;
 	VkSampleCountFlagBits& msaaSamples;
-	VkRenderPass& renderPass;
+	vkf::RenderPass& renderPass;
+	VkDescriptorSetLayout& shadowSetLayout;
+	VkDescriptorSet& shadowSet;
 
 	struct {
 		VkDescriptorSetLayout ubo = VK_NULL_HANDLE;
 		VkDescriptorSetLayout sampler = VK_NULL_HANDLE;
-		VkDescriptorSetLayout shadowUbo = VK_NULL_HANDLE;
-		VkDescriptorSetLayout shadowMap = VK_NULL_HANDLE;
 		VkDescriptorSetLayout ssbo = VK_NULL_HANDLE;
 	} descriptorSetLayout;
 
-	struct {
-		VkPipelineLayout offscreen = VK_NULL_HANDLE;
-		VkPipelineLayout model = VK_NULL_HANDLE;
-		VkPipelineLayout skinModel = VK_NULL_HANDLE;
-	} pipelineLayout;
+	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;		// model ∆ƒ¿Ã«¡∂Û¿Œ¿∫ 0, 1, 2π¯ º¬∏∏ ªÁøÎ«—¥Ÿ
 
-	struct {
-		VkPipeline offscreen = VK_NULL_HANDLE;
-		VkPipeline model = VK_NULL_HANDLE;
-		VkPipeline skinModel = VK_NULL_HANDLE;
+	struct Pipeline {
+		struct Type {
+			VkPipeline model = VK_NULL_HANDLE;
+			VkPipeline skinModel = VK_NULL_HANDLE;
+		} scene, offscreen;
 	} pipeline;
 
-	vkf::BufferObject uniformBufferObject;
-	vkf::BufferObject shadowUniformBufferObject;
+	struct {
+		vkf::BufferObject scene;
+		vkf::BufferObject offscreen;
+	} uniformBufferObject;
 
-	vkf::OffscreenPass &offscreenPass;
+	glm::vec3 lightPos = glm::vec3(10.f, 10.f, 10.f);
 
 	VkDescriptorPool samplerDescriptorPool;
 
-	// obj Îßµ
-	vkf::MeshBuffer mapBuffer;
-	vkf::Texture mapTexture;
-	OBJModelObject* mapObject;
+	vkf::MeshBuffer plainBuffer;
+	vkf::Texture plainTexture;
+	OBJModelObject* plainObject;
 
-	// obj Ï†ÑÏÇ¨
-	vkf::MeshBuffer warriorBuffer;
-	vkf::Texture warriorTexture;
-	std::array<OBJModelObject*, 10> warriorObject;
-
-	// gltf skin Î≤ÑÏÑØ
-	VulkanGLTFSkinModel mushroomModel;
-	std::array<GLTFSkinModelObject*, 100> mushroomObject;
-
-	// gltf skin ÏûÑÏãú ÏÉòÌîå
-	VulkanGLTFSkinModel playerModel;
+	vkf::MeshBuffer boxBuffer;
+	vkf::Texture boxTexture;
 	PlayerObject* pPlayer;
 
-	Camera camera;
+	GLTFModelObject* gltfModelObject;
+	VulkanGLTFModel gltfModel;
 
-	glm::vec3 lightPos = glm::vec3(100.f, 100.f, 100.f);
+	GLTFSkinModelObject* skinModelObject[2];
+	VulkanGLTFSkinModel skinModel[2];
+
+	Camera camera;
 
 	unsigned int keyState;
 	bool leftButtonPressed = false;
 
 public:
-	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, VkRenderPass& renderPass, vkf::OffscreenPass& offscreen);
+	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet);
 	~Scene();
 
 	void update(float elapsedTime, uint32_t currentFrame);
-	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame);
-	void offscreenDraw(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen);
 
 	void processKeyboard(int key, int action, int mods);
 	void processMouseButton(int button, int action, int mods, float xpos, float ypos);
@@ -80,11 +71,8 @@ public:
 private:
 	void createDescriptorSetLayout();
 	void createGraphicsPipeline();
-	void setDescriptors();
 
-	// obj Î™®Îç∏ÏùÄ ÏßÅÏ†ë bufferÏôÄ textureÎ•º ÎÑ£Ïñ¥Ï£ºÎèÑÎ°ù ÏÑ§Í≥Ñ. Îî∞ÎùºÏÑú textureÎ•º ÏúÑÌïú descriptor poolÏùÑ ÎßåÎì§Ïñ¥Ï§ÄÎã§.
+	// obj ∏µ®¿∫ ¡˜¡¢ bufferøÕ texture∏¶ ≥÷æÓ¡÷µµ∑œ º≥∞Ë. µ˚∂Ûº≠ texture∏¶ ¿ß«— descriptor pool¿ª ∏∏µÈæÓ¡ÿ¥Ÿ.
 	void createSamplerDescriptorPool(uint32_t setCount);
-
-	void updateLight(float elapsedTime);
 
 };

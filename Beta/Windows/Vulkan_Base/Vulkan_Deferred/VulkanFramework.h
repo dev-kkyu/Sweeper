@@ -1,4 +1,4 @@
-Ôªø#pragma once
+#pragma once
 
 #define MAX_FRAMES_IN_FLIGHT 2
 
@@ -24,31 +24,21 @@ namespace vkf
 		VkQueue presentQueue;
 		VkCommandPool commandPool;
 
-		VkPhysicalDeviceProperties physicalDeviceProperties;				// physicalDevice ÏÑ†ÌÉùÏãú Î©îÎ™®Î¶¨ ÏÜçÏÑ±Í≥º Ìï®Íªò ÏñªÏñ¥Ï§ÄÎã§.
+		VkPhysicalDeviceProperties physicalDeviceProperties;				// physicalDevice º±≈√Ω√ ∏ﬁ∏∏Æ º”º∫∞˙ «‘≤≤ æÚæÓ¡ÿ¥Ÿ.
 		VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
+	};
+
+	struct RenderPass
+	{
+		VkRenderPass scene = VK_NULL_HANDLE;
+		VkRenderPass offscreen = VK_NULL_HANDLE;
 	};
 
 	struct UniformBufferObject {
 		alignas(16) glm::mat4 view;
-		alignas(16) glm::mat4 proj;
-		alignas(16) glm::mat4 lightSpace;
-		alignas(16) glm::vec4 lightPos;
-	};
-
-	struct ShadowUniformBufferObject {
-		alignas(16) glm::mat4 depthMVP;
-	};
-
-	struct OffscreenPass {
-		int32_t width, height;
-		VkFramebuffer frameBuffer;
-		VkImage shadowImage;
-		VkDeviceMemory shadowMemory;
-		VkImageView shadowImageView;
-		VkRenderPass renderPass;
-		VkSampler depthSampler;
-		VkDescriptorPool descriptorPool;
-		VkDescriptorSet descriptorSet;
+		alignas(16) glm::mat4 projection;
+		alignas(16) glm::mat4 lightSpace;			// Scene Drawø°º≠ ªÁøÎ (±◊∏≤¿⁄ ∞ËªÍ, ∫˚ Ω√¡°¿« VP «‡∑ƒ)
+		alignas(16) glm::vec3 lightPos;				// Scene Drawø°º≠ ªÁøÎ (¡∂∏Ì ∞ËªÍ)
 	};
 
 	struct PushConstantData {
@@ -79,13 +69,6 @@ namespace vkf
 
 		static VkVertexInputBindingDescription getBindingDescription();
 		static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions();
-	};
-
-	struct ShadowMapVertex {
-		glm::vec3 pos;
-
-		static VkVertexInputBindingDescription getBindingDescription();
-		static std::array<VkVertexInputAttributeDescription, 1> getAttributeDescriptions();
 	};
 
 	class Shader
@@ -150,16 +133,12 @@ namespace vkf
 		std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> descriptorSets{};
 
 	public:
-		void createUniformBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout);		// ubo, ssbo Ï§ë ÌïòÎÇòÎßå ÏÉùÏÑ± Î∞è Ìò∏Ï∂úÌï† Í≤É
+		void createUniformBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout);		// ubo, ssbo ¡ﬂ «œ≥™∏∏ ª˝º∫ π◊ »£√‚«“ ∞Õ
 		void createShaderStorageBufferObjects(vkf::Device& fDevice, VkDeviceSize bufferSize, VkDescriptorSetLayout descriptorSetLayout);
-		void createShadowUniformBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout);
 		void destroy();
 
 		void copyTo(const void* data, VkDeviceSize size, uint32_t currentFrame);
 		void updateUniformBuffer(const UniformBufferObject& ubo, uint32_t currentFrame);
-		void updateShadowUniformBuffer(const ShadowUniformBufferObject& ubo, uint32_t currentFrame);
-		VkDescriptorPool getDescriptorPool();
-		VkDescriptorSet getDescriptorSet(uint32_t currentFrame);
 
 	private:
 		void createBuffers(VkDeviceSize bufferSize, VkBufferUsageFlags usage);

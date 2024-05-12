@@ -18,6 +18,40 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="GameFramework.cpp" />
+    <ClCompile Include="GameObjectBase.cpp" />
+    <ClCompile Include="GLTFModelObject.cpp" />
+    <ClCompile Include="GLTFSkinModelObject.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="OBJModelObject.cpp" />
+    <ClCompile Include="PlayerObject.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="VulkanFramework.cpp" />
+    <ClCompile Include="VulkanGLTFModel.cpp" />
+    <ClCompile Include="VulkanGLTFSkinModel.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="GameFramework.h" />
+    <ClInclude Include="GameObjectBase.h" />
+    <ClInclude Include="GLTFModelObject.h" />
+    <ClInclude Include="GLTFSkinModelObject.h" />
+    <ClInclude Include="OBJModelObject.h" />
+    <ClInclude Include="PlayerObject.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="Timer.h" />
+    <ClInclude Include="VulkanFramework.h" />
+    <ClInclude Include="VulkanGLTFModel.h" />
+    <ClInclude Include="VulkanGLTFSkinModel.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\fragment.frag" />
+    <None Include="shaders\model.vert" />
+    <None Include="shaders\skinnedmodel.vert" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -134,42 +168,6 @@
       <AdditionalOptions>vulkan-1.lib glfw3.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="GameFramework.cpp" />
-    <ClCompile Include="GameObjectBase.cpp" />
-    <ClCompile Include="GLTFModelObject.cpp" />
-    <ClCompile Include="GLTFSkinModelObject.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="OBJModelObject.cpp" />
-    <ClCompile Include="PlayerObject.cpp" />
-    <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="Timer.cpp" />
-    <ClCompile Include="VulkanFramework.cpp" />
-    <ClCompile Include="VulkanGLTFModel.cpp" />
-    <ClCompile Include="VulkanGLTFSkinModel.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="GameFramework.h" />
-    <ClInclude Include="GameObjectBase.h" />
-    <ClInclude Include="GLTFModelObject.h" />
-    <ClInclude Include="GLTFSkinModelObject.h" />
-    <ClInclude Include="OBJModelObject.h" />
-    <ClInclude Include="PlayerObject.h" />
-    <ClInclude Include="Scene.h" />
-    <ClInclude Include="Timer.h" />
-    <ClInclude Include="VulkanFramework.h" />
-    <ClInclude Include="VulkanGLTFModel.h" />
-    <ClInclude Include="VulkanGLTFSkinModel.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\model.frag" />
-    <None Include="shaders\model.vert" />
-    <None Include="shaders\offscreen.vert" />
-    <None Include="shaders\skinnedmodel.frag" />
-    <None Include="shaders\skinnedmodel.vert" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

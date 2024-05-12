@@ -1,4 +1,4 @@
-ï»¿#include "VulkanGLTFSkinModel.h"
+#include "VulkanGLTFSkinModel.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
@@ -47,7 +47,7 @@ void VulkanGLTFSkinModel::loadglTFFile(std::string filename)
 
 	bool fileLoaded = false;
 
-	// í™•ì¥ìê°€ glbì¸ì§€ ê²€ì‚¬í•˜ì—¬ glbì´ë©´ binaryë¡œ ì—´ê³ , ì•„ë‹ˆë©´ .gltfë¡œ ê°„ì£¼
+	// È®ÀåÀÚ°¡ glbÀÎÁö °Ë»çÇÏ¿© glbÀÌ¸é binary·Î ¿­°í, ¾Æ´Ï¸é .gltf·Î °£ÁÖ
 	size_t dotPosition = filename.find_last_of('.');
 	if (dotPosition != std::string::npos && dotPosition != filename.length() - 1) {
 		std::string extention = filename.substr(dotPosition + 1);
@@ -79,10 +79,10 @@ void VulkanGLTFSkinModel::loadglTFFile(std::string filename)
 		throw std::runtime_error("Could not open the glTF file.\n\nMake sure the assets submodule has been checked out and is up-to-date.");
 	}
 
-	// ì •ì  ë° ì¸ë±ìŠ¤ ë²„í¼ ìƒì„± ë° ì—…ë¡œë“œ
-	// ì „ì²´ glTF ì¥ë©´ì— ëŒ€í•´ í•˜ë‚˜ì˜ ë‹¨ì¼ ì •ì  ë²„í¼ì™€ í•˜ë‚˜ì˜ ë‹¨ì¼ ì¸ë±ìŠ¤ ë²„í¼ ì‚¬ìš©
-	// (glTF ëª¨ë¸ì˜) PrimitivesëŠ” ì¸ë±ìŠ¤ ì˜¤í”„ì…‹ì„ ì‚¬ìš©í•˜ì—¬ ì¸ë±ìŠ¤ë¥¼ ì ìš©
-	// Primitives ì •ë³´ëŠ” ê°ì²´ì—ì„œ ê°ì ì–»ê¸°ë¡œ í•œë‹¤. -> Nodeì˜ meshê°€ ë“¤ê³ ìˆê¸°ë•Œë¬¸
+	// Á¤Á¡ ¹× ÀÎµ¦½º ¹öÆÛ »ı¼º ¹× ¾÷·Îµå
+	// ÀüÃ¼ glTF Àå¸é¿¡ ´ëÇØ ÇÏ³ªÀÇ ´ÜÀÏ Á¤Á¡ ¹öÆÛ¿Í ÇÏ³ªÀÇ ´ÜÀÏ ÀÎµ¦½º ¹öÆÛ »ç¿ë
+	// (glTF ¸ğµ¨ÀÇ) Primitives´Â ÀÎµ¦½º ¿ÀÇÁ¼ÂÀ» »ç¿ëÇÏ¿© ÀÎµ¦½º¸¦ Àû¿ë
+	// Primitives Á¤º¸´Â °´Ã¼¿¡¼­ °¢ÀÚ ¾ò±â·Î ÇÑ´Ù. -> NodeÀÇ mesh°¡ µé°íÀÖ±â¶§¹®
 
 	buffer.loadFromBuffer(*fDevice, vertexBuffer, indexBuffer);
 }
@@ -106,7 +106,7 @@ void VulkanGLTFSkinModel::createSamplerDescriptorPool(uint32_t setCount)
 
 void VulkanGLTFSkinModel::loadImages()
 {
-	// ì´ë¯¸ì§€ ê°œìˆ˜ë§Œí¼ DescriptorPool ë¯¸ë¦¬ ë§Œë“¤ì–´ ì¤€ë‹¤.
+	// ÀÌ¹ÌÁö °³¼ö¸¸Å­ DescriptorPool ¹Ì¸® ¸¸µé¾î ÁØ´Ù.
 	createSamplerDescriptorPool(static_cast<uint32_t>(glTFInput->images.size()));
 	// Images can be stored inside the glTF (which is the case for the sample model), so instead of directly
 	// loading them from disk, we fetch them from the glTF loader and upload the buffers

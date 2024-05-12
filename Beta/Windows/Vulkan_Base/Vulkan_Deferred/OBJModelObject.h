@@ -20,7 +20,6 @@ public:
 	virtual void initialize() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
-	virtual void drawPos(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame);
 	virtual void release() override;
 
 	void setBuffer(const vkf::MeshBuffer& buffer);

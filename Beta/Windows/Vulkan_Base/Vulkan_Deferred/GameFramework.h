@@ -72,7 +72,22 @@ private:
 	std::vector<VkImageView> swapChainImageViews;
 	std::vector<VkFramebuffer> swapChainFramebuffers;
 
-	VkRenderPass renderPass;
+	vkf::RenderPass renderPass;
+
+	// 쉐도우 매핑을 위한 offScreen 정보들
+	const uint32_t shadowMapize{ 2048 };						// 가로 X 세로 사이즈
+	const VkFormat offscreenDepthFormat{ VK_FORMAT_D16_UNORM };	// 16비트면 충분
+	struct OffscreenPass {
+		VkFramebuffer frameBuffer;
+		VkImage depthImage;
+		VkDeviceMemory depthImageMemory;
+		VkImageView depthImageView;
+		//VkRenderPass renderPass;		// vkf::RenderPass 에 존재
+		VkSampler depthSampler;
+		VkDescriptorSetLayout samplerDescriptorSetLayout;
+		VkDescriptorPool samplerDescriptorPool;
+		VkDescriptorSet samplerDescriptorSet;
+	} offscreenPass{};
 
 	VkImage colorImage;
 	VkDeviceMemory colorImageMemory;
@@ -82,10 +97,6 @@ private:
 	VkDeviceMemory depthImageMemory;
 	VkImageView depthImageView;
 
-	VkSampler colorSampler;
-
-	vkf::OffscreenPass offscreenPass{};
-
 	std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> commandBuffers;
 
 	std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> imageAvailableSemaphores;
@@ -93,10 +104,6 @@ private:
 	std::array<VkFence, MAX_FRAMES_IN_FLIGHT> inFlightFences;
 	uint32_t currentFrame = 0;
 
-	float depthBiasConstant = 1.25f;
-	float depthBiasSlope = 1.75f;
-	const VkFormat offscreenDepthFormat{ VK_FORMAT_D16_UNORM };
-	const uint32_t shadowMapize{ 2048 };
 
 private:
 	void cleanupSwapChain();
@@ -115,11 +122,11 @@ private:
 	void createColorResources();
 	void createDepthResources();
 	void createFramebuffers();
+	void createOffscreenRenderPass();
+	void createOffscreenFramebuffer();
+	void createOffscreenDescriptors();
 	void createCommandBuffers();
 	void createSyncObjects();
-	
-	void prepareOffscreenRenderpass();
-	void prepareOffscreenFramebuffer();
 
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
@@ -134,6 +141,7 @@ private:
 	std::vector<const char*> getRequiredExtensions();
 	bool checkValidationLayerSupport();
 
+	VkBool32 formatIsFilterable(VkPhysicalDevice device, VkFormat format, VkImageTiling tiling);	// 쉐도우 맵 샘플러 생성시 필요
 	VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 	VkFormat findDepthFormat();
 	bool hasStencilComponent(VkFormat format);

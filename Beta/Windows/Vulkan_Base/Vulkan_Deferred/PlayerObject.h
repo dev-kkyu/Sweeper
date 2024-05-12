@@ -5,9 +5,9 @@
 #define KEY_LEFT	0x04
 #define KEY_RIGHT	0x08
 
-#include "GLTFSkinModelObject.h"
+#include "OBJModelObject.h"
 
-class PlayerObject : public GLTFSkinModelObject
+class PlayerObject : public OBJModelObject
 {
 private:
 
@@ -23,7 +23,6 @@ public:
 	virtual void initialize() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
-	virtual void drawPos(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void release() override;
 
 	void processKeyInput(unsigned int keyState);

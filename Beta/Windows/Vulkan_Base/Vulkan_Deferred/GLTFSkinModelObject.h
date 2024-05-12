@@ -27,12 +27,14 @@ public:
 	virtual void initialize() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
-	virtual void drawPos(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void release() override;
 
 	void initModel(VulkanGLTFSkinModel& model, VkDescriptorSetLayout ssboDescriptorSetLayout);
 
 	void setAnimateSpeed(float speed);
+
+	void changeAnimationClip();
+	void setAnimationClip(uint32_t animationIndex);		// animation load 완료 후 호출해야 함.
 
 private:
 	std::shared_ptr<Node>	findNode(std::shared_ptr<Node> parent, uint32_t index);
