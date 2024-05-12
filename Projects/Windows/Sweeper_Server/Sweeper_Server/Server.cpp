@@ -1,10 +1,16 @@
 #include "Server.h"
 
-#include "Room.h"
 #include "Session.h"
 
 #include <iostream>
 #include <cmath>
+
+// 파일 읽기용 헤더
+#include <fstream>
+#include <string>
+#include <sstream>
+
+#define MONSTER_FILE_NAME "resources/MushroomData.txt"
 
 Server::Server(asio::io_context& io_context, int port)
 	: io_context{ io_context }
@@ -12,14 +18,37 @@ Server::Server(asio::io_context& io_context, int port)
 	, timer{ io_context, std::chrono::steady_clock::now() }		// 만료 시간을 현재로 해준다.
 	, last_time{ std::chrono::steady_clock::now() }
 {
+	// 파일에서 몬스터 정보 읽어오기
+	loadMonsterInfo();
+
 	// 방 생성
 	// Todo: 여러 방으로 확장 필요
-	room = std::make_shared<Room>(io_context, 0);			// 일단 방번호 0번 설정
+	room = std::make_shared<Room>(io_context, 0, initMonsterInfo);			// 일단 방번호 0번 설정
 
 	fps_value = 60;			// 초당 60번 업데이트
 
 	doAccept();				// 접속을 받기 시작한다.
 	doTimer();				// 타이머 동작(업데이트)을 시작한다.
+}
+
+void Server::loadMonsterInfo()
+{
+	std::ifstream in{ MONSTER_FILE_NAME };
+	if (!in) {
+		std::cerr << "failed to open monster info file!" << std::endl;
+		exit(-1);
+	}
+	std::string line;
+	while (std::getline(in, line)) {
+		std::stringstream ss{ line };
+		char ignore;
+		float posx, posy, posz, rotx, roty, rotz;
+		ss >> ignore >> posx >> ignore >> posy >> ignore >> posz >> ignore;
+		ss >> ignore >> rotx >> ignore >> roty >> ignore >> rotz >> ignore;
+		MonsterInfo info{ posx, posy, posz, roty };
+		initMonsterInfo.push_back(info);
+	}
+	std::cout << "몬스터 초기화 파일 로드 완료" << std::endl;
 }
 
 void Server::doAccept()

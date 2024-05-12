@@ -4,6 +4,13 @@
 #include <memory>
 #include <mutex>
 #include <unordered_map>
+#include <list>
+
+struct MonsterInfo
+{
+	float posX, posY, posZ;
+	float rotationY;
+};
 
 namespace asio { class io_context; }
 class MonsterObject;
@@ -27,7 +34,7 @@ public:
 	std::mutex room_mutex;
 
 public:
-	Room(asio::io_context& io_context, int room_id);
+	Room(asio::io_context& io_context, int room_id, const std::list<MonsterInfo>& initMonsterInfo);
 	void addSession(std::shared_ptr<Session> session);
 	void update(float elapsedTime);
 

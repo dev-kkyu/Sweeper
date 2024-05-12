@@ -5,15 +5,17 @@
 
 #include <iostream>
 
-Room::Room(asio::io_context& io_context, int room_id)
+Room::Room(asio::io_context& io_context, int room_id, const std::list<MonsterInfo>& initMonsterInfo)
 	: io_context{ io_context }, monster_ids{ 0 }
 {
 	this->room_id = room_id;
 
 	// 버섯 생성
-	for (int i = 0; i < 10; ++i) {
+	for (const auto& info : initMonsterInfo) {
 		monsters.try_emplace(monster_ids, std::make_shared<MonsterObject>(this, monster_ids));
-		monsters[monster_ids]->setPosition({ -20.f + (i * -5.f), 0.f, 0.f });
+		// 유니티의 왼손 좌표계와 호환되도록 바꿔준다.
+		monsters[monster_ids]->setPosition({ -info.posX, info.posY, info.posZ });
+		monsters[monster_ids]->rotate(-info.rotationY);
 		++monster_ids;
 	}
 }
