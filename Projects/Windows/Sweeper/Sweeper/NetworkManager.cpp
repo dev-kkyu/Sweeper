@@ -34,6 +34,8 @@ NetworkManager& NetworkManager::getInstance()
 
 void NetworkManager::connectServer(std::string ipAddress)
 {
+	std::cout << "Connect To Server..." << std::endl;
+
 	asio::ip::tcp::endpoint endpoint(asio::ip::address::from_string(ipAddress), SERVER_PORT);
 	asio::error_code ec;
 	getSocket(p_socket).connect(endpoint, ec);		// connect는 비동기로 할 필요 없어보인다. 어차피 연결 안되면 바로 리턴됨.

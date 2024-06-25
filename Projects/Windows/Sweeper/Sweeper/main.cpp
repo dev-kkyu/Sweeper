@@ -23,6 +23,13 @@ static void packetCallback(unsigned char* packet);
 
 static void vulkanMain()
 {
+	std::string input;
+	std::cout << "Input Server Addr : ";
+	std::getline(std::cin, input);
+	std::string ipAddr = "127.0.0.1";
+	if (not input.empty())
+		ipAddr = std::move(input);
+
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -38,10 +45,11 @@ static void vulkanMain()
 	glfwSetCursorPosCallback(window, cursorPosCallback);
 
 	// vulkan 생성
+	std::cout << "Loading Vulkan..." << std::endl;
 	g_GameFramework.initVulkan(window);
 
 	// 네트워크 연결
-	NetworkManager::getInstance().connectServer("127.0.0.1");
+	NetworkManager::getInstance().connectServer(ipAddr);
 	NetworkManager::getInstance().setPacketReceivedCallback(packetCallback);	// Recv된 데이터 처리할 함수 설정
 	NetworkManager::getInstance().start(g_GameFramework.getPlayerType());		// 로그인 및 Recv 시작
 
