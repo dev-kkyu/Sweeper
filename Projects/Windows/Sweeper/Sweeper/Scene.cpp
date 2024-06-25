@@ -183,23 +183,23 @@ void Scene::processKeyboard(int key, int action, int mods)
 		switch (key)
 		{
 		case GLFW_KEY_W:
-			p.key = MY_KEY_EVENT::UP;
+			p.key = KEY_UP;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		case GLFW_KEY_A:
-			p.key = MY_KEY_EVENT::LEFT;
+			p.key = KEY_LEFT;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		case GLFW_KEY_S:
-			p.key = MY_KEY_EVENT::DOWN;
+			p.key = KEY_DOWN;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		case GLFW_KEY_D:
-			p.key = MY_KEY_EVENT::RIGHT;
+			p.key = KEY_RIGHT;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		case GLFW_KEY_SPACE:
-			p.key = MY_KEY_EVENT::SPACE;
+			p.key = KEY_SPACE;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		}
@@ -209,23 +209,23 @@ void Scene::processKeyboard(int key, int action, int mods)
 		switch (key)
 		{
 		case GLFW_KEY_W:
-			p.key = MY_KEY_EVENT::UP;
+			p.key = KEY_UP;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		case GLFW_KEY_A:
-			p.key = MY_KEY_EVENT::LEFT;
+			p.key = KEY_LEFT;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		case GLFW_KEY_S:
-			p.key = MY_KEY_EVENT::DOWN;
+			p.key = KEY_DOWN;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		case GLFW_KEY_D:
-			p.key = MY_KEY_EVENT::RIGHT;
+			p.key = KEY_RIGHT;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		case GLFW_KEY_SPACE:
-			p.key = MY_KEY_EVENT::SPACE;
+			p.key = KEY_SPACE;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		}
@@ -249,7 +249,7 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 			p.size = sizeof(p);
 			p.type = CS_KEY_EVENT;
 			p.is_pressed = true;
-			p.key = MY_KEY_EVENT::MOUSE_RIGHT;
+			p.key = KEY_MOUSE_RIGHT;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		}
@@ -272,7 +272,7 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 			p.size = sizeof(p);
 			p.type = CS_KEY_EVENT;
 			p.is_pressed = false;
-			p.key = MY_KEY_EVENT::MOUSE_RIGHT;
+			p.key = KEY_MOUSE_RIGHT;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		}
@@ -348,6 +348,11 @@ void Scene::processPacket(unsigned char* packet)
 		else
 			std::cout << int(p->player_id) << ": STATE 에러" << std::endl;
 		std::cout << int(p->player_id) << "의 상태가 " << ((p->state == PLAYER_STATE::RUN) ? "RUN" : (p->state == PLAYER_STATE::IDLE) ? "IDLE" : "ATTACK") << "로 변경" << std::endl;
+		break;
+	}
+	case SC_CLIENT_KEY_EVENT: {
+		auto p = reinterpret_cast<SC_CLIENT_KEY_EVENT_PACKET*>(packet);
+		pPlayers[p->player_id]->processKeyInput(p->key, p->is_pressed);
 		break;
 	}
 	case SC_ADD_MONSTER: {

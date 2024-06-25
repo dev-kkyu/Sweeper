@@ -29,3 +29,13 @@ void PlayerObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipeline
 void PlayerObject::release()
 {
 }
+
+void PlayerObject::processKeyInput(unsigned int key, bool is_pressed)
+{
+	if (is_pressed) {
+		keyState |= key;
+	}
+	else {
+		keyState &= ~key;
+	}
+}

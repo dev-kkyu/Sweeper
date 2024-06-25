@@ -149,28 +149,22 @@ bool Session::processPacket(unsigned char* packet)
 	}
 	case CS_KEY_EVENT: {
 		CS_KEY_EVENT_PACKET* p = reinterpret_cast<CS_KEY_EVENT_PACKET*>(packet);
-		switch (p->key)
-		{
-		case MY_KEY_EVENT::UP:
-			player->processKeyInput(KEY_UP, p->is_pressed);
-			break;
-		case MY_KEY_EVENT::DOWN:
-			player->processKeyInput(KEY_DOWN, p->is_pressed);
-			break;
-		case MY_KEY_EVENT::LEFT:
-			player->processKeyInput(KEY_LEFT, p->is_pressed);
-			break;
-		case MY_KEY_EVENT::RIGHT:
-			player->processKeyInput(KEY_RIGHT, p->is_pressed);
-			break;
-		case MY_KEY_EVENT::SPACE:
-			player->processKeyInput(KEY_SPACE, p->is_pressed);
-			break;
-		case MY_KEY_EVENT::MOUSE_RIGHT:
-			player->processKeyInput(KEY_MOUSE_RIGHT, p->is_pressed);
-			break;
-		}
+		player->processKeyInput(p->key, p->is_pressed);
 		std::cout << "Key Event 수신, ID: " << parentRoom->room_id << ":" << player_id << std::endl;
+
+		{	// 서버로 수신된 키 이벤트를 브로드캐스트 한다. (클라이언트 위치 보정용)
+			SC_CLIENT_KEY_EVENT_PACKET cp;
+			cp.size = sizeof(cp);
+			cp.type = SC_CLIENT_KEY_EVENT;
+			cp.player_id = player_id;
+			cp.key = p->key;
+			cp.is_pressed = p->is_pressed;
+
+			for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 키 이벤트를 브로드캐스트 한다
+				if (Room::isValidSession(s))
+					s->sendPacket(&cp);
+			}
+		}
 
 		if (player->getFixedState())	// 어떠한 상태에 빠져 있으면, 이벤트를 처리하지 않는다
 			break;

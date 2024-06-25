@@ -11,14 +11,22 @@ constexpr char SC_ADD_PLAYER = 4;
 constexpr char SC_MOVE_PLAYER = 5;
 constexpr char SC_PLAYER_LOOK = 6;
 constexpr char SC_PLAYER_STATE = 7;
-constexpr char SC_ADD_MONSTER = 8;
-constexpr char SC_MOVE_MONSTER = 9;
-constexpr char SC_MONSTER_LOOK = 10;
-constexpr char SC_REMOVE_MONSTER = 11;
-constexpr char SC_MONSTER_STATE = 12;
+constexpr char SC_CLIENT_KEY_EVENT = 8;
+constexpr char SC_ADD_MONSTER = 9;
+constexpr char SC_MOVE_MONSTER = 10;
+constexpr char SC_MONSTER_LOOK = 11;
+constexpr char SC_REMOVE_MONSTER = 12;
+constexpr char SC_MONSTER_STATE = 13;
 
 constexpr char CS_LOGIN = 1;
 constexpr char CS_KEY_EVENT = 2;
+
+#define KEY_UP			0x01
+#define KEY_DOWN		0x02
+#define KEY_LEFT		0x04
+#define KEY_RIGHT		0x08
+#define KEY_SPACE		0x10	// 사실 SPACE는 별도로 관리된다.
+#define KEY_MOUSE_RIGHT	0x20
 
 enum class PLAYER_TYPE : char
 {
@@ -26,16 +34,6 @@ enum class PLAYER_TYPE : char
 	ARCHER = 1,
 	MAGE = 2,
 	HEALER = 3,
-};
-
-enum class MY_KEY_EVENT : char
-{
-	UP = 0,
-	DOWN = 1,
-	LEFT = 2,
-	RIGHT = 3,
-	SPACE = 4,
-	MOUSE_RIGHT = 5
 };
 
 enum class PLAYER_STATE : char
@@ -122,6 +120,15 @@ struct SC_PLAYER_STATE_PACKET
 	PLAYER_STATE state;
 };
 
+struct SC_CLIENT_KEY_EVENT_PACKET
+{
+	unsigned char size;
+	char type;
+	char player_id;
+	bool is_pressed;
+	unsigned char key;
+};
+
 struct SC_ADD_MONSTER_PACKET
 {
 	unsigned char size;
@@ -180,7 +187,7 @@ struct CS_KEY_EVENT_PACKET
 	unsigned char size;
 	char type;
 	bool is_pressed;
-	MY_KEY_EVENT key;
+	unsigned char key;
 };
 
 #pragma pack(pop)

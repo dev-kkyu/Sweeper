@@ -226,6 +226,7 @@ void GameFramework::processPacket(unsigned char* packet)
 	case SC_MOVE_PLAYER:
 	case SC_PLAYER_LOOK:
 	case SC_PLAYER_STATE:
+	case SC_CLIENT_KEY_EVENT:
 	case SC_ADD_MONSTER:
 	case SC_MOVE_MONSTER:
 	case SC_MONSTER_LOOK:
