@@ -1,24 +1,9 @@
 #include "PlayerObject.h"
 
-#include <iostream>
-
-#define CLIP_IDLE			19
-#define CLIP_RUN			24
-#define CLIP_ATTACK_KNIFE	10
+#include "NetworkManager.h"		// 마우스 회전 전송을 위함
 
 PlayerObject::PlayerObject()
 {
-	my_id = -1;
-
-	state = PLAYER_STATE::IDLE;
-
-	moveSpeed = PLAYER_SPEED;							// 초당 이동속도 5m
-}
-
-PlayerObject::PlayerObject(int player_id)
-	: PlayerObject{}
-{
-	my_id = player_id;
 }
 
 PlayerObject::~PlayerObject()
@@ -43,29 +28,4 @@ void PlayerObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipeline
 
 void PlayerObject::release()
 {
-}
-
-void PlayerObject::setPlayerID(int player_id)
-{
-	my_id = player_id;
-}
-
-void PlayerObject::setPlayerState(PLAYER_STATE state)
-{
-	this->state = state;
-
-	if (state == PLAYER_STATE::IDLE)
-		setAnimationClip(CLIP_IDLE);
-	else if (state == PLAYER_STATE::RUN)
-		setAnimationClip(CLIP_RUN);
-	else if (state == PLAYER_STATE::ATTACK)
-		setAnimationClip(CLIP_ATTACK_KNIFE);
-	else
-		std::cout << int(my_id) << ": STATE 에러" << std::endl;
-	std::cout << int(my_id) << "의 상태가 " << ((state == PLAYER_STATE::RUN) ? "RUN" : (state == PLAYER_STATE::IDLE) ? "IDLE" : "ATTACK") << "로 변경" << std::endl;
-}
-
-PLAYER_STATE PlayerObject::getPlayerState() const
-{
-	return state;
 }

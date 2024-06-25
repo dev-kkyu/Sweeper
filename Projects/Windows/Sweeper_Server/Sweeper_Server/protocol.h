@@ -4,8 +4,6 @@
 #define BUFF_SIZE		1024
 #define MAX_ROOM		500
 
-constexpr float PLAYER_SPEED = 5.f;
-
 constexpr char SC_LOGIN_INFO = 1;
 constexpr char SC_LOGOUT = 2;
 constexpr char SC_LOGIN_FAIL = 3;

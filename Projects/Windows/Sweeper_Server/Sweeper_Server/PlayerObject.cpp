@@ -11,7 +11,7 @@
 PlayerObject::PlayerObject(Room* parentRoom, int p_id)
 	: GameObjectBase{ parentRoom, p_id }
 {
-	moveSpeed = PLAYER_SPEED;							// 초당 이동속도 5m
+	moveSpeed = 5.f;							// 초당 이동속도 5m
 
 	gravity = 25.f;								// 중력을 이것으로 조정해 준다.
 	jumpSpeed = glm::sqrt(2.f * gravity * 1.f);	// 최대 높이 1m
