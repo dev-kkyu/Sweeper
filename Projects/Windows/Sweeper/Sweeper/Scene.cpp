@@ -6,10 +6,6 @@
 
 #include "NetworkManager.h"
 
-#define CLIP_IDLE			19
-#define CLIP_RUN			24
-#define CLIP_ATTACK_KNIFE	10
-
 Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }
 {
@@ -56,7 +52,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 		pMyPlayer = std::make_shared<PlayerObject>();		// Todo : 추후 타입에 따라 다르게 생성
 		pMyPlayer->initModel(playerModel[static_cast<int>(player_type)], descriptorSetLayout.ssbo);
 		pMyPlayer->setScale(glm::vec3(1.3f));
-		pMyPlayer->setAnimationClip(CLIP_IDLE);	// Idle
+		pMyPlayer->setPlayerState(PLAYER_STATE::IDLE);	// Idle
 		camera.setPlayer(pMyPlayer);
 	}
 
@@ -303,6 +299,7 @@ void Scene::processPacket(unsigned char* packet)
 		std::cout << "로그인 패킷 수신, ROOM:ID->[" << int(p->room_id) << ":" << int(p->player_id) << "]\n";
 		// 룸 ID는 아직 사용하지 않음
 		my_id = p->player_id;
+		pMyPlayer->setPlayerID(my_id);
 		pMyPlayer->setPosition(glm::vec3(p->pos_x, 0.f, p->pos_z));
 		pMyPlayer->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
 		pPlayers[my_id] = pMyPlayer;
@@ -318,10 +315,10 @@ void Scene::processPacket(unsigned char* packet)
 	case SC_ADD_PLAYER: {
 		auto p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
 		std::cout << "플레이어 추가 패킷 수신 ID:[" << int(p->player_id) << "]\n";
-		pPlayers[p->player_id] = std::make_shared<PlayerObject>();		// Todo : 추후 타입에 따라 다르게 생성
+		pPlayers[p->player_id] = std::make_shared<PlayerObject>(p->player_id);		// Todo : 추후 타입에 따라 다르게 생성
 		pPlayers[p->player_id]->initModel(playerModel[static_cast<int>(p->player_type)], descriptorSetLayout.ssbo);
 		pPlayers[p->player_id]->setScale(glm::vec3(1.3f));
-		pPlayers[p->player_id]->setAnimationClip(CLIP_IDLE);
+		pPlayers[p->player_id]->setPlayerState(PLAYER_STATE::IDLE);
 		pPlayers[p->player_id]->setPosition(glm::vec3(p->pos_x, 0.f, p->pos_z));
 		pPlayers[p->player_id]->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
 		break;
@@ -339,15 +336,7 @@ void Scene::processPacket(unsigned char* packet)
 	}
 	case SC_PLAYER_STATE: {
 		auto p = reinterpret_cast<SC_PLAYER_STATE_PACKET*>(packet);
-		if (p->state == PLAYER_STATE::IDLE)
-			pPlayers[p->player_id]->setAnimationClip(CLIP_IDLE);
-		else if (p->state == PLAYER_STATE::RUN)
-			pPlayers[p->player_id]->setAnimationClip(CLIP_RUN);
-		else if (p->state == PLAYER_STATE::ATTACK)
-			pPlayers[p->player_id]->setAnimationClip(CLIP_ATTACK_KNIFE);
-		else
-			std::cout << int(p->player_id) << ": STATE 에러" << std::endl;
-		std::cout << int(p->player_id) << "의 상태가 " << ((p->state == PLAYER_STATE::RUN) ? "RUN" : (p->state == PLAYER_STATE::IDLE) ? "IDLE" : "ATTACK") << "로 변경" << std::endl;
+		pPlayers[p->player_id]->setPlayerState(p->state);
 		break;
 	}
 	case SC_ADD_MONSTER: {
