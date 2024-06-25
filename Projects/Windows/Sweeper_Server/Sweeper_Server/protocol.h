@@ -21,6 +21,8 @@ constexpr char SC_MONSTER_STATE = 13;
 constexpr char CS_LOGIN = 1;
 constexpr char CS_KEY_EVENT = 2;
 
+constexpr float PLAYER_SPEED = 5.f;
+
 #define KEY_UP			0x01
 #define KEY_DOWN		0x02
 #define KEY_LEFT		0x04
