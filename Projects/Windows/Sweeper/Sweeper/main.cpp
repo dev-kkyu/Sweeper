@@ -216,6 +216,8 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	// 일반적으로 yoffset만 유효. 음수(down) or 양수(up). -1, 1이 나오는 것 같다
+
+	g_GameFramework.processMouseScroll(xoffset, yoffset);
 }
 
 void cursorPosCallback(GLFWwindow* window, double xpos, double ypos)

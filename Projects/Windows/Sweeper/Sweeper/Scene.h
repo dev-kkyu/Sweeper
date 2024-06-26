@@ -74,6 +74,7 @@ public:
 
 	void processKeyboard(int key, int action, int mods);
 	void processMouseButton(int button, int action, int mods, float xpos, float ypos);
+	void processMouseScroll(double xoffset, double yoffset);
 	void processMouseCursor(float xpos, float ypos);
 
 	// 匙飘况农 菩哦 贸府

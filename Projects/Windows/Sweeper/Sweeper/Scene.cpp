@@ -283,6 +283,10 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 	}
 }
 
+void Scene::processMouseScroll(double xoffset, double yoffset)
+{
+}
+
 void Scene::processMouseCursor(float xpos, float ypos)
 {
 	if (middleButtonPressed) {

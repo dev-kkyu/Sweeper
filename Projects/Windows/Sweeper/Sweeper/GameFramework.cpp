@@ -209,6 +209,12 @@ void GameFramework::processMouseButton(int button, int action, int mods, float x
 		pScene->processMouseButton(button, action, mods, xpos, ypos);
 }
 
+void GameFramework::processMouseScroll(double xoffset, double yoffset)
+{
+	if (pScene)
+		pScene->processMouseScroll(xoffset, yoffset);
+}
+
 void GameFramework::processMouseCursor(float xpos, float ypos)
 {
 	if (pScene)
