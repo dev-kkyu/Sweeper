@@ -24,27 +24,29 @@ void PlayerObject::update(float elapsedTime, uint32_t currentFrame)
 	GLTFSkinModelObject::update(elapsedTime, currentFrame);
 
 	// 클라이언트에서 플레이어 이동 보정
-	glm::vec3 direction{};
-	if (keyState & KEY_UP) direction.z += 1.f;
-	if (keyState & KEY_DOWN) direction.z -= 1.f;
-	if (keyState & KEY_LEFT) direction.x += 1.f;
-	if (keyState & KEY_RIGHT) direction.x -= 1.f;
-	if (glm::length(direction) >= glm::epsilon<float>()) {
-		glm::vec3 look = getLook();
-		glm::vec3 dir = glm::normalize(direction);
-		glm::vec3 crossProduct = glm::cross(look, dir);
-		float radianAngle = glm::angle(look, dir);				// 0 ~ pi (예각으로 나온다)
+	if (24 == activeAnimation) {	// RUN Animation 일 때만(24) 이동보정 (추후 수정 필요)
+		glm::vec3 direction{};
+		if (keyState & KEY_UP) direction.z += 1.f;
+		if (keyState & KEY_DOWN) direction.z -= 1.f;
+		if (keyState & KEY_LEFT) direction.x += 1.f;
+		if (keyState & KEY_RIGHT) direction.x -= 1.f;
+		if (glm::length(direction) >= glm::epsilon<float>()) {
+			glm::vec3 look = getLook();
+			glm::vec3 dir = glm::normalize(direction);
+			glm::vec3 crossProduct = glm::cross(look, dir);
+			float radianAngle = glm::angle(look, dir);				// 0 ~ pi (예각으로 나온다)
 
-		float rotateSign = 1.f;
-		if (crossProduct.y < 0.f)								// 시계방향으로 돌지 반시계방향으로 돌지 정해준다
-			rotateSign = -1.f;
+			float rotateSign = 1.f;
+			if (crossProduct.y < 0.f)								// 시계방향으로 돌지 반시계방향으로 돌지 정해준다
+				rotateSign = -1.f;
 
-		float angleOffset = radianAngle / glm::pi<float>();		// 각도에 따라 0.f ~ 1.f
-		float rotateSpeed = glm::max(angleOffset / 2.f, 0.2f) * elapsedTime * 30.f;		// 기본 값은 0.f ~ 0.5f이고, 최소값은 0.2f
+			float angleOffset = radianAngle / glm::pi<float>();		// 각도에 따라 0.f ~ 1.f
+			float rotateSpeed = glm::max(angleOffset / 2.f, 0.2f) * elapsedTime * 30.f;		// 기본 값은 0.f ~ 0.5f이고, 최소값은 0.2f
 
-		rotate(glm::degrees(radianAngle * rotateSign) * rotateSpeed);
+			rotate(glm::degrees(radianAngle * rotateSign) * rotateSpeed);
 
-		move(dir, elapsedTime * PLAYER_SPEED * (1.f - angleOffset));	// 현재 회전 방향에 따른 속도 조절
+			move(dir, elapsedTime * PLAYER_SPEED * (1.f - angleOffset));	// 현재 회전 방향에 따른 속도 조절
+		}
 	}
 }
 
