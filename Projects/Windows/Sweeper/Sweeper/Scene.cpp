@@ -351,22 +351,26 @@ void Scene::processPacket(unsigned char* packet)
 		switch (p->state) {
 		case PLAYER_STATE::IDLE:
 			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_IDLE);
+			state = "IDLE";
 			break;
 		case PLAYER_STATE::RUN:
 			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_RUN);
+			state = "RUN";
 			break;
 		case PLAYER_STATE::DASH:
 			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_DASH);
+			state = "DASH";
 			break;
 		case PLAYER_STATE::ATTACK:
 			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_ATTACK_KNIFE);
+			state = "ATTACK";
 			break;
 		default:
 			std::cout << int(p->player_id) << ": STATE 에러" << std::endl;
 			break;
 		}
 		if (not state.empty())
-			std::cout << int(p->player_id) << "의 상태가 " << state << "로 변경" << std::endl;
+			std::cout << "PLAYER[" << int(p->player_id) << "]의 상태가 " << state << "로 변경" << std::endl;
 		break;
 	}
 	case SC_CLIENT_KEY_EVENT: {
