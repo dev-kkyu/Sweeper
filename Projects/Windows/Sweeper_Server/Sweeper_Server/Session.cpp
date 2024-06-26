@@ -173,7 +173,7 @@ bool Session::processPacket(unsigned char* packet)
 		nowState &= ~KEY_SPACE;		// 스페이스(점프)는 상태변화에 영향을 주지 않는다
 
 		// 마우스 버튼이 입력됐다면
-		if (nowState & KEY_MOUSE_RIGHT) {		// 한 번 클릭에 한 번 동작된다
+		if (nowState & MOUSE_LEFT) {		// 한 번 클릭에 한 번 동작된다
 			// 공격 중임을 플레이어에게 알려준다. (공격 충돌검사용)
 			player->setAttackStart();
 
@@ -200,7 +200,7 @@ bool Session::processPacket(unsigned char* packet)
 						p.size = sizeof(p);
 						p.type = SC_PLAYER_STATE;
 						p.player_id = player_id;
-						if (player->getKeyState() & ~KEY_SPACE & ~KEY_MOUSE_RIGHT) {
+						if (player->getKeyState() & ~KEY_SPACE & ~MOUSE_LEFT) {
 							p.state = PLAYER_STATE::RUN;
 							isRun = true;
 						}

@@ -236,20 +236,20 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 	case GLFW_PRESS:
 		switch (button)
 		{
-		case GLFW_MOUSE_BUTTON_LEFT:
-			leftButtonPressed = true;
-			camera.setStartMousePos(xpos, ypos);			// 위아래 회전용 (위아래 회전은 플레이어 방향에 영향을 주지 않는다)
-			break;
-		case GLFW_MOUSE_BUTTON_RIGHT: {
+		case GLFW_MOUSE_BUTTON_LEFT: {
 			CS_KEY_EVENT_PACKET p;
 			p.size = sizeof(p);
 			p.type = CS_KEY_EVENT;
 			p.is_pressed = true;
-			p.key = KEY_MOUSE_RIGHT;
+			p.key = MOUSE_LEFT;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		}
+		case GLFW_MOUSE_BUTTON_RIGHT:
+			break;
 		case GLFW_MOUSE_BUTTON_MIDDLE:
+			middleButtonPressed = true;
+			camera.setStartMousePos(xpos, ypos);			// 위아래 회전용 (위아래 회전은 플레이어 방향에 영향을 주지 않는다)
 			break;
 		case GLFW_MOUSE_BUTTON_4:
 			break;
@@ -260,19 +260,19 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 	case GLFW_RELEASE:
 		switch (button)
 		{
-		case GLFW_MOUSE_BUTTON_LEFT:
-			leftButtonPressed = false;
-			break;
-		case GLFW_MOUSE_BUTTON_RIGHT: {
+		case GLFW_MOUSE_BUTTON_LEFT: {
 			CS_KEY_EVENT_PACKET p;
 			p.size = sizeof(p);
 			p.type = CS_KEY_EVENT;
 			p.is_pressed = false;
-			p.key = KEY_MOUSE_RIGHT;
+			p.key = MOUSE_LEFT;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		}
+		case GLFW_MOUSE_BUTTON_RIGHT:
+			break;
 		case GLFW_MOUSE_BUTTON_MIDDLE:
+			middleButtonPressed = false;
 			break;
 		case GLFW_MOUSE_BUTTON_4:
 			break;
@@ -285,7 +285,7 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 
 void Scene::processMouseCursor(float xpos, float ypos)
 {
-	if (leftButtonPressed) {
+	if (middleButtonPressed) {
 		camera.processMouseCursor(xpos, ypos);
 	}
 }
@@ -335,15 +335,26 @@ void Scene::processPacket(unsigned char* packet)
 	}
 	case SC_PLAYER_STATE: {
 		auto p = reinterpret_cast<SC_PLAYER_STATE_PACKET*>(packet);
-		if (p->state == PLAYER_STATE::IDLE)
+		std::string state;
+		switch (p->state) {
+		case PLAYER_STATE::IDLE:
 			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_IDLE);
-		else if (p->state == PLAYER_STATE::RUN)
+			break;
+		case PLAYER_STATE::RUN:
 			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_RUN);
-		else if (p->state == PLAYER_STATE::ATTACK)
+			break;
+		case PLAYER_STATE::DASH:
+			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_DASH);
+			break;
+		case PLAYER_STATE::ATTACK:
 			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_ATTACK_KNIFE);
-		else
+			break;
+		default:
 			std::cout << int(p->player_id) << ": STATE 에러" << std::endl;
-		std::cout << int(p->player_id) << "의 상태가 " << ((p->state == PLAYER_STATE::RUN) ? "RUN" : (p->state == PLAYER_STATE::IDLE) ? "IDLE" : "ATTACK") << "로 변경" << std::endl;
+			break;
+		}
+		if (not state.empty())
+			std::cout << int(p->player_id) << "의 상태가 " << state << "로 변경" << std::endl;
 		break;
 	}
 	case SC_CLIENT_KEY_EVENT: {

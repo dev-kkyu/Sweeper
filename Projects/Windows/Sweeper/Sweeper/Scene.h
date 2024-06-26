@@ -63,7 +63,7 @@ private:
 	Camera camera;
 
 	unsigned int keyState;
-	bool leftButtonPressed = false;
+	bool middleButtonPressed = false;
 
 public:
 	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet);

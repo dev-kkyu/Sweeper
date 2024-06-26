@@ -4,6 +4,7 @@
 
 #define PLAYER_CLIP_IDLE			19
 #define PLAYER_CLIP_RUN				24
+#define PLAYER_CLIP_DASH			7
 #define PLAYER_CLIP_ATTACK_KNIFE	10
 
 class PlayerObject : public GLTFSkinModelObject
