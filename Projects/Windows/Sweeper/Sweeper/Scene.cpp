@@ -6,10 +6,6 @@
 
 #include "NetworkManager.h"
 
-#define CLIP_IDLE			19
-#define CLIP_RUN			24
-#define CLIP_ATTACK_KNIFE	10
-
 Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }
 {
@@ -56,7 +52,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 		pMyPlayer = std::make_shared<PlayerObject>();		// Todo : 추후 타입에 따라 다르게 생성
 		pMyPlayer->initModel(playerModel[static_cast<int>(player_type)], descriptorSetLayout.ssbo);
 		pMyPlayer->setScale(glm::vec3(1.3f));
-		pMyPlayer->setAnimationClip(CLIP_IDLE);	// Idle
+		pMyPlayer->setAnimationClip(PLAYER_CLIP_IDLE);	// Idle
 		camera.setPlayer(pMyPlayer);
 	}
 
@@ -321,7 +317,7 @@ void Scene::processPacket(unsigned char* packet)
 		pPlayers[p->player_id] = std::make_shared<PlayerObject>();		// Todo : 추후 타입에 따라 다르게 생성
 		pPlayers[p->player_id]->initModel(playerModel[static_cast<int>(p->player_type)], descriptorSetLayout.ssbo);
 		pPlayers[p->player_id]->setScale(glm::vec3(1.3f));
-		pPlayers[p->player_id]->setAnimationClip(CLIP_IDLE);
+		pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_IDLE);
 		pPlayers[p->player_id]->setPosition(glm::vec3(p->pos_x, 0.f, p->pos_z));
 		pPlayers[p->player_id]->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
 		break;
@@ -340,11 +336,11 @@ void Scene::processPacket(unsigned char* packet)
 	case SC_PLAYER_STATE: {
 		auto p = reinterpret_cast<SC_PLAYER_STATE_PACKET*>(packet);
 		if (p->state == PLAYER_STATE::IDLE)
-			pPlayers[p->player_id]->setAnimationClip(CLIP_IDLE);
+			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_IDLE);
 		else if (p->state == PLAYER_STATE::RUN)
-			pPlayers[p->player_id]->setAnimationClip(CLIP_RUN);
+			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_RUN);
 		else if (p->state == PLAYER_STATE::ATTACK)
-			pPlayers[p->player_id]->setAnimationClip(CLIP_ATTACK_KNIFE);
+			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_ATTACK_KNIFE);
 		else
 			std::cout << int(p->player_id) << ": STATE 에러" << std::endl;
 		std::cout << int(p->player_id) << "의 상태가 " << ((p->state == PLAYER_STATE::RUN) ? "RUN" : (p->state == PLAYER_STATE::IDLE) ? "IDLE" : "ATTACK") << "로 변경" << std::endl;
@@ -357,7 +353,7 @@ void Scene::processPacket(unsigned char* packet)
 	}
 	case SC_ADD_MONSTER: {
 		auto p = reinterpret_cast<SC_ADD_MONSTER_PACKET*>(packet);
-		pMonsterObjects.try_emplace(p->monster_id, std::make_shared<GLTFSkinModelObject>());
+		pMonsterObjects.try_emplace(p->monster_id, std::make_shared<MonsterObject>());
 		pMonsterObjects[p->monster_id]->initModel(mushroomModel, descriptorSetLayout.ssbo);
 		pMonsterObjects[p->monster_id]->setPosition({ p->pos_x, 0.f, p->pos_z });
 		pMonsterObjects[p->monster_id]->setLook({ p->dir_x, 0.f, p->dir_z });

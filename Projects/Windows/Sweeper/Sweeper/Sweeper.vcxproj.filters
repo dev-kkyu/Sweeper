@@ -34,6 +34,9 @@
     <Filter Include="GameObjectBase\GLTFSkinModelObject\PlayerObject">
       <UniqueIdentifier>{88c3c3cc-0a89-428e-bb44-e38f6d3e0c07}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObjectBase\GLTFSkinModelObject\MonsterObject">
+      <UniqueIdentifier>{751bad93-cb8e-4d3a-ab03-e6e5e94ffd55}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -78,6 +81,9 @@
     <ClCompile Include="NetworkManager.cpp">
       <Filter>NetworkManager</Filter>
     </ClCompile>
+    <ClCompile Include="MonsterObject.cpp">
+      <Filter>GameObjectBase\GLTFSkinModelObject\MonsterObject</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObjectBase.h">
@@ -118,6 +124,9 @@
     </ClInclude>
     <ClInclude Include="NetworkManager.h">
       <Filter>NetworkManager</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterObject.h">
+      <Filter>GameObjectBase\GLTFSkinModelObject\MonsterObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

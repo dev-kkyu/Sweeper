@@ -2,25 +2,23 @@
 
 #include "GLTFSkinModelObject.h"
 
-#define PLAYER_CLIP_IDLE			19
-#define PLAYER_CLIP_RUN				24
-#define PLAYER_CLIP_ATTACK_KNIFE	10
+#define MONSTER_CLIP_IDLE	0
+#define MONSTER_CLIP_MOVE	1
+#define MONSTER_CLIP_HIT	2
+#define MONSTER_CLIP_DIE	3
+#define MONSTER_CLIP_ATTACK	4
 
-class PlayerObject : public GLTFSkinModelObject
+class MonsterObject : public GLTFSkinModelObject
 {
-private:
-	// 키가 눌려진 상태를 종합한다.
-	unsigned int keyState = 0;
 
 public:
-	PlayerObject();
-	virtual ~PlayerObject();
+	MonsterObject();
+	virtual ~MonsterObject();
 
 	virtual void initialize() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void release() override;
 
-	void processKeyInput(unsigned int key, bool is_pressed);
-
 };
+

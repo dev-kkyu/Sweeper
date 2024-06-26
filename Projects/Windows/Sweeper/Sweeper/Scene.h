@@ -2,10 +2,11 @@
 
 #include <unordered_map>
 
-#include "OBJModelObject.h"
+//#include "OBJModelObject.h"
 #include "PlayerObject.h"
+#include "MonsterObject.h"
 #include "GLTFModelObject.h"
-//#include "GLTFSkinModelObject.h"	// included PlayerObject
+//#include "GLTFSkinModelObject.h"	// included PlayerObject, MonsterObject
 #include "Camera.h"
 
 #include "NetworkManager.h"
@@ -47,7 +48,7 @@ private:
 
 	// gltf skin 몬스터 모델들
 	VulkanGLTFSkinModel mushroomModel;
-	std::unordered_map<int, std::shared_ptr<GLTFSkinModelObject>> pMonsterObjects;	// 다형성을 위한 포인터 사용
+	std::unordered_map<int, std::shared_ptr<MonsterObject>> pMonsterObjects;	// 다형성을 위한 포인터 사용
 
 	VulkanGLTFSkinModel bossModel;
 	GLTFSkinModelObject bossObject;
