@@ -3,11 +3,73 @@
 #include "GameObjectBase.h"
 #include <chrono>
 
+#include "protocol.h"	// PLAYER_STATE
+
+class PlayerObject;
+class StateMachine
+{
+protected:
+	PLAYER_STATE state;
+	PlayerObject& player;
+
+public:
+	StateMachine(PlayerObject& player);
+	virtual ~StateMachine() = default;
+
+	virtual void enter() const final;
+	virtual void update(float elapsedTime) = 0;
+	virtual void exit() const final;
+	virtual PLAYER_STATE getState() const final;
+};
+
+class IDLEState : public StateMachine
+{
+public:
+	IDLEState(PlayerObject& player);
+	virtual ~IDLEState();
+
+	virtual void update(float elapsedTime) override;
+};
+
+class RUNState : public StateMachine
+{
+public:
+	RUNState(PlayerObject& player);
+	virtual ~RUNState();
+
+	virtual void update(float elapsedTime) override;
+};
+
+class DASHState : public StateMachine
+{
+public:
+	DASHState(PlayerObject& player);
+	virtual ~DASHState();
+
+	virtual void update(float elapsedTime) override;
+};
+
+class AttackState : public StateMachine
+{
+public:
+	AttackState(PlayerObject& player);
+	virtual ~AttackState();
+
+	virtual void update(float elapsedTime) override;
+};
+
 class PlayerObject : public GameObjectBase
 {
+	friend class StateMachine;
+	friend class IDLEState;
+	friend class RUNState;
+	friend class DASHState;
+	friend class AttackState;
+
 private:
-	// 고정 상태인 경우 움직이지 않는다
-	bool isFixedState = false;
+	// 상태 관리
+	std::unique_ptr<StateMachine> currentState;
+	std::unique_ptr<StateMachine> nextState;
 
 	// 키가 눌려진 상태를 종합한다.
 	unsigned int keyState = 0;
@@ -23,7 +85,6 @@ private:
 	float velocity;			// 현재 수직 속도
 
 	// 공격 관련 변수
-	bool isAttack = false;
 	std::chrono::steady_clock::time_point attackBeginTime;
 
 public:
@@ -36,8 +97,7 @@ public:
 	virtual void onHit(const GameObjectBase& other) override;
 
 	unsigned int getKeyState() const;
-	bool getFixedState() const;
-	void setFixedState(bool state);
+
 	void setAttackStart();
 
 	void processKeyInput(unsigned int key, bool is_pressed);
