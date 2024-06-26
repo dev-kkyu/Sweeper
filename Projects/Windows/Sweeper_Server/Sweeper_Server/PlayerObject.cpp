@@ -201,9 +201,7 @@ void AttackState::update(float elapsedTime)
 			float dist2 = (myPos.x - monPos.x) * (myPos.x - monPos.x) + (myPos.z - monPos.z) * (myPos.z - monPos.z);
 			if (dist2 <= 1.5f) {	// 충돌
 				m.second->onHit(player);
-				player.nextState = std::make_unique<IDLEState>(player);
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
-				break;
 			}
 		}
 	}

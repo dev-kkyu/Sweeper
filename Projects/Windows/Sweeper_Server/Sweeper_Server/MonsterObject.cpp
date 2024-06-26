@@ -13,6 +13,8 @@ MonsterObject::MonsterObject(Room* parentRoom, int m_id)
 	hp = 300;
 
 	collisionRadius = 0.4f;
+
+	attackBeginTime = std::chrono::steady_clock::now();
 }
 
 MonsterObject::~MonsterObject()
@@ -127,6 +129,9 @@ void MonsterObject::release()
 void MonsterObject::onHit(const GameObjectBase& other)
 {
 	// player의 update에서 호출될 예정이므로, 락X (업데이트 전에 락 걸기 때문)
+
+	// 중복 피격 방지시간 0.5초
+	if (attackBeginTime + std::chrono::milliseconds{ 500 } <= std::chrono::steady_clock::now())
 	{
 		hp -= 100;
 		attackBeginTime = std::chrono::steady_clock::now();
