@@ -285,6 +285,14 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 
 void Scene::processMouseScroll(double xoffset, double yoffset)
 {
+	float distance = camera.getDistance();
+	if (yoffset > 0.f) {
+		if (distance > 4.f)
+			camera.setDistance(distance - 1.f);
+	}
+	else if (yoffset < 0.f) {
+		camera.setDistance(distance + 1.f);
+	}
 }
 
 void Scene::processMouseCursor(float xpos, float ypos)

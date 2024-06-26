@@ -36,6 +36,9 @@ public:
 	glm::mat4 getView() const;
 	glm::mat4 getProjection() const;
 
+	void setDistance(float distance);
+	float getDistance() const;
+
 	void setStartMousePos(float xpos, float ypos);
 	void processMouseCursor(float xpos, float ypos);
 

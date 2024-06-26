@@ -44,6 +44,16 @@ glm::mat4 Camera::getProjection() const
 	return projectionTransform;
 }
 
+void Camera::setDistance(float distance)
+{
+	distanceFromPlayer = distance;
+}
+
+float Camera::getDistance() const
+{
+	return distanceFromPlayer;
+}
+
 void Camera::setStartMousePos(float xpos, float ypos)
 {
 	startXpos = xpos;
@@ -58,5 +68,5 @@ void Camera::processMouseCursor(float xpos, float ypos)
 	startYpos = ypos;
 
 	pitchAngle -= moveY * 40.f;
-	pitchAngle = glm::clamp(pitchAngle, -15.f, 75.f);
+	pitchAngle = glm::clamp(pitchAngle, -30.f, 89.99f);
 }
