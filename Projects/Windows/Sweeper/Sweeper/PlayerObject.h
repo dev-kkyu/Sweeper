@@ -19,6 +19,13 @@ private:
 	float acceleration;		// 현재 가속도
 	glm::vec3 lastDirection;	// 움직이던 방향 (키를 뗐을 때 갈 방향, xz만 사용)
 
+	bool dashFlag;				// Dash 시작 여부 판단
+	// 이 변수들은 서버와 동기화 필요
+	int dashAccFlag;			// 가속 플래그 (증가, 감소)
+	float dashMaxMoveSpeed;		// 최대 속도
+	float dashMoveSpeed;		// 현재 속도
+	float dashAcceleration;		// 현재 가속도
+
 public:
 	PlayerObject();
 	virtual ~PlayerObject();
