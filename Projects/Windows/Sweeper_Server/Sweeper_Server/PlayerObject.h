@@ -35,6 +35,13 @@ public:
 
 class RUNState : public StateMachine
 {
+private:
+	// 움직이는 속도	// 값은 생성자에서
+	float maxMoveSpeed;		// 최대 속도
+	float moveSpeed;		// 현재 속도
+	float acceleration;		// 현재 가속도
+	glm::vec3 lastDirection;	// 움직이던 방향 (키를 뗐을 때 갈 방향, xz만 사용)
+
 public:
 	RUNState(PlayerObject& player);
 	virtual ~RUNState() = default;
@@ -42,6 +49,10 @@ public:
 	virtual void enter() override;
 	virtual void update(float elapsedTime) override;
 	virtual void exit() override;
+
+private:
+	void rotateAndMoveToDirection(const glm::vec3& direction, float elapsedTime);
+
 };
 
 class DASHState : public StateMachine
@@ -86,12 +97,6 @@ private:
 	// 키가 눌려진 상태를 종합한다.
 	unsigned int keyState = 0;
 
-	// 움직이는 속도	// 값은 생성자에서
-	float maxMoveSpeed;		// 최대 속도
-	float moveSpeed;		// 현재 속도
-	float acceleration;		// 현재 가속도
-	glm::vec3 lastDirection;	// 움직이던 방향 (키를 뗐을 때 갈 방향, xz만 사용)
-
 	// 점프 관련 변수
 	bool runJump = false;
 	// 값은 생성자에서 넣어준다.
@@ -111,8 +116,5 @@ public:
 	unsigned int getKeyState() const;
 
 	void processKeyInput(unsigned int key, bool is_pressed);
-
-private:
-	void rotateAndMoveToDirection(const glm::vec3& direction, float elapsedTime);
 
 };

@@ -98,6 +98,10 @@ RUNState::RUNState(PlayerObject& player)
 	: StateMachine{ player }
 {
 	state = PLAYER_STATE::RUN;
+
+	maxMoveSpeed = PLAYER_SPEED;				// 초당 이동속도 5m
+	moveSpeed = 0.f;
+	acceleration = 25.f;
 }
 
 void RUNState::enter()
@@ -118,9 +122,9 @@ void RUNState::update(float elapsedTime)
 			player.keyState & KEY_LEFT or player.keyState & KEY_RIGHT;
 		if (isKeyOn) {
 			// 가속도 적용
-			player.moveSpeed += player.acceleration * elapsedTime;
-			if (player.moveSpeed > player.maxMoveSpeed)
-				player.moveSpeed = player.maxMoveSpeed;
+			moveSpeed += acceleration * elapsedTime;
+			if (moveSpeed > maxMoveSpeed)
+				moveSpeed = maxMoveSpeed;
 
 			glm::vec3 direction{ 0.f };
 			if (player.keyState & KEY_UP) direction.z += 1.f;
@@ -128,12 +132,12 @@ void RUNState::update(float elapsedTime)
 			if (player.keyState & KEY_LEFT) direction.x += 1.f;
 			if (player.keyState & KEY_RIGHT) direction.x -= 1.f;
 
-			player.lastDirection = direction;
+			lastDirection = direction;
 		}
 		else {	// 키가 떼졌을 때
-			player.moveSpeed -= player.acceleration * elapsedTime;
-			if (player.moveSpeed < 0.f) {
-				player.moveSpeed = 0.f;
+			moveSpeed -= acceleration * elapsedTime;
+			if (moveSpeed < 0.f) {
+				moveSpeed = 0.f;
 				// 키가 떼지고 속도가 0이 되면 IDLE로 바뀐다.
 				player.nextState = std::make_unique<IDLEState>(player);
 			}
@@ -141,7 +145,7 @@ void RUNState::update(float elapsedTime)
 
 		//move(direction, elapsedTime * moveSpeed);
 		// 입력된 방향으로 플레이어 방향을 점차 바꾸면서, 해당 방향으로 전진한다
-		player.rotateAndMoveToDirection(player.lastDirection, elapsedTime);
+		rotateAndMoveToDirection(lastDirection, elapsedTime);
 
 		// 이동 후 충돌처리
 		// 플레이어끼리
@@ -154,7 +158,7 @@ void RUNState::update(float elapsedTime)
 					glm::vec3 otherPos = player.parentRoom->sessions[i]->player->getPosition();
 					glm::vec3 dir = myPos - otherPos;
 					dir.y = 0.f;
-					player.move(dir, elapsedTime * player.moveSpeed);	// 움직인 방향과 무관하게, 상대와 나의 방향벡터를 구하면 슬라이딩 벡터가 가능하다
+					player.move(dir, elapsedTime * moveSpeed);	// 움직인 방향과 무관하게, 상대와 나의 방향벡터를 구하면 슬라이딩 벡터가 가능하다
 				}
 			}
 		}
@@ -165,7 +169,7 @@ void RUNState::update(float elapsedTime)
 				glm::vec3 otherPos = m.second->getPosition();
 				glm::vec3 dir = myPos - otherPos;
 				dir.y = 0.f;
-				player.move(dir, elapsedTime * player.moveSpeed);
+				player.move(dir, elapsedTime * moveSpeed);
 			}
 		}
 	}
@@ -175,9 +179,31 @@ void RUNState::update(float elapsedTime)
 
 void RUNState::exit()
 {
-	player.moveSpeed = 0.f;
-
 	StateMachine::exit();
+}
+
+void RUNState::rotateAndMoveToDirection(const glm::vec3& direction, float elapsedTime)
+{
+	if (glm::length(direction) <= 0.f)
+		return;
+
+	glm::vec3 look = player.getLook();
+	glm::vec3 dir = glm::normalize(direction);
+	glm::vec3 crossProduct = glm::cross(look, dir);
+	//float dotProduct = glm::dot(look, dir);
+	//float radianAngle = glm::acos(glm::clamp(dotProduct, -1.f, 1.f));				// 0 ~ pi (예각으로 나온다)
+	float radianAngle = glm::angle(look, dir);				// 0 ~ pi (예각으로 나온다)
+
+	float rotateSign = 1.f;
+	if (crossProduct.y < 0.f)								// 시계방향으로 돌지 반시계방향으로 돌지 정해준다
+		rotateSign = -1.f;
+
+	float angleOffset = radianAngle / glm::pi<float>();		// 각도에 따라 0.f ~ 1.f
+	float rotateSpeed = glm::max(angleOffset / 2.f, 0.2f) * elapsedTime * 30.f;		// 기본 값은 0.f ~ 0.5f이고, 최소값은 0.2f
+
+	player.rotate(glm::degrees(radianAngle * rotateSign) * rotateSpeed);
+
+	player.move(dir, elapsedTime * moveSpeed * (1.f - angleOffset));	// 현재 회전 방향에 따른 속도 조절
 }
 
 DASHState::DASHState(PlayerObject& player)
@@ -255,10 +281,6 @@ PlayerObject::PlayerObject(Room* parentRoom, int p_id)
 {
 	currentState = std::make_unique<IDLEState>(*this);
 
-	maxMoveSpeed = PLAYER_SPEED;				// 초당 이동속도 5m
-	moveSpeed = 0.f;
-	acceleration = 25.f;
-
 	gravity = 25.f;								// 중력을 이것으로 조정해 준다.
 	jumpSpeed = glm::sqrt(2.f * gravity * 1.f);	// 최대 높이 1m
 	velocity = 0.f;
@@ -311,28 +333,4 @@ void PlayerObject::processKeyInput(unsigned int key, bool is_pressed)
 	else {
 		keyState &= ~key;
 	}
-}
-
-void PlayerObject::rotateAndMoveToDirection(const glm::vec3& direction, float elapsedTime)
-{
-	if (glm::length(direction) <= 0.f)
-		return;
-
-	glm::vec3 look = getLook();
-	glm::vec3 dir = glm::normalize(direction);
-	glm::vec3 crossProduct = glm::cross(look, dir);
-	//float dotProduct = glm::dot(look, dir);
-	//float radianAngle = glm::acos(glm::clamp(dotProduct, -1.f, 1.f));				// 0 ~ pi (예각으로 나온다)
-	float radianAngle = glm::angle(look, dir);				// 0 ~ pi (예각으로 나온다)
-
-	float rotateSign = 1.f;
-	if (crossProduct.y < 0.f)								// 시계방향으로 돌지 반시계방향으로 돌지 정해준다
-		rotateSign = -1.f;
-
-	float angleOffset = radianAngle / glm::pi<float>();		// 각도에 따라 0.f ~ 1.f
-	float rotateSpeed = glm::max(angleOffset / 2.f, 0.2f) * elapsedTime * 30.f;		// 기본 값은 0.f ~ 0.5f이고, 최소값은 0.2f
-
-	rotate(glm::degrees(radianAngle * rotateSign) * rotateSpeed);
-
-	move(dir, elapsedTime * moveSpeed * (1.f - angleOffset));	// 현재 회전 방향에 따른 속도 조절
 }
