@@ -50,9 +50,6 @@ public:
 	virtual void update(float elapsedTime) override;
 	virtual void exit() override;
 
-private:
-	void rotateAndMoveToDirection(const glm::vec3& direction, float elapsedTime);
-
 };
 
 class DASHState : public StateMachine
@@ -116,5 +113,8 @@ public:
 	unsigned int getKeyState() const;
 
 	void processKeyInput(unsigned int key, bool is_pressed);
+
+private:
+	void rotateAndMoveToDirection(const glm::vec3& direction, float moveSpeed, float elapsedTime);
 
 };
