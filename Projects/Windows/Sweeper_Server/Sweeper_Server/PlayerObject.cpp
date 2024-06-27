@@ -102,6 +102,8 @@ RUNState::RUNState(PlayerObject& player)
 	maxMoveSpeed = PLAYER_SPEED;				// 초당 이동속도 5m
 	moveSpeed = 0.f;
 	acceleration = 25.f;
+
+	lastDirection = glm::vec3{ 0.f };
 }
 
 void RUNState::enter()
