@@ -18,7 +18,7 @@ public:
 
 	virtual void enter() = 0;
 	virtual void update(float elapsedTime) = 0;
-	virtual void exit() const final;
+	virtual void exit() = 0;
 	virtual PLAYER_STATE getState() const final;
 };
 
@@ -30,6 +30,7 @@ public:
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime) override;
+	virtual void exit() override;
 };
 
 class RUNState : public StateMachine
@@ -40,6 +41,7 @@ public:
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime) override;
+	virtual void exit() override;
 };
 
 class DASHState : public StateMachine
@@ -50,6 +52,7 @@ public:
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime) override;
+	virtual void exit() override;
 };
 
 class AttackState : public StateMachine
@@ -62,6 +65,7 @@ public:
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime) override;
+	virtual void exit() override;
 };
 
 class PlayerObject : public GameObjectBase
@@ -80,8 +84,11 @@ private:
 	// 키가 눌려진 상태를 종합한다.
 	unsigned int keyState = 0;
 
-	// 움직이는 속도
-	float moveSpeed = 0.f;
+	// 움직이는 속도	// 값은 생성자에서
+	float maxMoveSpeed;		// 최대 속도
+	float moveSpeed;		// 현재 속도
+	float acceleration;		// 현재 가속도
+	glm::vec3 lastDirection;	// 움직이던 방향 (키를 뗐을 때 갈 방향, xz만 사용)
 
 	// 점프 관련 변수
 	bool runJump = false;

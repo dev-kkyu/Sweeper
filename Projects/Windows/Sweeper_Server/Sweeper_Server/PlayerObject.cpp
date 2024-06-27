@@ -30,6 +30,12 @@ void StateMachine::enter()
 void StateMachine::update(float elapsedTime)
 {
 	// 점프는 상태 관계없이 해도 된다.
+	if (player.keyState & KEY_SPACE) {
+		if (!player.runJump) {
+			player.velocity = player.jumpSpeed;
+			player.runJump = true;
+		}
+	}
 
 	// 현재 점프 중이라면
 	if (player.runJump) {
@@ -47,7 +53,7 @@ void StateMachine::update(float elapsedTime)
 	}
 }
 
-void StateMachine::exit() const
+void StateMachine::exit()
 {
 }
 
@@ -70,13 +76,7 @@ void IDLEState::enter()
 void IDLEState::update(float elapsedTime)
 {
 	// IDLE인 상태에서 할 일..
-	// 점프 상태 확인
-	if (player.keyState & KEY_SPACE) {
-		if (!player.runJump) {
-			player.velocity = player.jumpSpeed;
-			player.runJump = true;
-		}
-	}
+
 	// 공격 혹은 이동
 	if (player.keyState & MOUSE_LEFT) {
 		player.nextState = std::make_unique<AttackState>(player);
@@ -87,6 +87,11 @@ void IDLEState::update(float elapsedTime)
 	}
 
 	StateMachine::update(elapsedTime);
+}
+
+void IDLEState::exit()
+{
+	StateMachine::exit();
 }
 
 RUNState::RUNState(PlayerObject& player)
@@ -105,26 +110,35 @@ void RUNState::update(float elapsedTime)
 	if (player.keyState & MOUSE_LEFT) {
 		player.nextState = std::make_unique<AttackState>(player);
 	}
-	else if (player.keyState & KEY_UP or player.keyState & KEY_DOWN
-		or player.keyState & KEY_LEFT or player.keyState & KEY_RIGHT) {
+	else {
+		bool isKeyOn = player.keyState & KEY_UP or player.keyState & KEY_DOWN or
+			player.keyState & KEY_LEFT or player.keyState & KEY_RIGHT;
+		if (isKeyOn) {
+			// 가속도 적용
+			player.moveSpeed += player.acceleration * elapsedTime;
+			if (player.moveSpeed > player.maxMoveSpeed)
+				player.moveSpeed = player.maxMoveSpeed;
 
-		glm::vec3 direction{ 0.f };
-		if (player.keyState & KEY_UP) direction.z += 1.f;
-		if (player.keyState & KEY_DOWN) direction.z -= 1.f;
-		if (player.keyState & KEY_LEFT) direction.x += 1.f;
-		if (player.keyState & KEY_RIGHT) direction.x -= 1.f;
+			glm::vec3 direction{ 0.f };
+			if (player.keyState & KEY_UP) direction.z += 1.f;
+			if (player.keyState & KEY_DOWN) direction.z -= 1.f;
+			if (player.keyState & KEY_LEFT) direction.x += 1.f;
+			if (player.keyState & KEY_RIGHT) direction.x -= 1.f;
 
-		// 점프 처리
-		if (player.keyState & KEY_SPACE) {
-			if (!player.runJump) {
-				player.velocity = player.jumpSpeed;
-				player.runJump = true;
+			player.lastDirection = direction;
+		}
+		else {	// 키가 떼졌을 때
+			player.moveSpeed -= player.acceleration * elapsedTime;
+			if (player.moveSpeed < 0.f) {
+				player.moveSpeed = 0.f;
+				// 키가 떼지고 속도가 0이 되면 IDLE로 바뀐다.
+				player.nextState = std::make_unique<IDLEState>(player);
 			}
 		}
 
 		//move(direction, elapsedTime * moveSpeed);
 		// 입력된 방향으로 플레이어 방향을 점차 바꾸면서, 해당 방향으로 전진한다
-		player.rotateAndMoveToDirection(direction, elapsedTime);
+		player.rotateAndMoveToDirection(player.lastDirection, elapsedTime);
 
 		// 이동 후 충돌처리
 		// 플레이어끼리
@@ -152,11 +166,15 @@ void RUNState::update(float elapsedTime)
 			}
 		}
 	}
-	else {		// 더 이상 키 입력이 없다면 IDLE
-		player.nextState = std::make_unique<IDLEState>(player);
-	}
 
 	StateMachine::update(elapsedTime);
+}
+
+void RUNState::exit()
+{
+	player.moveSpeed = 0.f;
+
+	StateMachine::exit();
 }
 
 DASHState::DASHState(PlayerObject& player)
@@ -177,6 +195,11 @@ void DASHState::update(float elapsedTime)
 	StateMachine::update(elapsedTime);
 }
 
+void DASHState::exit()
+{
+	StateMachine::exit();
+}
+
 AttackState::AttackState(PlayerObject& player)
 	: StateMachine{ player }
 {
@@ -185,8 +208,9 @@ AttackState::AttackState(PlayerObject& player)
 
 void AttackState::enter()
 {
-	StateMachine::enter();
 	attackBeginTime = std::chrono::steady_clock::now();
+
+	StateMachine::enter();
 }
 
 void AttackState::update(float elapsedTime)
@@ -214,12 +238,19 @@ void AttackState::update(float elapsedTime)
 	StateMachine::update(elapsedTime);
 }
 
+void AttackState::exit()
+{
+	StateMachine::exit();
+}
+
 PlayerObject::PlayerObject(Room* parentRoom, int p_id)
 	: GameObjectBase{ parentRoom, p_id }
 {
 	currentState = std::make_unique<IDLEState>(*this);
 
-	moveSpeed = PLAYER_SPEED;							// 초당 이동속도 5m
+	maxMoveSpeed = PLAYER_SPEED;				// 초당 이동속도 5m
+	moveSpeed = 0.f;
+	acceleration = 25.f;
 
 	gravity = 25.f;								// 중력을 이것으로 조정해 준다.
 	jumpSpeed = glm::sqrt(2.f * gravity * 1.f);	// 최대 높이 1m
