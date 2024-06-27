@@ -13,7 +13,7 @@ StateMachine::StateMachine(PlayerObject& player)
 {
 }
 
-void StateMachine::enter() const
+void StateMachine::enter()
 {
 	SC_PLAYER_STATE_PACKET p;
 	p.size = sizeof(p);
@@ -62,8 +62,9 @@ IDLEState::IDLEState(PlayerObject& player)
 	state = PLAYER_STATE::IDLE;
 }
 
-IDLEState::~IDLEState()
+void IDLEState::enter()
 {
+	StateMachine::enter();
 }
 
 void IDLEState::update(float elapsedTime)
@@ -78,7 +79,7 @@ void IDLEState::update(float elapsedTime)
 	}
 	// 공격 혹은 이동
 	if (player.keyState & MOUSE_LEFT) {
-		player.setAttackStart();
+		player.nextState = std::make_unique<AttackState>(player);
 	}
 	else if (player.keyState & KEY_UP or player.keyState & KEY_DOWN
 		or player.keyState & KEY_LEFT or player.keyState & KEY_RIGHT) {
@@ -94,14 +95,15 @@ RUNState::RUNState(PlayerObject& player)
 	state = PLAYER_STATE::RUN;
 }
 
-RUNState::~RUNState()
+void RUNState::enter()
 {
+	StateMachine::enter();
 }
 
 void RUNState::update(float elapsedTime)
 {
 	if (player.keyState & MOUSE_LEFT) {
-		player.setAttackStart();
+		player.nextState = std::make_unique<AttackState>(player);
 	}
 	else if (player.keyState & KEY_UP or player.keyState & KEY_DOWN
 		or player.keyState & KEY_LEFT or player.keyState & KEY_RIGHT) {
@@ -163,8 +165,9 @@ DASHState::DASHState(PlayerObject& player)
 	state = PLAYER_STATE::DASH;
 }
 
-DASHState::~DASHState()
+void DASHState::enter()
 {
+	StateMachine::enter();
 }
 
 void DASHState::update(float elapsedTime)
@@ -180,19 +183,21 @@ AttackState::AttackState(PlayerObject& player)
 	state = PLAYER_STATE::ATTACK;
 }
 
-AttackState::~AttackState()
+void AttackState::enter()
 {
+	StateMachine::enter();
+	attackBeginTime = std::chrono::steady_clock::now();
 }
 
 void AttackState::update(float elapsedTime)
 {
 	// Room의 Update에서 락 걸어준다
 	auto now_time = std::chrono::steady_clock::now();
-	if (now_time > player.attackBeginTime + std::chrono::milliseconds{ 700 }) {
+	if (now_time > attackBeginTime + std::chrono::milliseconds{ 700 }) {
 		// 끝났으면 State 변경
 		player.nextState = std::make_unique<IDLEState>(player);
 	}
-	else if (now_time > player.attackBeginTime + std::chrono::milliseconds{ 200 }) {
+	else if (now_time > attackBeginTime + std::chrono::milliseconds{ 200 }) {
 		// 충돌검사
 		auto myPos = player.getPosition();
 		myPos += player.getLook();	// 칼 범위를 플레이어 앞쪽으로 세팅해준다.
@@ -258,12 +263,6 @@ void PlayerObject::onHit(const GameObjectBase& other)
 unsigned int PlayerObject::getKeyState() const
 {
 	return keyState;
-}
-
-void PlayerObject::setAttackStart()
-{
-	nextState = std::make_unique<AttackState>(*this);
-	attackBeginTime = std::chrono::steady_clock::now();
 }
 
 void PlayerObject::processKeyInput(unsigned int key, bool is_pressed)

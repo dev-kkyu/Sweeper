@@ -16,7 +16,7 @@ public:
 	StateMachine(PlayerObject& player);
 	virtual ~StateMachine() = default;
 
-	virtual void enter() const final;
+	virtual void enter() = 0;
 	virtual void update(float elapsedTime) = 0;
 	virtual void exit() const final;
 	virtual PLAYER_STATE getState() const final;
@@ -26,8 +26,9 @@ class IDLEState : public StateMachine
 {
 public:
 	IDLEState(PlayerObject& player);
-	virtual ~IDLEState();
+	virtual ~IDLEState() = default;
 
+	virtual void enter() override;
 	virtual void update(float elapsedTime) override;
 };
 
@@ -35,8 +36,9 @@ class RUNState : public StateMachine
 {
 public:
 	RUNState(PlayerObject& player);
-	virtual ~RUNState();
+	virtual ~RUNState() = default;
 
+	virtual void enter() override;
 	virtual void update(float elapsedTime) override;
 };
 
@@ -44,17 +46,21 @@ class DASHState : public StateMachine
 {
 public:
 	DASHState(PlayerObject& player);
-	virtual ~DASHState();
+	virtual ~DASHState() = default;
 
+	virtual void enter() override;
 	virtual void update(float elapsedTime) override;
 };
 
 class AttackState : public StateMachine
 {
+private:
+	std::chrono::steady_clock::time_point attackBeginTime;
 public:
 	AttackState(PlayerObject& player);
-	virtual ~AttackState();
+	virtual ~AttackState() = default;
 
+	virtual void enter() override;
 	virtual void update(float elapsedTime) override;
 };
 
@@ -84,9 +90,6 @@ private:
 	float jumpSpeed;		// 점프 시작 속도 (m/s)	-> 루트(2 * g * h) -> h == 최대높이
 	float velocity;			// 현재 수직 속도
 
-	// 공격 관련 변수
-	std::chrono::steady_clock::time_point attackBeginTime;
-
 public:
 	PlayerObject(Room* parentRoom, int p_id);
 	virtual ~PlayerObject();
@@ -97,8 +100,6 @@ public:
 	virtual void onHit(const GameObjectBase& other) override;
 
 	unsigned int getKeyState() const;
-
-	void setAttackStart();
 
 	void processKeyInput(unsigned int key, bool is_pressed);
 
