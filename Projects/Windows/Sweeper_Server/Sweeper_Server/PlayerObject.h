@@ -46,6 +46,8 @@ public:
 
 class DASHState : public StateMachine
 {
+private:
+	std::chrono::steady_clock::time_point stateBeginTime;
 public:
 	DASHState(PlayerObject& player);
 	virtual ~DASHState() = default;
@@ -58,7 +60,7 @@ public:
 class AttackState : public StateMachine
 {
 private:
-	std::chrono::steady_clock::time_point attackBeginTime;
+	std::chrono::steady_clock::time_point stateBeginTime;
 public:
 	AttackState(PlayerObject& player);
 	virtual ~AttackState() = default;

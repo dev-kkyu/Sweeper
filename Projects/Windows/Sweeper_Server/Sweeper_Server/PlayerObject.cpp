@@ -110,6 +110,9 @@ void RUNState::update(float elapsedTime)
 	if (player.keyState & MOUSE_LEFT) {
 		player.nextState = std::make_unique<AttackState>(player);
 	}
+	else if (player.keyState & KEY_SHIFT) {
+		player.nextState = std::make_unique<DASHState>(player);
+	}
 	else {
 		bool isKeyOn = player.keyState & KEY_UP or player.keyState & KEY_DOWN or
 			player.keyState & KEY_LEFT or player.keyState & KEY_RIGHT;
@@ -185,12 +188,16 @@ DASHState::DASHState(PlayerObject& player)
 
 void DASHState::enter()
 {
+	stateBeginTime = std::chrono::steady_clock::now();
+
 	StateMachine::enter();
 }
 
 void DASHState::update(float elapsedTime)
 {
-	// Todo..
+	if (stateBeginTime + std::chrono::milliseconds(1000) <= std::chrono::steady_clock::now()) {
+		player.nextState = std::make_unique<IDLEState>(player);
+	}
 
 	StateMachine::update(elapsedTime);
 }
@@ -208,7 +215,7 @@ AttackState::AttackState(PlayerObject& player)
 
 void AttackState::enter()
 {
-	attackBeginTime = std::chrono::steady_clock::now();
+	stateBeginTime = std::chrono::steady_clock::now();
 
 	StateMachine::enter();
 }
@@ -217,11 +224,11 @@ void AttackState::update(float elapsedTime)
 {
 	// Room의 Update에서 락 걸어준다
 	auto now_time = std::chrono::steady_clock::now();
-	if (now_time > attackBeginTime + std::chrono::milliseconds{ 700 }) {
+	if (now_time > stateBeginTime + std::chrono::milliseconds{ 700 }) {
 		// 끝났으면 State 변경
 		player.nextState = std::make_unique<IDLEState>(player);
 	}
-	else if (now_time > attackBeginTime + std::chrono::milliseconds{ 200 }) {
+	else if (now_time > stateBeginTime + std::chrono::milliseconds{ 200 }) {
 		// 충돌검사
 		auto myPos = player.getPosition();
 		myPos += player.getLook();	// 칼 범위를 플레이어 앞쪽으로 세팅해준다.
