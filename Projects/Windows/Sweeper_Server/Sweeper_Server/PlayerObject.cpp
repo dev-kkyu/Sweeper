@@ -117,7 +117,7 @@ void RUNState::update(float elapsedTime)
 		player.nextState = std::make_unique<AttackState>(player);
 	}
 	else if (player.keyState & KEY_CTRL) {
-		player.nextState = std::make_unique<DASHState>(player, lastDirection);
+		player.nextState = std::make_unique<DASHState>(player);
 	}
 	else {
 		bool isKeyOn = player.keyState & KEY_UP or player.keyState & KEY_DOWN or
@@ -184,10 +184,16 @@ void RUNState::exit()
 	StateMachine::exit();
 }
 
-DASHState::DASHState(PlayerObject& player, const glm::vec3& direction)
-	: StateMachine{ player }, direction{ direction }
+DASHState::DASHState(PlayerObject& player)
+	: StateMachine{ player }
 {
 	state = PLAYER_STATE::DASH;
+
+	direction = glm::vec3{ 0.f };
+	if (player.keyState & KEY_UP) direction.z += 1.f;
+	if (player.keyState & KEY_DOWN) direction.z -= 1.f;
+	if (player.keyState & KEY_LEFT) direction.x += 1.f;
+	if (player.keyState & KEY_RIGHT) direction.x -= 1.f;
 
 	accFlag = 1;
 

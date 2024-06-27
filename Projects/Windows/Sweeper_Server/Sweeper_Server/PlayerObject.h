@@ -66,7 +66,7 @@ private:
 	glm::vec3 direction;	// 이동할 방향 (xz만 사용)
 
 public:
-	DASHState(PlayerObject& player, const glm::vec3& direction);
+	DASHState(PlayerObject& player);
 	virtual ~DASHState() = default;
 
 	virtual void enter() override;
