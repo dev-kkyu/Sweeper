@@ -13,6 +13,12 @@ private:
 	// 키가 눌려진 상태를 종합한다.
 	unsigned int keyState = 0;
 
+	// 움직이는 속도	// 값은 생성자에서
+	float maxMoveSpeed;		// 최대 속도
+	float moveSpeed;		// 현재 속도
+	float acceleration;		// 현재 가속도
+	glm::vec3 lastDirection;	// 움직이던 방향 (키를 뗐을 때 갈 방향, xz만 사용)
+
 public:
 	PlayerObject();
 	virtual ~PlayerObject();

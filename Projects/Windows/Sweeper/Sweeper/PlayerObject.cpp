@@ -7,6 +7,10 @@
 
 PlayerObject::PlayerObject()
 {
+	maxMoveSpeed = PLAYER_SPEED;				// 초당 이동속도 5m
+	moveSpeed = 0.f;
+	acceleration = 25.f;
+	lastDirection = glm::vec3{};
 }
 
 PlayerObject::~PlayerObject()
@@ -25,14 +29,32 @@ void PlayerObject::update(float elapsedTime, uint32_t currentFrame)
 
 	// 클라이언트에서 플레이어 이동 보정
 	if (24 == activeAnimation) {	// RUN Animation 일 때만(24) 이동보정 (추후 수정 필요)
-		glm::vec3 direction{};
-		if (keyState & KEY_UP) direction.z += 1.f;
-		if (keyState & KEY_DOWN) direction.z -= 1.f;
-		if (keyState & KEY_LEFT) direction.x += 1.f;
-		if (keyState & KEY_RIGHT) direction.x -= 1.f;
-		if (glm::length(direction) >= glm::epsilon<float>()) {
+		bool isKeyOn = keyState & KEY_UP or keyState & KEY_DOWN or
+			keyState & KEY_LEFT or keyState & KEY_RIGHT;
+		if (isKeyOn) {
+			// 가속도 적용
+			moveSpeed += acceleration * elapsedTime;
+			if (moveSpeed > maxMoveSpeed)
+				moveSpeed = maxMoveSpeed;
+
+			glm::vec3 direction{ 0.f };
+			if (keyState & KEY_UP) direction.z += 1.f;
+			if (keyState & KEY_DOWN) direction.z -= 1.f;
+			if (keyState & KEY_LEFT) direction.x += 1.f;
+			if (keyState & KEY_RIGHT) direction.x -= 1.f;
+
+			lastDirection = direction;
+		}
+		else {	// 키가 떼졌을 때
+			moveSpeed -= acceleration * elapsedTime;
+			if (moveSpeed < 0.f) {
+				moveSpeed = 0.f;
+			}
+		}
+
+		if (glm::length(lastDirection) >= glm::epsilon<float>()) {
 			glm::vec3 look = getLook();
-			glm::vec3 dir = glm::normalize(direction);
+			glm::vec3 dir = glm::normalize(lastDirection);
 			glm::vec3 crossProduct = glm::cross(look, dir);
 			float radianAngle = glm::angle(look, dir);				// 0 ~ pi (예각으로 나온다)
 
@@ -45,8 +67,11 @@ void PlayerObject::update(float elapsedTime, uint32_t currentFrame)
 
 			rotate(glm::degrees(radianAngle * rotateSign) * rotateSpeed);
 
-			move(dir, elapsedTime * PLAYER_SPEED * (1.f - angleOffset));	// 현재 회전 방향에 따른 속도 조절
+			move(dir, elapsedTime * moveSpeed * (1.f - angleOffset));	// 현재 회전 방향에 따른 속도 조절
 		}
+	}
+	else {
+		moveSpeed = 0.f;
 	}
 }
 
