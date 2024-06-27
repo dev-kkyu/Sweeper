@@ -359,18 +359,22 @@ void Scene::processPacket(unsigned char* packet)
 		switch (p->state) {
 		case PLAYER_STATE::IDLE:
 			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_IDLE);
+			pPlayers[p->player_id]->setAnimateSpeed(1.f);
 			state = "IDLE";
 			break;
 		case PLAYER_STATE::RUN:
 			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_RUN);
+			pPlayers[p->player_id]->setAnimateSpeed(1.f);
 			state = "RUN";
 			break;
 		case PLAYER_STATE::DASH:
 			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_DASH);
+			pPlayers[p->player_id]->setAnimateSpeed(2.f);
 			state = "DASH";
 			break;
 		case PLAYER_STATE::ATTACK:
 			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_ATTACK_KNIFE);
+			pPlayers[p->player_id]->setAnimateSpeed(1.f);
 			state = "ATTACK";
 			break;
 		default:
