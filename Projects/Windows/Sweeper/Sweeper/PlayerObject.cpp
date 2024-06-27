@@ -28,7 +28,10 @@ void PlayerObject::update(float elapsedTime, uint32_t currentFrame)
 	GLTFSkinModelObject::update(elapsedTime, currentFrame);
 
 	// 클라이언트에서 플레이어 이동 보정
-	if (24 == activeAnimation) {	// RUN Animation 일 때만(24) 이동보정 (추후 수정 필요)
+	if (keyState & MOUSE_LEFT) {
+		moveSpeed = 0.f;
+	}
+	else if (PLAYER_CLIP_RUN == activeAnimation) {	// RUN Animation 일 때만(24) 이동보정 (추후 수정 필요)
 		bool isKeyOn = keyState & KEY_UP or keyState & KEY_DOWN or
 			keyState & KEY_LEFT or keyState & KEY_RIGHT;
 		if (isKeyOn) {
@@ -69,9 +72,6 @@ void PlayerObject::update(float elapsedTime, uint32_t currentFrame)
 
 			move(dir, elapsedTime * moveSpeed * (1.f - angleOffset));	// 현재 회전 방향에 따른 속도 조절
 		}
-	}
-	else {
-		moveSpeed = 0.f;
 	}
 }
 
