@@ -115,7 +115,7 @@ void RUNState::update(float elapsedTime)
 		player.nextState = std::make_unique<AttackState>(player);
 	}
 	else if (player.keyState & KEY_SHIFT) {
-		player.nextState = std::make_unique<DASHState>(player);
+		player.nextState = std::make_unique<DASHState>(player, lastDirection);
 	}
 	else {
 		bool isKeyOn = player.keyState & KEY_UP or player.keyState & KEY_DOWN or
@@ -182,10 +182,16 @@ void RUNState::exit()
 	StateMachine::exit();
 }
 
-DASHState::DASHState(PlayerObject& player)
-	: StateMachine{ player }
+DASHState::DASHState(PlayerObject& player, const glm::vec3& direction)
+	: StateMachine{ player }, direction{ direction }
 {
 	state = PLAYER_STATE::DASH;
+
+	accFlag = 1;
+
+	maxMoveSpeed = 30.f;
+	moveSpeed = 0.f;
+	acceleration = 250.f;
 }
 
 void DASHState::enter()
@@ -197,9 +203,23 @@ void DASHState::enter()
 
 void DASHState::update(float elapsedTime)
 {
-	if (stateBeginTime + std::chrono::milliseconds(1000) <= std::chrono::steady_clock::now()) {
+	if (stateBeginTime + std::chrono::milliseconds(500) <= std::chrono::steady_clock::now()) {
 		player.nextState = std::make_unique<IDLEState>(player);
 	}
+
+	if (accFlag > 0) {
+		moveSpeed += acceleration * elapsedTime;
+		if (moveSpeed >= maxMoveSpeed) {
+			moveSpeed = maxMoveSpeed;
+			accFlag = -1;
+		}
+	}
+	else {
+		moveSpeed -= acceleration * elapsedTime;
+		if (moveSpeed < 0.f)
+			moveSpeed = 0.f;
+	}
+	player.rotateAndMoveToDirection(direction, moveSpeed, elapsedTime);
 
 	StateMachine::update(elapsedTime);
 }
@@ -282,8 +302,8 @@ bool PlayerObject::update(float elapsedTime)
 	}
 	currentState->update(elapsedTime);
 
-	if (dynamic_cast<RUNState*>(currentState.get()) or runJump) {
-		return true;	// Run 상태이거나 점프 중일 때만 위치가 바뀐다.
+	if (dynamic_cast<RUNState*>(currentState.get()) or dynamic_cast<DASHState*>(currentState.get()) or runJump) {
+		return true;	// Run, Dash 상태이거나 점프 중일 때만 위치가 바뀐다.
 	}
 	return false;
 }

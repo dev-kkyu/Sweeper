@@ -56,8 +56,17 @@ class DASHState : public StateMachine
 {
 private:
 	std::chrono::steady_clock::time_point stateBeginTime;
+
+	int accFlag;			// 가속 플래그 (증가, 감소)
+
+	// 움직이는 속도	// 값은 생성자에서
+	float maxMoveSpeed;		// 최대 속도
+	float moveSpeed;		// 현재 속도
+	float acceleration;		// 현재 가속도
+	glm::vec3 direction;	// 이동할 방향 (xz만 사용)
+
 public:
-	DASHState(PlayerObject& player);
+	DASHState(PlayerObject& player, const glm::vec3& direction);
 	virtual ~DASHState() = default;
 
 	virtual void enter() override;
