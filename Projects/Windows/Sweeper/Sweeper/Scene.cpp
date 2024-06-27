@@ -198,8 +198,8 @@ void Scene::processKeyboard(int key, int action, int mods)
 			p.key = KEY_SPACE;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
-		case GLFW_KEY_LEFT_SHIFT:
-			p.key = KEY_SHIFT;
+		case GLFW_KEY_LEFT_CONTROL:
+			p.key = KEY_CTRL;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		}
@@ -228,8 +228,8 @@ void Scene::processKeyboard(int key, int action, int mods)
 			p.key = KEY_SPACE;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
-		case GLFW_KEY_LEFT_SHIFT:
-			p.key = KEY_SHIFT;
+		case GLFW_KEY_LEFT_CONTROL:
+			p.key = KEY_CTRL;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		}

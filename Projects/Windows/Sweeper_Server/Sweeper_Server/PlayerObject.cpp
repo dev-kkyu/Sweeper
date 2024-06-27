@@ -114,7 +114,7 @@ void RUNState::update(float elapsedTime)
 	if (player.keyState & MOUSE_LEFT) {
 		player.nextState = std::make_unique<AttackState>(player);
 	}
-	else if (player.keyState & KEY_SHIFT) {
+	else if (player.keyState & KEY_CTRL) {
 		player.nextState = std::make_unique<DASHState>(player, lastDirection);
 	}
 	else {
