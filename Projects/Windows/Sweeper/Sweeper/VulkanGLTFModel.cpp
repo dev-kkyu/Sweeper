@@ -9,13 +9,11 @@
 void VulkanGLTFModel::destroy()
 {
 	if (fDevice) {
-		for (auto node : nodes) {
-			delete node;
-		}
 		// Release all Vulkan resources allocated for the model
+
 		buffer.destroy();
 
-		for (Image image : images) {
+		for (VulkanGLTFModel::Image& image : images) {
 			image.texture.destroy();
 		}
 
@@ -43,13 +41,13 @@ void VulkanGLTFModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipel
 	}
 }
 
-void VulkanGLTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, VulkanGLTFModel::Node* node, const glm::mat4& worldMatrix)
+void VulkanGLTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const std::shared_ptr<VulkanGLTFModel::Node>& node, const glm::mat4& worldMatrix)
 {
 	if (node->mesh.primitives.size() > 0) {
 		// Pass the node's matrix via push constants
 		// Traverse the node hierarchy to the top-most parent to get the final matrix of the current node
 		glm::mat4 nodeMatrix = node->matrix;
-		VulkanGLTFModel::Node* currentParent = node->parent;
+		std::shared_ptr<VulkanGLTFModel::Node> currentParent = node->parent;
 		while (currentParent) {
 			nodeMatrix = currentParent->matrix * nodeMatrix;
 			currentParent = currentParent->parent;
@@ -58,7 +56,7 @@ void VulkanGLTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout p
 		nodeMatrix = worldMatrix * nodeMatrix;
 		// Pass the final matrix to the vertex shader using push constants
 		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &nodeMatrix);
-		for (VulkanGLTFModel::Primitive& primitive : node->mesh.primitives) {
+		for (const VulkanGLTFModel::Primitive& primitive : node->mesh.primitives) {
 			if (primitive.indexCount > 0) {
 				// Get the texture index for this primitive
 				VulkanGLTFModel::TextureID texture = textures[materials[primitive.materialIndex].baseColorTextureIndex];
@@ -68,7 +66,7 @@ void VulkanGLTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout p
 			}
 		}
 	}
-	for (auto& child : node->children) {
+	for (const auto& child : node->children) {
 		drawNode(commandBuffer, pipelineLayout, child, worldMatrix);
 	}
 }
@@ -199,9 +197,9 @@ void VulkanGLTFModel::loadMaterials(tinygltf::Model& input)
 	}
 }
 
-void VulkanGLTFModel::loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, VulkanGLTFModel::Node* parent, std::vector<uint32_t>& indexBuffer, std::vector<vkf::Vertex>& vertexBuffer)
+void VulkanGLTFModel::loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, const std::shared_ptr<VulkanGLTFModel::Node>& parent, std::vector<uint32_t>& indexBuffer, std::vector<vkf::Vertex>& vertexBuffer)
 {
-	VulkanGLTFModel::Node* node = new VulkanGLTFModel::Node{};
+	std::shared_ptr<VulkanGLTFModel::Node> node = std::make_shared<VulkanGLTFModel::Node>();
 	node->matrix = glm::mat4(1.0f);
 	node->parent = parent;
 
