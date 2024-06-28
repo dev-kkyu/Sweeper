@@ -73,7 +73,7 @@ void VulkanGLTFSkinModel::loadglTFFile(std::string filename)
 		loadTextures();
 		const tinygltf::Scene& scene = glTFInput->scenes[0];
 		for (size_t i = 0; i < scene.nodes.size(); i++) {
-			const tinygltf::Node node = glTFInput->nodes[scene.nodes[i]];
+			const tinygltf::Node& node = glTFInput->nodes[scene.nodes[i]];
 			loadMeshes(node, vertexBuffer, indexBuffer);
 		}
 	}
@@ -184,7 +184,7 @@ void VulkanGLTFSkinModel::loadMeshes(const tinygltf::Node& inputNode, std::vecto
 	// In glTF this is done via accessors and buffer views
 	if (inputNode.mesh > -1)
 	{
-		const tinygltf::Mesh mesh = glTFInput->meshes[inputNode.mesh];
+		const tinygltf::Mesh& mesh = glTFInput->meshes[inputNode.mesh];
 		// Iterate through all primitives of this node's mesh
 		for (size_t i = 0; i < mesh.primitives.size(); i++)
 		{

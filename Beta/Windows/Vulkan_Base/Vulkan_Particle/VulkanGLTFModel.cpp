@@ -229,7 +229,7 @@ void VulkanGLTFModel::loadNode(const tinygltf::Node& inputNode, const tinygltf::
 	// If the node contains mesh data, we load vertices and indices from the buffers
 	// In glTF this is done via accessors and buffer views
 	if (inputNode.mesh > -1) {
-		const tinygltf::Mesh mesh = input.meshes[inputNode.mesh];
+		const tinygltf::Mesh& mesh = input.meshes[inputNode.mesh];
 		// Iterate through all primitives of this node's mesh
 		for (size_t i = 0; i < mesh.primitives.size(); i++) {
 			const tinygltf::Primitive& glTFPrimitive = mesh.primitives[i];
