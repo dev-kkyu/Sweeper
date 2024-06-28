@@ -34,7 +34,7 @@ private:
 	PlayerObject* pPlayer;
 
 	GameObjectglTF* sampleModelObject[2];
-	VulkanglTFModel sampleModel[2];
+	VulkanGLTFModel sampleModel[2];
 
 	Camera camera;
 

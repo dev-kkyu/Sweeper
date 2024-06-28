@@ -2,13 +2,15 @@
 
 #include "VulkanFramework.h"
 
+#include <memory>
+
 namespace tinygltf
 {
 	class Node;
 	class Model;
 }
 
-class VulkanglTFModel
+class VulkanGLTFModel
 {
 public:
 	vkf::Device* fDevice = nullptr;
@@ -37,15 +39,10 @@ public:
 
 	// A node represents an object in the glTF scene graph
 	struct Node {
-		Node* parent;
-		std::vector<Node*> children;
+		std::shared_ptr<Node> parent;
+		std::vector<std::shared_ptr<Node>> children;
 		Mesh mesh;
 		glm::mat4 matrix;
-		~Node() {
-			for (auto& child : children) {
-				delete child;
-			}
-		}
 	};
 
 	// A glTF material stores information in e.g. the texture that is attached to it and colors
@@ -75,7 +72,7 @@ public:
 	std::vector<Image> images;
 	std::vector<TextureID> textures;
 	std::vector<Material> materials;
-	std::vector<Node*> nodes;
+	std::vector<std::shared_ptr<Node>> nodes;
 
 
 public:
@@ -83,10 +80,10 @@ public:
 
 	void loadModel(vkf::Device& fDevice, VkDescriptorSetLayout samplerDescriptorSetLayout, std::string filename);
 
-	void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, glm::mat4 parentMatrix = glm::mat4(1.f));
+	void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const glm::mat4& worldMatrix = glm::mat4{ 1.f });
 
 private:
-	void drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, VulkanglTFModel::Node* node, const glm::mat4& parentMatrix);
+	void drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const std::shared_ptr<VulkanGLTFModel::Node>& node, const glm::mat4& worldMatrix);
 
 	void loadglTFFile(std::string filename);
 
@@ -94,7 +91,7 @@ private:
 	void loadImages(tinygltf::Model& input);
 	void loadTextures(tinygltf::Model& input);
 	void loadMaterials(tinygltf::Model& input);
-	void loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, VulkanglTFModel::Node* parent, std::vector<uint32_t>& indexBuffer, std::vector<vkf::Vertex>& vertexBuffer);
+	void loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, const std::shared_ptr<VulkanGLTFModel::Node>& parent, std::vector<uint32_t>& indexBuffer, std::vector<vkf::Vertex>& vertexBuffer);
 
 
 };

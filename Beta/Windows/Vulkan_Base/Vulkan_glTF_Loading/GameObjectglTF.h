@@ -1,13 +1,13 @@
 #pragma once
 
 #include "GameObjectBase.h"
-#include "VulkanglTFModel.h"
+#include "VulkanGLTFModel.h"
 
 class GameObjectglTF : public GameObjectBase
 {
 protected:
 
-	VulkanglTFModel* model = nullptr;
+	VulkanGLTFModel* model = nullptr;
 
 public:
 	GameObjectglTF();
@@ -18,7 +18,7 @@ public:
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
 	virtual void release();
 
-	void setModel(VulkanglTFModel& model);
+	void setModel(VulkanGLTFModel& model);
 
 };
 

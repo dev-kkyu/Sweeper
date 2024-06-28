@@ -26,7 +26,7 @@ void GameObjectglTF::release()
 {
 }
 
-void GameObjectglTF::setModel(VulkanglTFModel& model)
+void GameObjectglTF::setModel(VulkanGLTFModel& model)
 {
 	this->model = &model;
 }

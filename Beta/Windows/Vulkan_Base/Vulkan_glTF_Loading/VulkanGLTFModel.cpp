@@ -1,28 +1,28 @@
-﻿#include "VulkanglTFModel.h"
+﻿#include "VulkanGLTFModel.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 
-#define TINYGLTF_IMPLEMENTATION
+#define TINYGLTF_IMPLEMENTATION			// 이 프로젝트만 여기서 선언
 #define TINYGLTF_NO_STB_IMAGE_WRITE
 #include <tiny_gltf.h>
 
-void VulkanglTFModel::destroy()
+void VulkanGLTFModel::destroy()
 {
-	for (auto node : nodes) {
-		delete node;
-	}
-	// Release all Vulkan resources allocated for the model
-	buffer.destroy();
+	if (fDevice) {
+		// Release all Vulkan resources allocated for the model
 
-	for (Image image : images) {
-		image.texture.destroy();
-	}
+		buffer.destroy();
 
-	vkDestroyDescriptorPool(fDevice->logicalDevice, samplerDescriptorPool, nullptr);
+		for (VulkanGLTFModel::Image& image : images) {
+			image.texture.destroy();
+		}
+
+		vkDestroyDescriptorPool(fDevice->logicalDevice, samplerDescriptorPool, nullptr);
+	}
 }
 
-void VulkanglTFModel::loadModel(vkf::Device& fDevice, VkDescriptorSetLayout samplerDescriptorSetLayout, std::string filename)
+void VulkanGLTFModel::loadModel(vkf::Device& fDevice, VkDescriptorSetLayout samplerDescriptorSetLayout, std::string filename)
 {
 	this->fDevice = &fDevice;
 	this->samplerDescriptorSetLayout = samplerDescriptorSetLayout;
@@ -30,7 +30,7 @@ void VulkanglTFModel::loadModel(vkf::Device& fDevice, VkDescriptorSetLayout samp
 	loadglTFFile(filename);
 }
 
-void VulkanglTFModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, glm::mat4 parentMatrix)
+void VulkanGLTFModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const glm::mat4& worldMatrix)
 {
 	// All vertices and indices are stored in single buffers, so we only need to bind once
 	VkDeviceSize offsets[1] = { 0 };
@@ -38,41 +38,41 @@ void VulkanglTFModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipel
 	vkCmdBindIndexBuffer(commandBuffer, buffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 	// Render all nodes at top-level
 	for (auto& node : nodes) {
-		drawNode(commandBuffer, pipelineLayout, node, parentMatrix);
+		drawNode(commandBuffer, pipelineLayout, node, worldMatrix);
 	}
 }
 
-void VulkanglTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, VulkanglTFModel::Node* node, const glm::mat4& parentMatrix)
+void VulkanGLTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const std::shared_ptr<VulkanGLTFModel::Node>& node, const glm::mat4& worldMatrix)
 {
 	if (node->mesh.primitives.size() > 0) {
 		// Pass the node's matrix via push constants
 		// Traverse the node hierarchy to the top-most parent to get the final matrix of the current node
 		glm::mat4 nodeMatrix = node->matrix;
-		VulkanglTFModel::Node* currentParent = node->parent;
+		std::shared_ptr<VulkanGLTFModel::Node> currentParent = node->parent;
 		while (currentParent) {
 			nodeMatrix = currentParent->matrix * nodeMatrix;
 			currentParent = currentParent->parent;
 		}
 		// 월드 좌표계로 이동
-		nodeMatrix = parentMatrix * nodeMatrix;
+		nodeMatrix = worldMatrix * nodeMatrix;
 		// Pass the final matrix to the vertex shader using push constants
 		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &nodeMatrix);
-		for (VulkanglTFModel::Primitive& primitive : node->mesh.primitives) {
+		for (const VulkanGLTFModel::Primitive& primitive : node->mesh.primitives) {
 			if (primitive.indexCount > 0) {
 				// Get the texture index for this primitive
-				VulkanglTFModel::TextureID texture = textures[materials[primitive.materialIndex].baseColorTextureIndex];
+				VulkanGLTFModel::TextureID texture = textures[materials[primitive.materialIndex].baseColorTextureIndex];
 				// Bind the descriptor for the current primitive's texture
 				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &images[texture.imageIndex].texture.samplerDescriptorSet, 0, nullptr);
 				vkCmdDrawIndexed(commandBuffer, primitive.indexCount, 1, primitive.firstIndex, 0, 0);
 			}
 		}
 	}
-	for (auto& child : node->children) {
-		drawNode(commandBuffer, pipelineLayout, child, parentMatrix);
+	for (const auto& child : node->children) {
+		drawNode(commandBuffer, pipelineLayout, child, worldMatrix);
 	}
 }
 
-void VulkanglTFModel::loadglTFFile(std::string filename)
+void VulkanGLTFModel::loadglTFFile(std::string filename)
 {
 	tinygltf::Model glTFInput;
 	tinygltf::TinyGLTF gltfContext;
@@ -102,7 +102,7 @@ void VulkanglTFModel::loadglTFFile(std::string filename)
 		loadTextures(glTFInput);
 		const tinygltf::Scene& scene = glTFInput.scenes[0];
 		for (size_t i = 0; i < scene.nodes.size(); i++) {
-			const tinygltf::Node node = glTFInput.nodes[scene.nodes[i]];
+			const tinygltf::Node& node = glTFInput.nodes[scene.nodes[i]];
 			loadNode(node, glTFInput, nullptr, indexBuffer, vertexBuffer);
 		}
 	}
@@ -118,7 +118,7 @@ void VulkanglTFModel::loadglTFFile(std::string filename)
 	buffer.loadFromBuffer(*fDevice, vertexBuffer, indexBuffer);
 }
 
-void VulkanglTFModel::createSamplerDescriptorPool(uint32_t setCount)
+void VulkanGLTFModel::createSamplerDescriptorPool(uint32_t setCount)
 {
 	std::array<VkDescriptorPoolSize, 1> poolSizes{};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -135,7 +135,7 @@ void VulkanglTFModel::createSamplerDescriptorPool(uint32_t setCount)
 	}
 }
 
-void VulkanglTFModel::loadImages(tinygltf::Model& input)
+void VulkanGLTFModel::loadImages(tinygltf::Model& input)
 {
 	createSamplerDescriptorPool(static_cast<uint32_t>(input.images.size()));
 	// Images can be stored inside the glTF (which is the case for the sample model), so instead of directly
@@ -173,7 +173,7 @@ void VulkanglTFModel::loadImages(tinygltf::Model& input)
 	}
 }
 
-void VulkanglTFModel::loadTextures(tinygltf::Model& input)
+void VulkanGLTFModel::loadTextures(tinygltf::Model& input)
 {
 	textures.resize(input.textures.size());
 	for (size_t i = 0; i < input.textures.size(); i++) {
@@ -181,7 +181,7 @@ void VulkanglTFModel::loadTextures(tinygltf::Model& input)
 	}
 }
 
-void VulkanglTFModel::loadMaterials(tinygltf::Model& input)
+void VulkanGLTFModel::loadMaterials(tinygltf::Model& input)
 {
 	materials.resize(input.materials.size());
 	for (size_t i = 0; i < input.materials.size(); i++) {
@@ -198,9 +198,9 @@ void VulkanglTFModel::loadMaterials(tinygltf::Model& input)
 	}
 }
 
-void VulkanglTFModel::loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, VulkanglTFModel::Node* parent, std::vector<uint32_t>& indexBuffer, std::vector<vkf::Vertex>& vertexBuffer)
+void VulkanGLTFModel::loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, const std::shared_ptr<VulkanGLTFModel::Node>& parent, std::vector<uint32_t>& indexBuffer, std::vector<vkf::Vertex>& vertexBuffer)
 {
-	VulkanglTFModel::Node* node = new VulkanglTFModel::Node{};
+	std::shared_ptr<VulkanGLTFModel::Node> node = std::make_shared<VulkanGLTFModel::Node>();
 	node->matrix = glm::mat4(1.0f);
 	node->parent = parent;
 

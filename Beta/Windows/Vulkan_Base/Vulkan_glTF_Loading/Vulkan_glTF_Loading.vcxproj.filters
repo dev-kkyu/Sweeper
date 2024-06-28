@@ -54,14 +54,14 @@
     <ClCompile Include="PlayerObject.cpp">
       <Filter>GameObject\PlayerObject</Filter>
     </ClCompile>
-    <ClCompile Include="VulkanglTFModel.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="GameObjectObj.cpp">
       <Filter>GameObject\GameObjectObj</Filter>
     </ClCompile>
     <ClCompile Include="GameObjectglTF.cpp">
       <Filter>GameObject\GameObjectglTF</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanGLTFModel.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -86,14 +86,14 @@
     <ClInclude Include="PlayerObject.h">
       <Filter>GameObject\PlayerObject</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanglTFModel.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="GameObjectObj.h">
       <Filter>GameObject\GameObjectObj</Filter>
     </ClInclude>
     <ClInclude Include="GameObjectglTF.h">
       <Filter>GameObject\GameObjectglTF</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanGLTFModel.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

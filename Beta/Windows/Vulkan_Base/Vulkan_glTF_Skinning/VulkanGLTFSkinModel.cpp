@@ -13,13 +13,15 @@ glm::mat4 VulkanGLTFSkinModel::Node::getLocalMatrix()
 
 void VulkanGLTFSkinModel::destroy()
 {
-	buffer.destroy();
+	if (fDevice) {
+		buffer.destroy();
 
-	for (Image image : images) {
-		image.texture.destroy();
+		for (Image& image : images) {
+			image.texture.destroy();
+		}
+
+		vkDestroyDescriptorPool(fDevice->logicalDevice, samplerDescriptorPool, nullptr);
 	}
-
-	vkDestroyDescriptorPool(fDevice->logicalDevice, samplerDescriptorPool, nullptr);
 }
 
 void VulkanGLTFSkinModel::loadModel(vkf::Device& fDevice, VkDescriptorSetLayout samplerDescriptorSetLayout, std::string filename)
