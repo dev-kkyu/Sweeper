@@ -16,7 +16,7 @@ void VulkanGLTFSkinModel::destroy()
 	if (fDevice) {
 		buffer.destroy();
 
-		for (Image image : images) {
+		for (Image& image : images) {
 			image.texture.destroy();
 		}
 

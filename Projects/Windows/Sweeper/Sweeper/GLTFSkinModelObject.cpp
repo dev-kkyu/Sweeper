@@ -58,7 +58,7 @@ void GLTFSkinModelObject::initModel(VulkanGLTFSkinModel& model, VkDescriptorSetL
 	uint32_t indexBufferCount = 0;
 	for (size_t i = 0; i < scene.nodes.size(); i++)
 	{
-		const tinygltf::Node node = glTFInput.nodes[scene.nodes[i]];
+		const tinygltf::Node& node = glTFInput.nodes[scene.nodes[i]];
 		loadNode(node, nullptr, scene.nodes[i], indexBufferCount);
 	}
 	loadSkins(ssboDescriptorSetLayout);
@@ -88,7 +88,7 @@ void GLTFSkinModelObject::setAnimationClip(uint32_t animationIndex)
 	animations[activeAnimation].currentTime = 0.f;
 }
 
-std::shared_ptr<Node> GLTFSkinModelObject::findNode(std::shared_ptr<Node> parent, uint32_t index)
+std::shared_ptr<Node> GLTFSkinModelObject::findNode(const std::shared_ptr<Node>& parent, uint32_t index) const
 {
 	std::shared_ptr<Node> nodeFound = nullptr;
 	if (parent->index == index)
@@ -106,7 +106,7 @@ std::shared_ptr<Node> GLTFSkinModelObject::findNode(std::shared_ptr<Node> parent
 	return nodeFound;
 }
 
-std::shared_ptr<Node> GLTFSkinModelObject::nodeFromIndex(uint32_t index)
+std::shared_ptr<Node> GLTFSkinModelObject::nodeFromIndex(uint32_t index) const
 {
 	std::shared_ptr<Node> nodeFound = nullptr;
 	for (auto& node : nodes)
@@ -128,7 +128,7 @@ void GLTFSkinModelObject::loadSkins(VkDescriptorSetLayout ssboDescriptorSetLayou
 
 	for (size_t i = 0; i < input.skins.size(); i++)
 	{
-		tinygltf::Skin glTFSkin = input.skins[i];
+		const tinygltf::Skin& glTFSkin = input.skins[i];
 
 		skins[i].name = glTFSkin.name;
 		// Find the root node of the skeleton
@@ -170,14 +170,14 @@ void GLTFSkinModelObject::loadAnimations()
 
 	for (size_t i = 0; i < input.animations.size(); i++)
 	{
-		tinygltf::Animation glTFAnimation = input.animations[i];
+		const tinygltf::Animation& glTFAnimation = input.animations[i];
 		animations[i].name = glTFAnimation.name;
 
 		// Samplers
 		animations[i].samplers.resize(glTFAnimation.samplers.size());
 		for (size_t j = 0; j < glTFAnimation.samplers.size(); j++)
 		{
-			tinygltf::AnimationSampler glTFSampler = glTFAnimation.samplers[j];
+			const tinygltf::AnimationSampler& glTFSampler = glTFAnimation.samplers[j];
 			AnimationSampler& dstSampler = animations[i].samplers[j];
 			dstSampler.interpolation = glTFSampler.interpolation;
 
@@ -242,7 +242,7 @@ void GLTFSkinModelObject::loadAnimations()
 		animations[i].channels.resize(glTFAnimation.channels.size());
 		for (size_t j = 0; j < glTFAnimation.channels.size(); j++)
 		{
-			tinygltf::AnimationChannel glTFChannel = glTFAnimation.channels[j];
+			const tinygltf::AnimationChannel& glTFChannel = glTFAnimation.channels[j];
 			AnimationChannel& dstChannel = animations[i].channels[j];
 			dstChannel.path = glTFChannel.target_path;
 			dstChannel.samplerIndex = glTFChannel.sampler;
@@ -251,7 +251,7 @@ void GLTFSkinModelObject::loadAnimations()
 	}
 }
 
-void GLTFSkinModelObject::loadNode(const tinygltf::Node& inputNode, std::shared_ptr<Node> parent, uint32_t nodeIndex, uint32_t& indexBufferCount)
+void GLTFSkinModelObject::loadNode(const tinygltf::Node& inputNode, const std::shared_ptr<Node>& parent, uint32_t nodeIndex, uint32_t& indexBufferCount)
 {
 	const tinygltf::Model& input = *(model->glTFInput);
 
@@ -293,7 +293,7 @@ void GLTFSkinModelObject::loadNode(const tinygltf::Node& inputNode, std::shared_
 	// 모델에서는 vertex, index buffer 만들어 줬고, 노드마다의 index와 offset을 구해준다. -> Primitive
 	if (inputNode.mesh > -1)
 	{
-		const tinygltf::Mesh mesh = input.meshes[inputNode.mesh];
+		const tinygltf::Mesh& mesh = input.meshes[inputNode.mesh];
 		// Iterate through all primitives of this node's mesh
 		for (size_t i = 0; i < mesh.primitives.size(); i++)
 		{
@@ -326,7 +326,7 @@ void GLTFSkinModelObject::loadNode(const tinygltf::Node& inputNode, std::shared_
 	}
 }
 
-glm::mat4 GLTFSkinModelObject::getNodeMatrix(std::shared_ptr<Node> node)
+glm::mat4 GLTFSkinModelObject::getNodeMatrix(const std::shared_ptr<Node>& node) const
 {
 	glm::mat4				nodeMatrix = node->getLocalMatrix();
 	std::shared_ptr<Node>	currentParent = node->parent;
@@ -339,7 +339,7 @@ glm::mat4 GLTFSkinModelObject::getNodeMatrix(std::shared_ptr<Node> node)
 }
 
 // 현재 애니메이션 프레임에서 joint 행렬을 업데이트하고 GPU에 전달
-void GLTFSkinModelObject::updateJoints(std::shared_ptr<Node> node, uint32_t currentFrame)
+void GLTFSkinModelObject::updateJoints(const std::shared_ptr<Node>& node, uint32_t currentFrame)
 {
 	if (node->skin > -1)
 	{
@@ -379,7 +379,7 @@ void GLTFSkinModelObject::updateAnimation(float elapsedTime, uint32_t currentFra
 
 	for (auto& channel : animation.channels)
 	{
-		AnimationSampler& sampler = animation.samplers[channel.samplerIndex];
+		const AnimationSampler& sampler = animation.samplers[channel.samplerIndex];
 		for (size_t i = 0; i < sampler.inputs.size() - 1; i++)
 		{
 			if (sampler.interpolation != "LINEAR")
@@ -425,7 +425,7 @@ void GLTFSkinModelObject::updateAnimation(float elapsedTime, uint32_t currentFra
 	}
 }
 
-void GLTFSkinModelObject::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame, std::shared_ptr<Node> node, const glm::mat4& worldMatrix)
+void GLTFSkinModelObject::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame, const std::shared_ptr<Node>& node, const glm::mat4& worldMatrix)
 {
 	if (node->mesh.primitives.size() > 0)
 	{

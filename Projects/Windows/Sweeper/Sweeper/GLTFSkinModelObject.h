@@ -37,14 +37,14 @@ public:
 	void setAnimationClip(uint32_t animationIndex);		// animation load 완료 후 호출해야 함.
 
 private:
-	std::shared_ptr<Node>	findNode(std::shared_ptr<Node> parent, uint32_t index);
-	std::shared_ptr<Node>	nodeFromIndex(uint32_t index);
+	std::shared_ptr<Node>	findNode(const std::shared_ptr<Node>& parent, uint32_t index) const;
+	std::shared_ptr<Node>	nodeFromIndex(uint32_t index) const;
 	void					loadSkins(VkDescriptorSetLayout ssboDescriptorSetLayout);
 	void					loadAnimations();
-	void					loadNode(const tinygltf::Node& inputNode, std::shared_ptr<Node> parent, uint32_t nodeIndex, uint32_t& indexBufferCount);
-	glm::mat4				getNodeMatrix(std::shared_ptr<Node> node);
-	void					updateJoints(std::shared_ptr<Node> node, uint32_t currentFrame);
+	void					loadNode(const tinygltf::Node& inputNode, const std::shared_ptr<Node>& parent, uint32_t nodeIndex, uint32_t& indexBufferCount);
+	glm::mat4				getNodeMatrix(const std::shared_ptr<Node>& node) const;
+	void					updateJoints(const std::shared_ptr<Node>& node, uint32_t currentFrame);
 	void					updateAnimation(float elapsedTime, uint32_t currentFrame);
-	void					drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame, std::shared_ptr<Node> node, const glm::mat4& worldMatrix);
+	void					drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame, const std::shared_ptr<Node>& node, const glm::mat4& worldMatrix);
 
 };
