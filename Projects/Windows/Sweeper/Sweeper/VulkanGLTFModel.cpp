@@ -101,7 +101,7 @@ void VulkanGLTFModel::loadglTFFile(std::string filename)
 		loadTextures(glTFInput);
 		const tinygltf::Scene& scene = glTFInput.scenes[0];
 		for (size_t i = 0; i < scene.nodes.size(); i++) {
-			const tinygltf::Node node = glTFInput.nodes[scene.nodes[i]];
+			const tinygltf::Node& node = glTFInput.nodes[scene.nodes[i]];
 			loadNode(node, glTFInput, nullptr, indexBuffer, vertexBuffer);
 		}
 	}
