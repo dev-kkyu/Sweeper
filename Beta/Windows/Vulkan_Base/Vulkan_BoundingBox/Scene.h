@@ -27,6 +27,8 @@ private:
 			VkPipeline model = VK_NULL_HANDLE;
 			VkPipeline skinModel = VK_NULL_HANDLE;
 		} scene, offscreen;
+		// 바운딩 박스 파이프라인
+		VkPipeline boundingBoxPipeline;
 	} pipeline;
 
 	struct {

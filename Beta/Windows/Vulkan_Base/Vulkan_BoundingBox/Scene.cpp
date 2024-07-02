@@ -77,6 +77,7 @@ Scene::~Scene()
 	uniformBufferObject.scene.destroy();
 	uniformBufferObject.offscreen.destroy();
 
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.boundingBoxPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.model, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.skinModel, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.offscreen.model, nullptr);
@@ -461,6 +462,32 @@ void Scene::createGraphicsPipeline()
 	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.offscreen.model) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+	// BoundingBox
+	vkf::Shader boundingBoxShader{ fDevice, "shaders/boundingbox.vert.spv", "shaders/boundingbox.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(boundingBoxShader.shaderStages.size());
+	pipelineInfo.pStages = boundingBoxShader.shaderStages.data();
+
+	// input이 없는 쉐이더
+	vertexInputInfo.vertexBindingDescriptionCount = 0;
+	vertexInputInfo.pVertexBindingDescriptions = nullptr;
+	vertexInputInfo.vertexAttributeDescriptionCount = 0;
+	vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+
+	// offscreen에서 바뀐부분 원복
+	multisampling.rasterizationSamples = msaaSamples;
+	colorBlending.attachmentCount = 1;
+	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+	rasterizer.depthBiasEnable = VK_FALSE;
+	dynamicState.dynamicStateCount = 2;		// offscreen에서 추가한거 다시 제거
+	pipelineInfo.renderPass = renderPass.scene;
+
+	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.boundingBoxPipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 }
