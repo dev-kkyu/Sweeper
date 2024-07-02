@@ -14,14 +14,11 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 
 	createSamplerDescriptorPool(2);
 
-	plainBuffer.loadFromObjFile(fDevice, "models/tile.obj");
-	plainTexture.loadFromFile(fDevice, "textures/tile.jpg", samplerDescriptorPool, descriptorSetLayout.sampler);
+	mapModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/map.glb");
+	mapObject.setModel(mapModel);
+
 	boxBuffer.loadFromObjFile(fDevice, "models/box.obj");
 	boxTexture.loadFromFile(fDevice, "textures/wood.jpg", samplerDescriptorPool, descriptorSetLayout.sampler);
-
-	plainObject = new OBJModelObject;
-	plainObject->setBuffer(plainBuffer);
-	plainObject->setTexture(plainTexture);
 
 	pPlayer = new PlayerObject;
 	pPlayer->setBuffer(boxBuffer);
@@ -68,9 +65,7 @@ Scene::~Scene()
 	boxTexture.destroy();
 	boxBuffer.destroy();
 
-	delete plainObject;
-	plainTexture.destroy();
-	plainBuffer.destroy();
+	mapModel.destroy();
 
 	vkDestroyDescriptorPool(fDevice.logicalDevice, samplerDescriptorPool, nullptr);
 
@@ -113,8 +108,6 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	uniformBufferObject.offscreen.updateUniformBuffer(ubo, currentFrame);
 
 	// 오브젝트 업데이트
-	plainObject->update(elapsedTime, currentFrame);
-
 	pPlayer->update(elapsedTime, currentFrame);
 
 	gltfModelObject->update(elapsedTime, currentFrame);
@@ -135,7 +128,7 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOf
 
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.sceneOnOff[idx].model);
 
-	plainObject->draw(commandBuffer, pipelineLayout, currentFrame);
+	mapObject.draw(commandBuffer, pipelineLayout, currentFrame);
 	pPlayer->draw(commandBuffer, pipelineLayout, currentFrame);
 	gltfModelObject->draw(commandBuffer, pipelineLayout, currentFrame);
 

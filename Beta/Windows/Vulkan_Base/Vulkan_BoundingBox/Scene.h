@@ -52,9 +52,8 @@ private:
 
 	VkDescriptorPool samplerDescriptorPool;
 
-	vkf::MeshBuffer plainBuffer;
-	vkf::Texture plainTexture;
-	OBJModelObject* plainObject;
+	VulkanGLTFModel mapModel;
+	GLTFModelObject mapObject;
 
 	vkf::MeshBuffer boxBuffer;
 	vkf::Texture boxTexture;
