@@ -1,19 +1,30 @@
 #pragma once
 
-#include "GameObjectBase.h"
+#include "VulkanFramework.h"
 
-class BoundingBoxObject : public GameObjectBase
+class BoundingBox
 {
 private:
+	float top;
+	float bottom;
+	float front;
+	float back;
+	float left;
+	float right;
+
+private:
+	glm::mat4 modelTransform;
 
 public:
-	BoundingBoxObject();
-	virtual ~BoundingBoxObject();
+	BoundingBox();
+	~BoundingBox();
 
-	virtual void initialize() override;
-	virtual void update(float elapsedTime, uint32_t currentFrame) override;
-	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
-	virtual void release() override;
+	void setBound(float top, float bottom, float front, float back, float left, float right);
+
+	void updatePosition(const glm::vec3& position);
+	void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame);
+
+	bool isCollide(const BoundingBox& other);
 
 };
 
