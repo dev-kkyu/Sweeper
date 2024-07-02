@@ -133,25 +133,21 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen)
 {
 	// if문을 쓰지 않기 위한 코드..
-	Pipeline::Type* lineType[2]{ &pipeline.scene, &pipeline.offscreen };
-	vkf::BufferObject* uboType[2]{ &uniformBufferObject.scene, &uniformBufferObject.offscreen };
 	int idx = !!static_cast<int>(isOffscreen);
-	Pipeline::Type& line = *lineType[idx];
-	vkf::BufferObject& ubo = *uboType[idx];
 
 	// shadow map bind (offscreen draw시에는 사용하지 않는다)
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowSet, 0, nullptr);
 
 	// UBO 바인드, firstSet은 set의 시작인덱스
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &ubo.descriptorSets[currentFrame], 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.uboOnOff[idx].descriptorSets[currentFrame], 0, nullptr);
 
 	// Model Object들
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, line.model);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.sceneOnOff[idx].model);
 
 	mapObject.draw(commandBuffer, pipelineLayout, currentFrame);
 
 	// skinModel Object들
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, line.skinModel);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.sceneOnOff[idx].skinModel);
 
 	bossObject.draw(commandBuffer, pipelineLayout, currentFrame);
 

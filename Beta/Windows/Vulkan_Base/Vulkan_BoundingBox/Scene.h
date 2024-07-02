@@ -22,18 +22,30 @@ private:
 
 	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;		// model 파이프라인은 0, 1, 2번 셋만 사용한다
 
-	struct Pipeline {
-		struct Type {
-			VkPipeline model = VK_NULL_HANDLE;
-			VkPipeline skinModel = VK_NULL_HANDLE;
-		} scene, offscreen;
+	struct ScenePipeline {
+		VkPipeline model;
+		VkPipeline skinModel;
+	};
+	struct {
+		union {
+			ScenePipeline sceneOnOff[2]{};
+			struct {
+				ScenePipeline scene;
+				ScenePipeline offscreen;
+			};
+		};
 		// 바운딩 박스 파이프라인
 		VkPipeline boundingBoxPipeline;
 	} pipeline;
 
 	struct {
-		vkf::BufferObject scene;
-		vkf::BufferObject offscreen;
+		union {
+			vkf::BufferObject uboOnOff[2]{};
+			struct {
+				vkf::BufferObject scene;
+				vkf::BufferObject offscreen;
+			};
+		};
 	} uniformBufferObject;
 
 	glm::vec3 lightPos = glm::vec3(10.f, 10.f, 10.f);
