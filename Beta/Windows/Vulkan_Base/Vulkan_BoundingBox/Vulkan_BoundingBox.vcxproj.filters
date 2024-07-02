@@ -1,0 +1,125 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="소스 파일\Shader">
+      <UniqueIdentifier>{925e55df-afdc-4bef-941f-d57c7b03a1da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase">
+      <UniqueIdentifier>{eb966ab8-95f0-42d6-bb39-5a03d8c0b470}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\GLTFSkinModelObject">
+      <UniqueIdentifier>{9c5c629d-bcdf-442a-bef6-60a5f93f7481}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\GLTFModelObject">
+      <UniqueIdentifier>{d7dd76f3-2919-43ae-a222-3cfdedf26fe3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\OBJModelObject">
+      <UniqueIdentifier>{51b7fce7-16a9-4c76-9ada-a5efc42cd353}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\OBJModelObject\PlayerObejct">
+      <UniqueIdentifier>{ba4a03ac-7746-4886-b2c7-f1441f8d1e81}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\skinnedmodel.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\fragment.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\model.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Camera.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="GameFramework.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanFramework.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanGLTFModel.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanGLTFSkinModel.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="OBJModelObject.cpp">
+      <Filter>GameObjectBase\OBJModelObject</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerObject.cpp">
+      <Filter>GameObjectBase\OBJModelObject\PlayerObejct</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjectBase.cpp">
+      <Filter>GameObjectBase</Filter>
+    </ClCompile>
+    <ClCompile Include="GLTFSkinModelObject.cpp">
+      <Filter>GameObjectBase\GLTFSkinModelObject</Filter>
+    </ClCompile>
+    <ClCompile Include="GLTFModelObject.cpp">
+      <Filter>GameObjectBase\GLTFModelObject</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="OBJModelObject.h">
+      <Filter>GameObjectBase\OBJModelObject</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerObject.h">
+      <Filter>GameObjectBase\OBJModelObject\PlayerObejct</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjectBase.h">
+      <Filter>GameObjectBase</Filter>
+    </ClInclude>
+    <ClInclude Include="GLTFSkinModelObject.h">
+      <Filter>GameObjectBase\GLTFSkinModelObject</Filter>
+    </ClInclude>
+    <ClInclude Include="GLTFModelObject.h">
+      <Filter>GameObjectBase\GLTFModelObject</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanGLTFSkinModel.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanGLTFModel.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanFramework.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="GameFramework.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
