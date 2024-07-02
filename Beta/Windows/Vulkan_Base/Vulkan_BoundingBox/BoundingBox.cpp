@@ -1,4 +1,4 @@
-#include "BoundingBoxObject.h"
+#include "BoundingBox.h"
 
 BoundingBox::BoundingBox()
 	: modelTransform{ 1.f }

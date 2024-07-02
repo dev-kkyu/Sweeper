@@ -92,9 +92,6 @@ void VulkanGLTFModel::loadglTFFile(std::string filename)
 		throw std::runtime_error("This file does not have extension.\n");
 	}
 
-	std::vector<uint32_t> indexBuffer;
-	std::vector<vkf::Vertex> vertexBuffer;
-
 	if (fileLoaded) {
 		loadImages(glTFInput);
 		loadMaterials(glTFInput);
@@ -102,7 +99,7 @@ void VulkanGLTFModel::loadglTFFile(std::string filename)
 		const tinygltf::Scene& scene = glTFInput.scenes[0];
 		for (size_t i = 0; i < scene.nodes.size(); i++) {
 			const tinygltf::Node& node = glTFInput.nodes[scene.nodes[i]];
-			loadNode(node, glTFInput, nullptr, indexBuffer, vertexBuffer);
+			loadNode(node, glTFInput, nullptr);
 		}
 	}
 	else {
@@ -113,7 +110,6 @@ void VulkanGLTFModel::loadglTFFile(std::string filename)
 	// We will be using one single vertex buffer and one single index buffer for the whole glTF scene
 	// Primitives (of the glTF model) will then index into these using index offsets
 
-	indexCount = static_cast<uint32_t>(indexBuffer.size());
 	buffer.loadFromBuffer(*fDevice, vertexBuffer, indexBuffer);
 }
 
@@ -197,7 +193,7 @@ void VulkanGLTFModel::loadMaterials(tinygltf::Model& input)
 	}
 }
 
-void VulkanGLTFModel::loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, const std::shared_ptr<VulkanGLTFModel::Node>& parent, std::vector<uint32_t>& indexBuffer, std::vector<vkf::Vertex>& vertexBuffer)
+void VulkanGLTFModel::loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, const std::shared_ptr<VulkanGLTFModel::Node>& parent)
 {
 	std::shared_ptr<VulkanGLTFModel::Node> node = std::make_shared<VulkanGLTFModel::Node>();
 	node->matrix = glm::mat4(1.0f);
@@ -222,7 +218,7 @@ void VulkanGLTFModel::loadNode(const tinygltf::Node& inputNode, const tinygltf::
 	// Load node's children
 	if (inputNode.children.size() > 0) {
 		for (size_t i = 0; i < inputNode.children.size(); i++) {
-			loadNode(input.nodes[inputNode.children[i]], input, node, indexBuffer, vertexBuffer);
+			loadNode(input.nodes[inputNode.children[i]], input, node);
 		}
 	}
 

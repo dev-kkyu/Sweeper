@@ -18,8 +18,11 @@ public:
 	VkDescriptorPool samplerDescriptorPool = VK_NULL_HANDLE;
 	VkDescriptorSetLayout samplerDescriptorSetLayout = VK_NULL_HANDLE;
 
+	// 실제 모델에서 불러온 버퍼
+	std::vector<vkf::Vertex> vertexBuffer;
+	std::vector<uint32_t> indexBuffer;
+
 	vkf::MeshBuffer buffer;
-	uint32_t indexCount = 0;
 
 	// The following structures roughly represent the glTF scene structure
 	// To keep things simple, they only contain those properties that are required for this sample
@@ -91,7 +94,7 @@ private:
 	void loadImages(tinygltf::Model& input);
 	void loadTextures(tinygltf::Model& input);
 	void loadMaterials(tinygltf::Model& input);
-	void loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, const std::shared_ptr<VulkanGLTFModel::Node>& parent, std::vector<uint32_t>& indexBuffer, std::vector<vkf::Vertex>& vertexBuffer);
+	void loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, const std::shared_ptr<VulkanGLTFModel::Node>& parent);
 
 
 };

@@ -31,9 +31,6 @@
     <Filter Include="GameObjectBase\OBJModelObject\PlayerObejct">
       <UniqueIdentifier>{ba4a03ac-7746-4886-b2c7-f1441f8d1e81}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameObjectBase\BoundingBoxObject">
-      <UniqueIdentifier>{bf27dcdb-5fac-47c8-bea7-496674809e91}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\skinnedmodel.vert">
@@ -92,8 +89,8 @@
     <ClCompile Include="GLTFModelObject.cpp">
       <Filter>GameObjectBase\GLTFModelObject</Filter>
     </ClCompile>
-    <ClCompile Include="BoundingBoxObject.cpp">
-      <Filter>GameObjectBase\BoundingBoxObject</Filter>
+    <ClCompile Include="BoundingBox.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -133,8 +130,8 @@
     <ClInclude Include="Camera.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="BoundingBoxObject.h">
-      <Filter>GameObjectBase\BoundingBoxObject</Filter>
+    <ClInclude Include="BoundingBox.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
