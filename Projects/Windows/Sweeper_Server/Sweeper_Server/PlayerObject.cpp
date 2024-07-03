@@ -1,5 +1,6 @@
 #include "PlayerObject.h"
 
+#include "Map.h"
 #include "Room.h"
 #include "Session.h"
 #include "MonsterObject.h"
@@ -147,7 +148,15 @@ void RUNState::update(float elapsedTime)
 
 		//move(direction, elapsedTime * moveSpeed);
 		// 입력된 방향으로 플레이어 방향을 점차 바꾸면서, 해당 방향으로 전진한다
+		auto befPos = player.getPosition();
 		player.rotateAndMoveToDirection(lastDirection, moveSpeed, elapsedTime);
+		auto& boundBox = Map::getInstance().getBoundingBox();
+		for (const auto& box : boundBox) {
+			if (box.isCollide(player.getBoundingBox())) {
+				player.setPosition(befPos);		// 충돌시 기존 위치로 돌아간다.
+				break;
+			}
+		}
 
 		// 이동 후 충돌처리
 		// 플레이어끼리

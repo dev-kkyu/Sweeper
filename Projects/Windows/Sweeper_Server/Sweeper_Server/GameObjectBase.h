@@ -1,9 +1,6 @@
 #pragma once
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "BoundingBox.h"
 
 #include <memory>
 
@@ -45,5 +42,6 @@ public:
 	virtual void rotate(float degree) final;
 
 	virtual bool isCollide(const GameObjectBase& other) const final;
+	virtual BoundingBox getBoundingBox() const final;
 
 };

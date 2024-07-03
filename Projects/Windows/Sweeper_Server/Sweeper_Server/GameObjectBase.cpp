@@ -85,3 +85,11 @@ bool GameObjectBase::isCollide(const GameObjectBase& other) const
 	return dist2 <= collision_dist * collision_dist;
 }
 
+BoundingBox GameObjectBase::getBoundingBox() const
+{
+	const glm::vec3 myPos = getPosition();
+	BoundingBox boundingBox;
+	boundingBox.setBound(1.f, 0.1f, myPos.z + collisionRadius, myPos.z - collisionRadius, myPos.x - collisionRadius, myPos.x + collisionRadius);
+	return boundingBox;
+}
+
