@@ -36,6 +36,12 @@
     <ClCompile Include="MonsterObject.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="BoundingBox.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Map.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Session.h">
@@ -57,6 +63,12 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="MonsterObject.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundingBox.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Map.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

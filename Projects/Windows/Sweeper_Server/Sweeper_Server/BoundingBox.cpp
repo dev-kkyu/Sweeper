@@ -3,7 +3,6 @@
 #include <tuple>
 
 BoundingBox::BoundingBox()
-	: shaderTransform{ 1.f }
 {
 	top = 1.f;
 	bottom = 0.f;
@@ -34,25 +33,6 @@ void BoundingBox::applyTransform(const glm::mat4& transform)
 
 	std::tie(left, bottom, back) = std::tie(v1.x, v1.y, v1.z);
 	std::tie(right, top, front) = std::tie(v2.x, v2.y, v2.z);
-
-	float len_x = right - left;
-	float len_y = top - bottom;
-	float len_z = front - back;
-
-	float cen_x = (right + left) / 2.f;
-	float cen_y = (top + bottom) / 2.f;
-	float cen_z = (front + back) / 2.f;
-
-	glm::mat4 scaleMat = glm::scale(glm::mat4(1.f), glm::vec3(len_x, len_y, len_z));
-	glm::mat4 posMat = glm::translate(glm::mat4(1.f), glm::vec3(cen_x, cen_y, cen_z));
-
-	shaderTransform = posMat * scaleMat;
-}
-
-void BoundingBox::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
-{
-	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &shaderTransform);
-	vkCmdDraw(commandBuffer, 48, 1, 0, 0);
 }
 
 bool BoundingBox::isCollide(const BoundingBox& other)
