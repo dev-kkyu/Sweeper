@@ -63,3 +63,33 @@ bool BoundingBox::isCollide(const BoundingBox& other)
 	if (back >= other.front) return false;
 	return true;
 }
+
+float BoundingBox::getTop() const
+{
+	return top;
+}
+
+float BoundingBox::getBottom() const
+{
+	return bottom;
+}
+
+float BoundingBox::getFront() const
+{
+	return front;
+}
+
+float BoundingBox::getBack() const
+{
+	return back;
+}
+
+float BoundingBox::getLeft() const
+{
+	return left;
+}
+
+float BoundingBox::getRight() const
+{
+	return right;
+}

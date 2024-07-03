@@ -26,5 +26,12 @@ public:
 
 	bool isCollide(const BoundingBox& other);
 
+	float getTop() const;
+	float getBottom() const;
+	float getFront() const;
+	float getBack() const;
+	float getLeft() const;
+	float getRight() const;
+
 };
 
