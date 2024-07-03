@@ -6,7 +6,7 @@
 #include <iostream>
 
 #define GLM_ENABLE_EXPERIMENTAL
-#include "includes/glm/gtx/vector_angle.hpp"
+#include <glm/gtx/vector_angle.hpp>
 
 StateMachine::StateMachine(PlayerObject& player)
 	: player{ player }
