@@ -35,7 +35,7 @@ void BoundingBox::applyTransform(const glm::mat4& transform)
 	std::tie(right, top, front) = std::tie(v2.x, v2.y, v2.z);
 }
 
-bool BoundingBox::isCollide(const BoundingBox& other)
+bool BoundingBox::isCollide(const BoundingBox& other) const
 {
 	if (left >= other.right) return false;
 	if (right <= other.left) return false;

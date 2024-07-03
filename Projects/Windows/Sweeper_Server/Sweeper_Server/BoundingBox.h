@@ -22,7 +22,7 @@ public:
 	void setBound(float top, float bottom, float front, float back, float left, float right);
 	void applyTransform(const glm::mat4& transform);
 
-	bool isCollide(const BoundingBox& other);
+	bool isCollide(const BoundingBox& other) const;
 
 	float getTop() const;
 	float getBottom() const;

@@ -24,7 +24,7 @@ public:
 
 	void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const;
 
-	bool isCollide(const BoundingBox& other);
+	bool isCollide(const BoundingBox& other) const;
 
 	float getTop() const;
 	float getBottom() const;

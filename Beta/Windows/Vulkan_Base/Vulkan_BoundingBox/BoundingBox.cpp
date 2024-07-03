@@ -53,7 +53,7 @@ void BoundingBox::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineL
 	vkCmdDraw(commandBuffer, 48, 1, 0, 0);
 }
 
-bool BoundingBox::isCollide(const BoundingBox& other)
+bool BoundingBox::isCollide(const BoundingBox& other) const
 {
 	if (left >= other.right) return false;
 	if (right <= other.left) return false;
