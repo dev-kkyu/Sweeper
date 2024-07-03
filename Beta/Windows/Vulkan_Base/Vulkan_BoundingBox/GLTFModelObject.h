@@ -9,6 +9,8 @@ protected:
 
 	VulkanGLTFModel* model = nullptr;
 
+	std::vector<BoundingBox> boundingBox;
+
 public:
 	GLTFModelObject();
 	virtual ~GLTFModelObject();
@@ -19,6 +21,12 @@ public:
 	virtual void release() override;
 
 	void setModel(VulkanGLTFModel& model);
+
+	void updateBoundingBox();
+	void drawBoundingBox(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const;
+
+private:
+	void copyBoundingBoxByNode(const std::shared_ptr<VulkanGLTFModel::Node> node);
 
 };
 

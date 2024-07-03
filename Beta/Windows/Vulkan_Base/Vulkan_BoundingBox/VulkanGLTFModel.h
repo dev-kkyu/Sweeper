@@ -2,6 +2,8 @@
 
 #include "VulkanFramework.h"
 
+#include "BoundingBox.h"
+
 #include <memory>
 
 namespace tinygltf
@@ -38,6 +40,7 @@ public:
 	// Contains the node's (optional) geometry and can be made up of an arbitrary number of primitives
 	struct Mesh {
 		std::vector<Primitive> primitives;
+		std::vector<BoundingBox> boundingBox;	// Ãß°¡
 	};
 
 	// A node represents an object in the glTF scene graph
@@ -96,6 +99,8 @@ private:
 	void loadMaterials(tinygltf::Model& input);
 	void loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, const std::shared_ptr<VulkanGLTFModel::Node>& parent);
 
+	void createBoundingBox();
+	void createBoundingBoxNode(const std::shared_ptr<VulkanGLTFModel::Node>& node);
 
 };
 

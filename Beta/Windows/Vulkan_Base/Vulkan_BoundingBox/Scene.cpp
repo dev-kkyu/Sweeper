@@ -39,6 +39,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 	gltfModelObject->setModel(gltfModel);
 	gltfModelObject->setPosition({ 0.f, 1.5f, 0.f });
 	gltfModelObject->setScale(glm::vec3{ 1.f });
+	gltfModelObject->updateBoundingBox();
 
 	skinModelObject[0] = new GLTFSkinModelObject;
 	skinModelObject[0]->initModel(skinModel[0], descriptorSetLayout.ssbo);
@@ -136,6 +137,12 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOf
 	// ubo는 공용이기 때문에, 다시 bind 하지 않는다
 	skinModelObject[0]->draw(commandBuffer, pipelineLayout, currentFrame);
 	skinModelObject[1]->draw(commandBuffer, pipelineLayout, currentFrame);
+
+	if (not isOffscreen) {
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.boundingBoxPipeline);
+		mapObject.drawBoundingBox(commandBuffer, pipelineLayout);
+		gltfModelObject->drawBoundingBox(commandBuffer, pipelineLayout);
+	}
 }
 
 void Scene::processKeyboard(int key, int action, int mods)

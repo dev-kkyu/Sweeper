@@ -101,6 +101,7 @@ void VulkanGLTFModel::loadglTFFile(std::string filename)
 			const tinygltf::Node& node = glTFInput.nodes[scene.nodes[i]];
 			loadNode(node, glTFInput, nullptr);
 		}
+		createBoundingBox();	// 추가
 	}
 	else {
 		throw std::runtime_error("Could not open the glTF file.\n\nMake sure the assets submodule has been checked out and is up-to-date.");
@@ -319,5 +320,57 @@ void VulkanGLTFModel::loadNode(const tinygltf::Node& inputNode, const tinygltf::
 	}
 	else {
 		nodes.push_back(node);
+	}
+}
+
+void VulkanGLTFModel::createBoundingBox()
+{
+	for (auto& node : nodes) {
+		createBoundingBoxNode(node);
+	}
+}
+
+void VulkanGLTFModel::createBoundingBoxNode(const std::shared_ptr<VulkanGLTFModel::Node>& node)
+{
+	if (node->mesh.primitives.size() > 0) {
+		glm::mat4 nodeMatrix = node->matrix;
+		std::shared_ptr<VulkanGLTFModel::Node> currentParent = node->parent;
+		while (currentParent) {
+			nodeMatrix = currentParent->matrix * nodeMatrix;
+			currentParent = currentParent->parent;
+		}
+
+		for (const VulkanGLTFModel::Primitive& primitive : node->mesh.primitives) {
+			if (primitive.indexCount > 0) {
+				glm::vec3 minVertex = vertexBuffer[indexBuffer[primitive.firstIndex]].pos;
+				glm::vec3 maxVertex = minVertex;
+
+				for (uint32_t i = primitive.firstIndex; i < primitive.firstIndex + primitive.indexCount; ++i) {
+					const glm::vec3& nowPos = vertexBuffer[indexBuffer[i]].pos;
+					if (minVertex.x > nowPos.x)
+						minVertex.x = nowPos.x;
+					if (minVertex.y > nowPos.y)
+						minVertex.y = nowPos.y;
+					if (minVertex.z > nowPos.z)
+						minVertex.z = nowPos.z;
+
+					if (maxVertex.x < nowPos.x)
+						maxVertex.x = nowPos.x;
+					if (maxVertex.y < nowPos.y)
+						maxVertex.y = nowPos.y;
+					if (maxVertex.z < nowPos.z)
+						maxVertex.z = nowPos.z;
+				}
+
+				BoundingBox boundingBox;
+				boundingBox.setBound(maxVertex.y, minVertex.y, maxVertex.z, minVertex.z, minVertex.x, maxVertex.x);
+				boundingBox.applyTransform(nodeMatrix);
+
+				node->mesh.boundingBox.push_back(boundingBox);
+			}
+		}
+	}
+	for (const auto& child : node->children) {
+		createBoundingBoxNode(child);
 	}
 }

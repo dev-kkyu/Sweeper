@@ -1,7 +1,7 @@
 #include "BoundingBox.h"
 
 BoundingBox::BoundingBox()
-	: modelTransform{ 1.f }
+	: shaderTransform{ 1.f }
 {
 	top = 1.f;
 	bottom = 0.f;
@@ -25,8 +25,14 @@ void BoundingBox::setBound(float top, float bottom, float front, float back, flo
 	this->right = right;
 }
 
-void BoundingBox::updatePosition(const glm::vec3& position)
+void BoundingBox::applyTransform(const glm::mat4& transform)
 {
+	glm::vec4 v1 = transform * glm::vec4(left, bottom, back, 1.f);
+	glm::vec4 v2 = transform * glm::vec4(right, top, front, 1.f);
+
+	std::tie(left, bottom, back) = std::tie(v1.x, v1.y, v1.z);
+	std::tie(right, top, front) = std::tie(v2.x, v2.y, v2.z);
+
 	float len_x = right - left;
 	float len_y = top - bottom;
 	float len_z = front - back;
@@ -36,14 +42,14 @@ void BoundingBox::updatePosition(const glm::vec3& position)
 	float cen_z = (front + back) / 2.f;
 
 	glm::mat4 scaleMat = glm::scale(glm::mat4(1.f), glm::vec3(len_x, len_y, len_z));
-	glm::mat4 posMat = glm::translate(glm::mat4(1.f), glm::vec3(cen_x, cen_y, cen_z) + position);
+	glm::mat4 posMat = glm::translate(glm::mat4(1.f), glm::vec3(cen_x, cen_y, cen_z));
 
-	modelTransform = posMat * scaleMat;
+	shaderTransform = posMat * scaleMat;
 }
 
-void BoundingBox::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
+void BoundingBox::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
 {
-	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &modelTransform);
+	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &shaderTransform);
 	vkCmdDraw(commandBuffer, 48, 1, 0, 0);
 }
 
