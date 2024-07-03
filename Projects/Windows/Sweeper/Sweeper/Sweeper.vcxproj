@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BoundingBox.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="GameObjectBase.cpp" />
@@ -152,6 +153,7 @@
     <ClCompile Include="VulkanGLTFSkinModel.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="GameObjectBase.h" />
@@ -168,6 +170,8 @@
     <ClInclude Include="VulkanGLTFSkinModel.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\boundingbox.frag" />
+    <None Include="shaders\boundingbox.vert" />
     <None Include="shaders\fragment.frag" />
     <None Include="shaders\model.vert" />
     <None Include="shaders\skinnedmodel.vert" />
