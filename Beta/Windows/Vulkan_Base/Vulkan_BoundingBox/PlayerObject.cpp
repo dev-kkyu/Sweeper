@@ -24,7 +24,7 @@ void PlayerObject::update(float elapsedTime, uint32_t currentFrame)
 		if (keyState & KEY_LEFT) direction += 1.f * right;
 		if (keyState & KEY_RIGHT) direction -= 1.f * right;
 
-		move(direction, elapsedTime * 3.f);
+		move(direction, elapsedTime * 10.f);
 	}
 }
 

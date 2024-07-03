@@ -195,6 +195,9 @@ void GameFramework::processKeyboard(int key, int action, int mods)
 {
 	if (pScene)
 		pScene->processKeyboard(key, action, mods);
+
+	if (key == GLFW_KEY_B and action == GLFW_PRESS)
+		isDrawBoundingBox = not isDrawBoundingBox;
 }
 
 void GameFramework::processMouseButton(int button, int action, int mods, float xpos, float ypos)
@@ -939,6 +942,9 @@ void GameFramework::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 		pScene->draw(commandBuffer, currentFrame, false);
+
+		if (isDrawBoundingBox)
+			pScene->drawBoundingBox(commandBuffer, currentFrame);
 
 		vkCmdEndRenderPass(commandBuffer);
 	}

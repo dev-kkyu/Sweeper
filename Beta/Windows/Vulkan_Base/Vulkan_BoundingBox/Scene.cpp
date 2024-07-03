@@ -137,12 +137,14 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOf
 	// ubo는 공용이기 때문에, 다시 bind 하지 않는다
 	skinModelObject[0]->draw(commandBuffer, pipelineLayout, currentFrame);
 	skinModelObject[1]->draw(commandBuffer, pipelineLayout, currentFrame);
+}
 
-	if (not isOffscreen) {
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.boundingBoxPipeline);
-		mapObject.drawBoundingBox(commandBuffer, pipelineLayout);
-		gltfModelObject->drawBoundingBox(commandBuffer, pipelineLayout);
-	}
+void Scene::drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+{
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.boundingBoxPipeline);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
+	mapObject.drawBoundingBox(commandBuffer, pipelineLayout);
+	gltfModelObject->drawBoundingBox(commandBuffer, pipelineLayout);
 }
 
 void Scene::processKeyboard(int key, int action, int mods)

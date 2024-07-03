@@ -76,6 +76,7 @@ public:
 
 	void update(float elapsedTime, uint32_t currentFrame);
 	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen);
+	void drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
 	void processKeyboard(int key, int action, int mods);
 	void processMouseButton(int button, int action, int mods, float xpos, float ypos);

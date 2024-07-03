@@ -55,6 +55,7 @@ private:
 	int& framebufferHeight;
 
 	std::unique_ptr<Scene> pScene;
+	bool isDrawBoundingBox = true;
 
 	vkf::Device fDevice;
 
