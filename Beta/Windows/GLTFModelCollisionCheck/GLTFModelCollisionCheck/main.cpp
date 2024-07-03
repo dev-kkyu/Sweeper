@@ -1,12 +1,12 @@
 #include <iostream>
 
-#include "GLTFCollisionModel.h"
+#include "CollisionObject.h"
 
 int main()
 {
 	GLTFCollisionModel model{ "../../../../Projects/Windows/Sweeper/Sweeper/Models/map.glb" };
+	CollisionObject object{ model };
 
-	std::cout << model.vertexBuffer.size() << "개의 버텍스" << std::endl;
-	std::cout << model.indexBuffer.size() << "개의 인덱스" << std::endl;
-	std::cout << model.nodes.size() << "개의 부모 노드" << std::endl;
+	std::cout << object.getBoundingBox().size() << "개의 바운딩 박스" << std::endl;
+
 }

@@ -4,10 +4,7 @@
 #include <string>
 #include <vector>
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "BoundingBox.h"
 
 namespace tinygltf
 {
@@ -34,6 +31,7 @@ public:
 	// 노드들의 geometry가 선택적으로 포함될 수 있으며, 임의의 갯수의 primitive로 구성될 수 있다.
 	struct Mesh {
 		std::vector<Primitive> primitives;
+		std::vector<BoundingBox> boundingBox;	// 추가
 	};
 
 	// A node represents an object in the glTF scene graph
@@ -45,10 +43,10 @@ public:
 		glm::mat4 matrix;
 	};
 
-private:
-public:
+
 	std::vector<Vertex> vertexBuffer;
 	std::vector<uint32_t> indexBuffer;
+
 	std::vector<std::shared_ptr<Node>> nodes;
 
 public:
@@ -57,6 +55,9 @@ public:
 private:
 	void loadglTFFile(std::string filename);
 	void loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, const std::shared_ptr<GLTFCollisionModel::Node>& parent);
+
+	void createBoundingBox();
+	void createBoundingBoxNode(const std::shared_ptr<GLTFCollisionModel::Node>& node);
 
 };
 
