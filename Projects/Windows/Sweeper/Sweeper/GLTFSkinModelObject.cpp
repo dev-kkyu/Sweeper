@@ -88,6 +88,19 @@ void GLTFSkinModelObject::setAnimationClip(uint32_t animationIndex)
 	animations[activeAnimation].currentTime = 0.f;
 }
 
+BoundingBox GLTFSkinModelObject::getBoundingBox() const
+{
+	const glm::vec3 myPos = getPosition();
+	BoundingBox boundingBox;
+	boundingBox.setBound(1.f, 0.1f, myPos.z + collisionRadius, myPos.z - collisionRadius, myPos.x - collisionRadius, myPos.x + collisionRadius);
+	return boundingBox;
+}
+
+void GLTFSkinModelObject::drawBoundingBox(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
+{
+	getBoundingBox().draw(commandBuffer, pipelineLayout);
+}
+
 std::shared_ptr<Node> GLTFSkinModelObject::findNode(const std::shared_ptr<Node>& parent, uint32_t index) const
 {
 	std::shared_ptr<Node> nodeFound = nullptr;

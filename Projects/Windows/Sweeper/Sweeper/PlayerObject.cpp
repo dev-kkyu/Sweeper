@@ -17,6 +17,8 @@ PlayerObject::PlayerObject()
 	dashMaxMoveSpeed = 30.f;
 	dashMoveSpeed = 0.f;
 	dashAcceleration = 250.f;
+
+	collisionRadius = 0.4f;						// 캐릭터 충돌 반지름 조정
 }
 
 PlayerObject::~PlayerObject()

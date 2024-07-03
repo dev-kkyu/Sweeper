@@ -27,6 +27,8 @@ Server::Server(asio::io_context& io_context, int port)
 
 	fps_value = 60;			// 초당 60번 업데이트
 
+	std::cout << "서버 준비 완료" << std::endl;
+
 	doAccept();				// 접속을 받기 시작한다.
 	doTimer();				// 타이머 동작(업데이트)을 시작한다.
 }

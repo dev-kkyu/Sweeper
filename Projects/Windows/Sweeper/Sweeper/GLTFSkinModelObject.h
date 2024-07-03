@@ -3,6 +3,8 @@
 #include "GameObjectBase.h"
 #include "VulkanGLTFSkinModel.h"
 
+#include "BoundingBox.h"
+
 class GLTFSkinModelObject : public GameObjectBase
 {
 	using Node = VulkanGLTFSkinModel::Node;
@@ -20,6 +22,9 @@ protected:
 
 	float animateSpeed = 1.f;
 
+	// 충돌 반지름 (기본 0.5f)
+	float collisionRadius = 0.5f;
+
 public:
 	GLTFSkinModelObject();
 	virtual ~GLTFSkinModelObject();
@@ -35,6 +40,9 @@ public:
 
 	void changeAnimationClip();
 	void setAnimationClip(uint32_t animationIndex);		// animation load 완료 후 호출해야 함.
+
+	BoundingBox getBoundingBox() const;
+	void drawBoundingBox(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const;
 
 private:
 	std::shared_ptr<Node>	findNode(const std::shared_ptr<Node>& parent, uint32_t index) const;
