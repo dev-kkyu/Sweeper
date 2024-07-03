@@ -63,7 +63,8 @@ void GLTFModelObject::drawBoundingBox(VkCommandBuffer commandBuffer, VkPipelineL
 void GLTFModelObject::copyBoundingBoxByNode(const std::shared_ptr<VulkanGLTFModel::Node> node)
 {
 	for (const auto& box : node->mesh.boundingBox) {
-		boundingBox.push_back(box);
+		if (box.getTop() > 0.f)		// 아래쪽 박스는 사용하지 않는다.
+			boundingBox.push_back(box);
 	}
 
 	for (const auto& child : node->children) {
