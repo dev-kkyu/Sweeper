@@ -12,12 +12,12 @@ GameObjectBase::~GameObjectBase()
 {
 }
 
-void GameObjectBase::setPosition(glm::vec3 position)
+void GameObjectBase::setPosition(const glm::vec3& position)
 {
 	modelTransform[3] = glm::vec4(position, 1.f);
 }
 
-void GameObjectBase::setLook(glm::vec3 look)
+void GameObjectBase::setLook(const glm::vec3& look)
 {
 	glm::vec3 position = getPosition();
 
@@ -31,7 +31,7 @@ void GameObjectBase::setLook(glm::vec3 look)
 	setPosition(position);
 }
 
-void GameObjectBase::setScale(glm::vec3 scale)
+void GameObjectBase::setScale(const glm::vec3& scale)
 {
 	scaleValue = scaleValue * scale;
 	glm::mat4 scaleMat = glm::scale(glm::mat4(1.f), scale);
@@ -60,7 +60,7 @@ void GameObjectBase::moveForward(float value)
 	setPosition(position);
 }
 
-void GameObjectBase::move(glm::vec3 direction, float value)
+void GameObjectBase::move(const glm::vec3& direction, float value)
 {
 	if (glm::length(direction) > 0.f) {
 		auto position = getPosition();
