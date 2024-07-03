@@ -42,12 +42,12 @@ void BoundingBox::applyTransform(const glm::mat4& transform)
 
 bool BoundingBox::isCollide(const BoundingBox& other) const
 {
-	if (left >= other.right) return false;
-	if (right <= other.left) return false;
-	if (top <= other.bottom) return false;
-	if (bottom >= other.top) return false;
-	if (front <= other.back) return false;
-	if (back >= other.front) return false;
+	if (left > other.right) return false;
+	if (right < other.left) return false;
+	if (top < other.bottom) return false;
+	if (bottom > other.top) return false;
+	if (front < other.back) return false;
+	if (back > other.front) return false;
 	return true;
 }
 
