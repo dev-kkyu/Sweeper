@@ -1,5 +1,8 @@
 #include "BoundingBox.h"
 
+#include <tuple>
+#include <utility>
+
 BoundingBox::BoundingBox()
 	: shaderTransform{ 1.f }
 {
@@ -23,6 +26,32 @@ void BoundingBox::setBound(float top, float bottom, float front, float back, flo
 	this->back = back;
 	this->left = left;
 	this->right = right;
+
+	float len_x = right - left;
+	float len_y = top - bottom;
+	float len_z = front - back;
+
+	float cen_x = (right + left) / 2.f;
+	float cen_y = (top + bottom) / 2.f;
+	float cen_z = (front + back) / 2.f;
+
+	glm::mat4 scaleMat = glm::scale(glm::mat4(1.f), glm::vec3(len_x, len_y, len_z));
+	glm::mat4 posMat = glm::translate(glm::mat4(1.f), glm::vec3(cen_x, cen_y, cen_z));
+
+	shaderTransform = posMat * scaleMat;
+}
+
+void BoundingBox::applyTransform(const glm::mat4& transform)
+{
+	glm::vec4 v1 = transform * glm::vec4(left, bottom, back, 1.f);
+	glm::vec4 v2 = transform * glm::vec4(right, top, front, 1.f);
+
+	std::tie(left, bottom, back) = std::tie(v1.x, v1.y, v1.z);
+	std::tie(right, top, front) = std::tie(v2.x, v2.y, v2.z);
+
+	if (left > right) std::swap(left, right);
+	if (bottom > top) std::swap(bottom, top);
+	if (back > front) std::swap(back, front);
 
 	float len_x = right - left;
 	float len_y = top - bottom;

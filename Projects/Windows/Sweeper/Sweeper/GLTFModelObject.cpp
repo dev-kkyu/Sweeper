@@ -34,10 +34,6 @@ void GLTFModelObject::setModel(VulkanGLTFModel& model)
 	for (const auto& node : this->model->nodes) {
 		copyBoundingBoxByNode(node);
 	}
-	// 현재 오브젝트의 트랜스폼을 적용
-	for (auto& box : boundingBox) {
-		box.applyTransform(modelTransform);
-	}
 }
 
 void GLTFModelObject::updateBoundingBox()
