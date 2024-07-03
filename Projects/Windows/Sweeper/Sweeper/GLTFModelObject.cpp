@@ -56,6 +56,11 @@ void GLTFModelObject::drawBoundingBox(VkCommandBuffer commandBuffer, VkPipelineL
 		box.draw(commandBuffer, pipelineLayout);
 }
 
+const std::vector<BoundingBox>& GLTFModelObject::getBoundingBox() const
+{
+	return boundingBox;
+}
+
 void GLTFModelObject::copyBoundingBoxByNode(const std::shared_ptr<VulkanGLTFModel::Node> node)
 {
 	for (const auto& box : node->mesh.boundingBox) {

@@ -88,6 +88,11 @@ void GLTFSkinModelObject::setAnimationClip(uint32_t animationIndex)
 	animations[activeAnimation].currentTime = 0.f;
 }
 
+uint32_t GLTFSkinModelObject::getAnimationClip() const
+{
+	return activeAnimation;
+}
+
 BoundingBox GLTFSkinModelObject::getBoundingBox() const
 {
 	const glm::vec3 myPos = getPosition();

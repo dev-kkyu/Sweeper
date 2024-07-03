@@ -40,6 +40,7 @@ public:
 
 	void changeAnimationClip();
 	void setAnimationClip(uint32_t animationIndex);		// animation load 완료 후 호출해야 함.
+	uint32_t getAnimationClip() const;
 
 	BoundingBox getBoundingBox() const;
 	void drawBoundingBox(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const;

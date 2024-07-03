@@ -126,8 +126,22 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	}
 
 	for (auto& player : pPlayers) {
-		if (player)
-			player->update(elapsedTime, currentFrame);
+		if (player) {
+			if (player->getAnimationClip() == PLAYER_CLIP_RUN) {	// 플레이어 이동시 충돌처리
+				auto befPos = player->getPosition();
+				player->update(elapsedTime, currentFrame);
+				auto& boundBox = mapObject.getBoundingBox();
+				for (const auto& box : boundBox) {
+					if (box.isCollide(player->getBoundingBox())) {
+						player->setPosition(befPos);		// 충돌시 기존 위치로 돌아간다.
+						break;
+					}
+				}
+			}
+			else {
+				player->update(elapsedTime, currentFrame);
+			}
+		}
 	}
 }
 

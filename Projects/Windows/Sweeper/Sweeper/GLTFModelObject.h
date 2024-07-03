@@ -24,6 +24,7 @@ public:
 
 	void updateBoundingBox();
 	void drawBoundingBox(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const;
+	const std::vector<BoundingBox>& getBoundingBox() const;
 
 private:
 	void copyBoundingBoxByNode(const std::shared_ptr<VulkanGLTFModel::Node> node);
