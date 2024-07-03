@@ -20,7 +20,6 @@ public:
 	~BoundingBox();
 
 	void setBound(float top, float bottom, float front, float back, float left, float right);
-	void applyTransform(const glm::mat4& transform);
 
 	bool isCollide(const BoundingBox& other) const;
 

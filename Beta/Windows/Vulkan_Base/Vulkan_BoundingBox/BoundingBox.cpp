@@ -23,15 +23,6 @@ void BoundingBox::setBound(float top, float bottom, float front, float back, flo
 	this->back = back;
 	this->left = left;
 	this->right = right;
-}
-
-void BoundingBox::applyTransform(const glm::mat4& transform)
-{
-	glm::vec4 v1 = transform * glm::vec4(left, bottom, back, 1.f);
-	glm::vec4 v2 = transform * glm::vec4(right, top, front, 1.f);
-
-	std::tie(left, bottom, back) = std::tie(v1.x, v1.y, v1.z);
-	std::tie(right, top, front) = std::tie(v2.x, v2.y, v2.z);
 
 	float len_x = right - left;
 	float len_y = top - bottom;

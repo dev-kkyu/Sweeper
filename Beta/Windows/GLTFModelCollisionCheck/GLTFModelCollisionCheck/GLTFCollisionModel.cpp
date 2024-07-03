@@ -188,11 +188,11 @@ void GLTFCollisionModel::createBoundingBoxNode(const std::shared_ptr<GLTFCollisi
 
 		for (const GLTFCollisionModel::Primitive& primitive : node->mesh.primitives) {
 			if (primitive.indexCount > 0) {
-				glm::vec3 minVertex = vertexBuffer[indexBuffer[primitive.firstIndex]].pos;
-				glm::vec3 maxVertex = minVertex;
+				glm::vec4 minVertex = nodeMatrix * glm::vec4(vertexBuffer[indexBuffer[primitive.firstIndex]].pos, 1.f);
+				glm::vec4 maxVertex = minVertex;
 
 				for (uint32_t i = primitive.firstIndex; i < primitive.firstIndex + primitive.indexCount; ++i) {
-					const glm::vec3& nowPos = vertexBuffer[indexBuffer[i]].pos;
+					const glm::vec4 nowPos = nodeMatrix * glm::vec4(vertexBuffer[indexBuffer[i]].pos, 1.f);
 					if (minVertex.x > nowPos.x)
 						minVertex.x = nowPos.x;
 					if (minVertex.y > nowPos.y)
@@ -210,7 +210,6 @@ void GLTFCollisionModel::createBoundingBoxNode(const std::shared_ptr<GLTFCollisi
 
 				BoundingBox boundingBox;
 				boundingBox.setBound(maxVertex.y, minVertex.y, maxVertex.z, minVertex.z, minVertex.x, maxVertex.x);
-				boundingBox.applyTransform(nodeMatrix);
 
 				node->mesh.boundingBox.push_back(boundingBox);
 			}
