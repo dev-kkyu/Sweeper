@@ -110,32 +110,9 @@ void fullScreenToggle(GLFWwindow* window)
 		// 주 모니터에 전체화면으로 전환해준다.
 		GLFWmonitor* priMonitor = glfwGetPrimaryMonitor();							// 주 모니터 얻어오기
 		const GLFWvidmode* currMode = glfwGetVideoMode(priMonitor);					// 현재 비디오 모드 얻기
-		// 16:9 비율 만들어주기
 		int setWidth = currMode->width;
 		int setHeight = currMode->height;
 		int setRefreshRate = currMode->refreshRate;
-		if (setWidth / 16 * 9 != setHeight) {										// 만약 기존 모드가 16:9가 아니었다면
-			// 사용 가능한 모니터 모드 로드
-			int modeCount;
-			const GLFWvidmode* modes = glfwGetVideoModes(priMonitor, &modeCount);	// 모든 비디오 모드 얻기
-			std::vector<int> candidateIdx;
-			for (int i = 0; i < modeCount; ++i) {
-				if (modes[i].width / 16 * 9 == modes[i].height)						// 16:9 모드 찾기
-					candidateIdx.push_back(i);
-			}
-			if (candidateIdx.empty()) {												// 없으면 전체화면을 사용하지 않는다.
-				std::cerr << "Can't find any available monitor modes." << std::endl;
-				return;
-			}
-			int selectIdx = *std::max_element(candidateIdx.begin(), candidateIdx.end(), [&modes](const int a, const int b) {
-				if (modes[a].width != modes[b].width)
-					return modes[a].width < modes[b].width;							// 가능한 모드중에 제일 높은 해상도 선택
-				return modes[a].refreshRate < modes[b].refreshRate;					// 같은 해상도 중에서는 높은 주사율 선택
-				});
-			setWidth = modes[selectIdx].width;
-			setHeight = modes[selectIdx].height;
-			setRefreshRate = modes[selectIdx].refreshRate;
-		}
 		glfwSetWindowMonitor(window, priMonitor, 0, 0, setWidth, setHeight, setRefreshRate);		// 2번째 인자가 지정되면 해당 모니터에 전체화면. 위치 무시
 		std::cout << "Full Screen Info : (" << setWidth << " * " << setHeight << " " << setRefreshRate << "Hz)" << std::endl;
 	}

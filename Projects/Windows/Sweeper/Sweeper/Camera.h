@@ -11,6 +11,9 @@ class PlayerObject;
 class Camera
 {
 private:
+	int& winWidth;
+	int& winHeight;
+
 	float distanceFromPlayer;	// 생성자 호출 시 값 정해주기
 
 	glm::mat4 viewTransform{ 1.f };
@@ -26,7 +29,7 @@ private:
 	float pitchAngle;			// 생성자 호출 시 값 정해주기
 
 public:
-	Camera();
+	Camera(int& width, int& height);
 	~Camera();
 
 	void update(float elapsedTime);

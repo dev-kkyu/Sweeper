@@ -4,12 +4,13 @@
 
 #include <glm/gtx/vector_angle.hpp>
 
-Camera::Camera()
-	: distanceFromPlayer{ 14.f }		// 카메라 거리
+Camera::Camera(int& width, int& height)
+	: winWidth{ width }, winHeight{ height }
+	, distanceFromPlayer{ 14.f }		// 카메라 거리
 	, pitchAngle{ 45.f }					// 카메라 각도
 {
 	viewTransform = glm::lookAt(glm::vec3(0.f, 3.f, 10.f), glm::vec3(0.f), glm::vec3(0.0f, 1.0f, 0.0f));
-	projectionTransform = glm::perspective(glm::radians(45.0f), 16.f / 9.f, 1.f, 100.0f);
+	projectionTransform = glm::perspective(glm::radians(45.0f), float(winWidth) / float(winHeight), 1.f, 100.0f);
 }
 
 Camera::~Camera()
@@ -25,7 +26,7 @@ void Camera::update(float elapsedTime)
 		glm::vec4 cameraPos = glm::rotate(glm::mat4(1.f), glm::radians(pitchAngle), glm::vec3(1.f, 0.f, 0.f)) * glm::vec4(0.f, 0.f, -distanceFromPlayer, 1.f);
 		// 카메라 위치를 실제 플레이어 위치로 옮기고, 카메라 변환 행렬을 계산
 		viewTransform = glm::lookAt(glm::vec3(cameraPos) + position, position, glm::vec3(0.0f, 1.0f, 0.0f));
-		//projectionTransform = glm::perspective(glm::radians(45.0f), 16.f / 9.f, 0.1f, 10.0f);
+		projectionTransform = glm::perspective(glm::radians(45.0f), float(winWidth) / float(winHeight), 1.f, 100.0f);
 	}
 }
 

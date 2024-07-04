@@ -80,7 +80,7 @@ private:
 	bool middleButtonPressed = false;
 
 public:
-	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet);
+	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, int& width, int& height);
 	~Scene();
 
 	void update(float elapsedTime, uint32_t currentFrame);
