@@ -141,3 +141,8 @@ void PlayerObject::processKeyInput(unsigned int key, bool is_pressed)
 		keyState &= ~key;
 	}
 }
+
+float PlayerObject::getMoveSpeed() const
+{
+	return moveSpeed;
+}

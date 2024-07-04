@@ -37,4 +37,6 @@ public:
 
 	void processKeyInput(unsigned int key, bool is_pressed);
 
+	float getMoveSpeed() const;
+
 };
