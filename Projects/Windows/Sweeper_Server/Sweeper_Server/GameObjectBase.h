@@ -41,6 +41,8 @@ public:
 
 	virtual void rotate(float degree) final;
 
+	virtual void setCollisionRadius(float radius) final;
+	virtual float getCollisionRadius() const final;
 	virtual bool isCollide(const GameObjectBase& other) const final;
 	virtual BoundingBox getBoundingBox() const final;
 

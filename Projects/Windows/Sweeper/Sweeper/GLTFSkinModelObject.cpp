@@ -93,6 +93,16 @@ uint32_t GLTFSkinModelObject::getAnimationClip() const
 	return activeAnimation;
 }
 
+void GLTFSkinModelObject::setCollisionRadius(float radius)
+{
+	collisionRadius = radius;
+}
+
+float GLTFSkinModelObject::getCollisionRadius() const
+{
+	return collisionRadius;
+}
+
 BoundingBox GLTFSkinModelObject::getBoundingBox() const
 {
 	const glm::vec3 myPos = getPosition();

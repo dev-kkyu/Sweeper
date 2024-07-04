@@ -42,6 +42,8 @@ public:
 	void setAnimationClip(uint32_t animationIndex);		// animation load 완료 후 호출해야 함.
 	uint32_t getAnimationClip() const;
 
+	virtual void setCollisionRadius(float radius) final;
+	virtual float getCollisionRadius() const final;
 	BoundingBox getBoundingBox() const;
 	void drawBoundingBox(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const;
 

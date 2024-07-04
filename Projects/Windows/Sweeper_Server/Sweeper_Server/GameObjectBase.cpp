@@ -75,6 +75,16 @@ void GameObjectBase::rotate(float degree)
 	modelTransform = modelTransform * rotateMatrix;
 }
 
+void GameObjectBase::setCollisionRadius(float radius)
+{
+	collisionRadius = radius;
+}
+
+float GameObjectBase::getCollisionRadius() const
+{
+	return collisionRadius;
+}
+
 bool GameObjectBase::isCollide(const GameObjectBase& other) const
 {
 	glm::vec3 aPos = getPosition();
