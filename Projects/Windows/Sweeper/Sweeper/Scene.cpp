@@ -126,8 +126,8 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	}
 
 	for (auto& player : pPlayers) {
-		if (player) {
-			if (player->getAnimationClip() == PLAYER_CLIP_RUN) {	// 플레이어 이동시 충돌처리
+		if (player) {		// 플레이어 이동/대쉬 시 충돌처리
+			if (player->getAnimationClip() == PLAYER_CLIP_RUN or player->getAnimationClip() == PLAYER_CLIP_DASH) {
 				auto befPos = player->getPosition();
 				player->update(elapsedTime, currentFrame);
 				auto& boundBox = mapObject.getBoundingBox();

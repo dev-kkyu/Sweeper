@@ -236,7 +236,15 @@ void DASHState::update(float elapsedTime)
 		if (moveSpeed < 0.f)
 			moveSpeed = 0.f;
 	}
+	auto befPos = player.getPosition();
 	player.rotateAndMoveToDirection(direction, moveSpeed, elapsedTime);
+	auto& boundBox = Map::getInstance().getBoundingBox();
+	for (const auto& box : boundBox) {
+		if (box.isCollide(player.getBoundingBox())) {
+			player.setPosition(befPos);		// 충돌시 기존 위치로 돌아간다.
+			break;
+		}
+	}
 
 	StateMachine::update(elapsedTime);
 }
