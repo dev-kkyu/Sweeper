@@ -256,7 +256,7 @@ void AttackState::update(float elapsedTime)
 {
 	// Room의 Update에서 락 걸어준다
 	auto now_time = std::chrono::steady_clock::now();
-	if (now_time > stateBeginTime + std::chrono::milliseconds{ 700 }) {
+	if (now_time > stateBeginTime + std::chrono::milliseconds{ 400 }) {
 		// 끝났으면 State 변경
 		player.nextState = std::make_unique<IDLEState>(player);
 	}

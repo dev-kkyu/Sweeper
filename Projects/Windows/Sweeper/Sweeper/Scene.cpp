@@ -435,7 +435,7 @@ void Scene::processPacket(unsigned char* packet)
 			break;
 		case PLAYER_STATE::ATTACK:
 			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_ATTACK_KNIFE);
-			pPlayers[p->player_id]->setAnimateSpeed(1.f);
+			pPlayers[p->player_id]->setAnimateSpeed(0.4f);
 			state = "ATTACK";
 			break;
 		default:
