@@ -75,12 +75,12 @@ void BoundingBox::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineL
 
 bool BoundingBox::isCollide(const BoundingBox& other) const
 {
-	if (left > other.right) return false;
-	if (right < other.left) return false;
-	if (top < other.bottom) return false;
-	if (bottom > other.top) return false;
-	if (front < other.back) return false;
-	if (back > other.front) return false;
+	if (left >= other.right) return false;
+	if (right <= other.left) return false;
+	if (top <= other.bottom) return false;
+	if (bottom >= other.top) return false;
+	if (front <= other.back) return false;
+	if (back >= other.front) return false;
 	return true;
 }
 
