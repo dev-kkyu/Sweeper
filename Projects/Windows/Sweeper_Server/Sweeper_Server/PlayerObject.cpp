@@ -148,53 +148,8 @@ void RUNState::update(float elapsedTime)
 
 		//move(direction, elapsedTime * moveSpeed);
 		// 입력된 방향으로 플레이어 방향을 점차 바꾸면서, 해당 방향으로 전진한다
-		auto befPos = player.getPosition();
-		player.rotateAndMoveToDirection(lastDirection, moveSpeed, elapsedTime);
-		auto& boundBox = Map::getInstance().getBoundingBox();
-		for (const auto& box : boundBox) {
-			if (box.isCollide(player.getBoundingBox())) {
-				player.setPosition(befPos);			// 충돌시 먼저 기존 위치로 돌아간다.
-				// 슬라이딩 벡터 구현
-				glm::vec3 pDir = player.getLook();	// 현재 보고있는 방향
-				pDir.y = 0.f;
-				glm::vec3 moveDir = pDir;			// 이동할 방향
-				auto pBox = player.getBoundingBox();// 충돌 전의 바운딩 박스
-				// 기존 지점에서 어느 방향이 충돌이었는지 확인 (충돌 전 위치로 돌아갔으니, 해당 방향에서는 현재 충돌이 아니다)
-				glm::vec3 newPos = befPos;
-				if (box.getBack() > pBox.getFront() or box.getFront() < pBox.getBack()) {
-					moveDir.z = 0.f;
-					if (box.getBack() > pBox.getFront()) {	// 플레이어가 박스의 뒤쪽
-						newPos.z = box.getBack() - player.getCollisionRadius() - 0.00001f;
-					}
-					else {									// 플레이어가 박스의 앞쪽
-						newPos.z = box.getFront() + player.getCollisionRadius() + 0.00001f;
-					}
-				}
-				if (box.getLeft() > pBox.getRight() or box.getRight() < pBox.getLeft()) {
-					moveDir.x = 0.f;
-					if (box.getLeft() > pBox.getRight()) {	// 플레이어가 박스의 왼쪽
-						newPos.x = box.getLeft() - player.getCollisionRadius() - 0.00001f;
-					}
-					else {									// 플레이어가 박스의 오른쪽
-						newPos.x = box.getRight() + player.getCollisionRadius() + 0.00001f;
-					}
-				}
-				player.setPosition(newPos);			// 충돌이 아닌 최대의 위치로 움직여 준다.
-				if (glm::length(moveDir) > 0.f) {
-					// 내적값의 두배를 하여 직각일 때를 제외하고 두배의 속도, 최대 1.f의 속도로 움직이도록 한다.
-					float moveOffset = glm::clamp(glm::dot(pDir, glm::normalize(moveDir)) * 2.f, 0.f, 1.f);
-					player.move(moveDir, moveOffset * moveSpeed * elapsedTime);
-					// 슬라이딩을 하였음에도 충돌이면 기존 위치로 돌아가고, 더이상 움직이지 않는다.
-					for (const auto& box2 : boundBox) {
-						if (box2.isCollide(player.getBoundingBox())) {
-							player.setPosition(newPos);
-							break;
-						}
-					}
-				}
-				break;
-			}
-		}
+		// 이동하며 맵과 충돌체크를 하여 갈 수 있는 곳만 간다
+		player.moveAndCheckCollision(lastDirection, moveSpeed, elapsedTime);
 
 		// 이동 후 충돌처리
 		// 플레이어끼리
@@ -274,15 +229,7 @@ void DASHState::update(float elapsedTime)
 		if (moveSpeed < 0.f)
 			moveSpeed = 0.f;
 	}
-	auto befPos = player.getPosition();
-	player.rotateAndMoveToDirection(direction, moveSpeed, elapsedTime);
-	auto& boundBox = Map::getInstance().getBoundingBox();
-	for (const auto& box : boundBox) {
-		if (box.isCollide(player.getBoundingBox())) {
-			player.setPosition(befPos);		// 충돌시 기존 위치로 돌아간다.
-			break;
-		}
-	}
+	player.moveAndCheckCollision(direction, moveSpeed, elapsedTime);
 
 	StateMachine::update(elapsedTime);
 }
@@ -416,4 +363,55 @@ void PlayerObject::rotateAndMoveToDirection(const glm::vec3& direction, float mo
 	rotate(glm::degrees(radianAngle * rotateSign) * rotateSpeed);
 
 	move(dir, elapsedTime * moveSpeed * (1.f - angleOffset));	// 현재 회전 방향에 따른 속도 조절
+}
+
+void PlayerObject::moveAndCheckCollision(const glm::vec3& direction, float moveSpeed, float elapsedTime)
+{
+	auto befPos = getPosition();
+	rotateAndMoveToDirection(direction, moveSpeed, elapsedTime);
+	auto& boundBox = Map::getInstance().getBoundingBox();
+	for (const auto& box : boundBox) {
+		if (box.isCollide(getBoundingBox())) {
+			setPosition(befPos);			// 충돌시 먼저 기존 위치로 돌아간다.
+			// 슬라이딩 벡터 구현
+			glm::vec3 pDir = getLook();	// 현재 보고있는 방향
+			pDir.y = 0.f;
+			glm::vec3 moveDir = pDir;			// 이동할 방향
+			auto pBox = getBoundingBox();// 충돌 전의 바운딩 박스
+			// 기존 지점에서 어느 방향이 충돌이었는지 확인 (충돌 전 위치로 돌아갔으니, 해당 방향에서는 현재 충돌이 아니다)
+			glm::vec3 newPos = befPos;
+			if (box.getBack() > pBox.getFront() or box.getFront() < pBox.getBack()) {
+				moveDir.z = 0.f;
+				if (box.getBack() > pBox.getFront()) {	// 플레이어가 박스의 뒤쪽
+					newPos.z = box.getBack() - getCollisionRadius() - 0.00001f;
+				}
+				else {									// 플레이어가 박스의 앞쪽
+					newPos.z = box.getFront() + getCollisionRadius() + 0.00001f;
+				}
+			}
+			if (box.getLeft() > pBox.getRight() or box.getRight() < pBox.getLeft()) {
+				moveDir.x = 0.f;
+				if (box.getLeft() > pBox.getRight()) {	// 플레이어가 박스의 왼쪽
+					newPos.x = box.getLeft() - getCollisionRadius() - 0.00001f;
+				}
+				else {									// 플레이어가 박스의 오른쪽
+					newPos.x = box.getRight() + getCollisionRadius() + 0.00001f;
+				}
+			}
+			setPosition(newPos);			// 충돌이 아닌 최대의 위치로 움직여 준다.
+			if (glm::length(moveDir) > 0.f) {
+				// 내적값의 두배를 하여 직각일 때를 제외하고 두배의 속도, 최대 1.f의 속도로 움직이도록 한다.
+				float moveOffset = glm::clamp(glm::dot(pDir, glm::normalize(moveDir)) * 2.f, 0.f, 1.f);
+				move(moveDir, moveOffset * moveSpeed * elapsedTime);
+				// 슬라이딩을 하였음에도 충돌이면 기존 위치로 돌아가고, 더이상 움직이지 않는다.
+				for (const auto& box2 : boundBox) {
+					if (box2.isCollide(getBoundingBox())) {
+						setPosition(newPos);
+						break;
+					}
+				}
+			}
+			break;
+		}
+	}
 }

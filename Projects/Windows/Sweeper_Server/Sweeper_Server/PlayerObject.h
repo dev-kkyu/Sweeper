@@ -125,5 +125,6 @@ public:
 
 private:
 	void rotateAndMoveToDirection(const glm::vec3& direction, float moveSpeed, float elapsedTime);
+	void moveAndCheckCollision(const glm::vec3& direction, float moveSpeed, float elapsedTime);
 
 };
