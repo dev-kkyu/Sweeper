@@ -418,7 +418,7 @@ void Scene::processPacket(unsigned char* packet)
 			break;
 		case PLAYER_STATE::DASH:
 			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_DASH);
-			pPlayers[p->player_id]->setAnimateSpeed(2.f);
+			pPlayers[p->player_id]->setAnimateSpeed(2.5f);
 			state = "DASH";
 			break;
 		case PLAYER_STATE::ATTACK:

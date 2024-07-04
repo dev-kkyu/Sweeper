@@ -244,7 +244,7 @@ void DASHState::enter()
 
 void DASHState::update(float elapsedTime)
 {
-	if (stateBeginTime + std::chrono::milliseconds(500) <= std::chrono::steady_clock::now()) {
+	if (stateBeginTime + std::chrono::milliseconds(400) <= std::chrono::steady_clock::now()) {
 		player.nextState = std::make_unique<IDLEState>(player);
 	}
 
