@@ -2,6 +2,7 @@
 
 #include <array>
 #include <memory>
+#include <atomic>
 #include <mutex>
 #include <unordered_map>
 #include <list>
@@ -26,12 +27,12 @@ public:
 	// 타이머를 위해 io_context도 들고있는다
 	asio::io_context& io_context;
 
-	std::array<std::shared_ptr<Session>, 4> sessions;	// 한 방에는 4명이 있다
+	std::array<std::atomic<std::shared_ptr<Session>>, 4> sessions;	// 한 방에는 4명이 있다
 
+	std::mutex monster_mutex;		// 컨테이너는 thread-safe 하지 않다
 	std::unordered_map<int, std::shared_ptr<MonsterObject>> monsters;
 	std::list<int> reserved_monster_ids;
 
-	std::mutex room_mutex;
 
 public:
 	Room(asio::io_context& io_context, int room_id, const std::list<MonsterInfo>& initMonsterInfo);

@@ -35,10 +35,11 @@ void Session::update(float elapsedTime)
 		std::tie(p.pos_x, p.pos_y, p.pos_z) = std::tie(pos.x, pos.y, pos.z);
 		p.dir_x = look.x; p.dir_z = look.z;
 
-		// 내 위치를 모두에게 보낸다.	// 룸에서 update 호출 시 락 걸어주기 때문에 여기서는 하지 않는다.
-		for (auto& s : parentRoom->sessions) {
-			if (Room::isValidSession(s))
-				s->sendPacket(&p);
+		// 내 위치를 모두에게 보낸다.
+		for (auto& a : parentRoom->sessions) {
+			std::shared_ptr<Session> session = a.load();
+			if (Room::isValidSession(session))
+				session->sendPacket(&p);
 		}
 	}
 }
@@ -93,30 +94,29 @@ bool Session::processPacket(unsigned char* packet)
 			p.pos_z = pos.z;
 			p.dir_x = dir.x;
 			p.dir_z = dir.z;
-			parentRoom->room_mutex.lock();
 			for (int i = 0; i < parentRoom->sessions.size(); ++i) {
 				if (i == this->player_id)		// 나는 알릴 필요 없다.
 					continue;
-				if (Room::isValidSession(parentRoom->sessions[i])) {	// 존재하는 플레이어에게 전송
-					parentRoom->sessions[i]->sendPacket(&p);
+				std::shared_ptr<Session> session = parentRoom->sessions[i].load();
+				if (Room::isValidSession(session)) {	// 존재하는 플레이어에게 전송
+					session->sendPacket(&p);
 				}
 			}
-			parentRoom->room_mutex.unlock();
 		}
 		// 접속된 모든 플레이어를 나에게 알린다.
 		{
 			SC_ADD_PLAYER_PACKET p;
 			p.size = sizeof(p);
 			p.type = SC_ADD_PLAYER;
-			parentRoom->room_mutex.lock();
 			for (int i = 0; i < parentRoom->sessions.size(); ++i) {
 				if (i == this->player_id)		// 나는 알릴 필요 없다.
 					continue;
-				if (Room::isValidSession(parentRoom->sessions[i])) {	// 존재하는 플레이어를 전송
+				std::shared_ptr<Session> session = parentRoom->sessions[i].load();
+				if (Room::isValidSession(session)) {	// 존재하는 플레이어를 전송
 					p.player_id = i;
-					p.player_type = parentRoom->sessions[i]->player_type;
-					auto pos = parentRoom->sessions[i]->player->getPosition();
-					auto dir = parentRoom->sessions[i]->player->getLook();
+					p.player_type = session->player_type;
+					auto pos = session->player->getPosition();
+					auto dir = session->player->getLook();
 					p.pos_x = pos.x;
 					p.pos_z = pos.z;
 					p.dir_x = dir.x;
@@ -124,7 +124,6 @@ bool Session::processPacket(unsigned char* packet)
 					sendPacket(&p);
 				}
 			}
-			parentRoom->room_mutex.unlock();
 		}
 
 		// 모든 몬스터 추가 패킷을 보낸다
@@ -132,7 +131,8 @@ bool Session::processPacket(unsigned char* packet)
 			SC_ADD_MONSTER_PACKET p;
 			p.size = sizeof(p);
 			p.type = SC_ADD_MONSTER;
-			parentRoom->room_mutex.lock();
+			// 업데이트가 아닌 부분에서 컨테이너 접근은 락이 필요하다. (삽입, 삭제 주의)
+			std::lock_guard<std::mutex> ml{ parentRoom->monster_mutex };
 			for (auto& m : parentRoom->monsters) {
 				p.monster_id = m.first;
 				auto pos = m.second->getPosition();
@@ -143,7 +143,6 @@ bool Session::processPacket(unsigned char* packet)
 				p.dir_z = dir.z;
 				sendPacket(&p);
 			}
-			parentRoom->room_mutex.unlock();
 		}
 		break;
 	}
@@ -160,9 +159,10 @@ bool Session::processPacket(unsigned char* packet)
 			cp.key = p->key;
 			cp.is_pressed = p->is_pressed;
 
-			for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 키 이벤트를 브로드캐스트 한다
-				if (Room::isValidSession(s))
-					s->sendPacket(&cp);
+			for (auto& a : parentRoom->sessions) {	// 모든 플레이어에게 키 이벤트를 브로드캐스트 한다
+				std::shared_ptr<Session> session = a.load();
+				if (Room::isValidSession(session))
+					session->sendPacket(&cp);
 			}
 		}
 
@@ -177,10 +177,9 @@ bool Session::processPacket(unsigned char* packet)
 
 		std::cout << "INFO:ERROR [" << remote_ip << ":" << remote_port << "] 연결 종료" << std::endl;
 
-		parentRoom->room_mutex.lock();
+		// atomic_store
+		parentRoom->sessions[player_id] = nullptr;	// doRead에서 shared_from_this 해주기 때문에 not delete
 		socket.close();
-		parentRoom->sessions[player_id] = nullptr;
-		parentRoom->room_mutex.unlock();
 		return false;
 		break;
 	}
@@ -204,7 +203,7 @@ void Session::doRead()
 
 				std::cout << "INFO:DISCONNECT [" << remote_ip << ":" << remote_port << "] 연결 해제" << std::endl;
 
-				parentRoom->room_mutex.lock();
+				// atomic_store
 				parentRoom->sessions[player_id] = nullptr;				// 나를 제거한다.
 				// 남은 모든 플레이어에게 나의 로그아웃 전송
 				{
@@ -213,12 +212,12 @@ void Session::doRead()
 					p.type = SC_LOGOUT;
 					p.player_id = player_id;
 					for (int i = 0; i < parentRoom->sessions.size(); ++i) {
-						if (Room::isValidSession(parentRoom->sessions[i])) {					// 존재하는 플레이어에게 전송
-							parentRoom->sessions[i]->sendPacket(&p);
+						std::shared_ptr<Session> session = parentRoom->sessions[i].load();
+						if (Room::isValidSession(session)) {					// 존재하는 플레이어에게 전송
+							session->sendPacket(&p);
 						}
 					}
 				}
-				parentRoom->room_mutex.unlock();
 
 				return;
 			}

@@ -27,7 +27,6 @@ void MonsterObject::initialize()
 
 bool MonsterObject::update(float elapsedTime)
 {
-	// update 호출 전 lock이 걸려있다.
 	if (hp <= 0) {		// 죽었다면..
 		parentRoom->reserved_monster_ids.emplace_back(my_id);		// 컨테이너에서는 삭제를 예약하여 더이상의 접근을 막는다.
 		state = MONSTER_STATE::DIE;
@@ -42,12 +41,11 @@ bool MonsterObject::update(float elapsedTime)
 					p.size = sizeof(p);
 					p.type = SC_REMOVE_MONSTER;
 					p.monster_id = my_id;
-					parentRoom->room_mutex.lock();
-					for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 객체를 제거할 것을 명령
-						if (Room::isValidSession(s))
-							s->sendPacket(&p);
+					for (auto& a : parentRoom->sessions) {	// 모든 플레이어에게 객체를 제거할 것을 명령
+						std::shared_ptr<Session> session = a.load();
+						if (Room::isValidSession(session))
+							session->sendPacket(&p);
 					}
-					parentRoom->room_mutex.unlock();
 				}
 			});
 		return false;
@@ -65,8 +63,9 @@ bool MonsterObject::update(float elapsedTime)
 	}
 
 	for (int i = 0; i < 4; ++i) {
-		if (Room::isValidSession(parentRoom->sessions[i])) {		// Todo: 0번 플레이어 대신, 제일 가까운 플레이어에게 가도록 해야한다
-			auto playerPos = parentRoom->sessions[i]->player->getPosition();
+		std::shared_ptr<Session> session = parentRoom->sessions[i].load();
+		if (Room::isValidSession(session)) {		// Todo: 0번 플레이어 대신, 제일 가까운 플레이어에게 가도록 해야한다
+			auto playerPos = session->player->getPosition();
 			auto myPos = getPosition();
 			float dist2 = (myPos.x - playerPos.x) * (myPos.x - playerPos.x) + (myPos.z - playerPos.z) * (myPos.z - playerPos.z);
 			float targetDist2 = 3.f * 3.f;
@@ -84,7 +83,7 @@ bool MonsterObject::update(float elapsedTime)
 
 				// 이동 후 충돌처리
 				// 플레이어와 충돌
-				if (isCollide(*parentRoom->sessions[i]->player)) {
+				if (isCollide(*session->player)) {
 					// 충돌 상태이면 attack
 					state = MONSTER_STATE::ATTACK;
 					// 밀려나게 하기
@@ -128,8 +127,6 @@ void MonsterObject::release()
 
 void MonsterObject::onHit(const GameObjectBase& other)
 {
-	// player의 update에서 호출될 예정이므로, 락X (업데이트 전에 락 걸기 때문)
-
 	// 중복 피격 방지시간 0.5초
 	if (attackBeginTime + std::chrono::milliseconds{ 500 } <= std::chrono::steady_clock::now())
 	{
@@ -149,9 +146,10 @@ void MonsterObject::onHit(const GameObjectBase& other)
 		p.dir_x = newDir.x;
 		p.dir_z = newDir.z;
 
-		for (auto& s : parentRoom->sessions) {	// 모든 플레이어에게 변경된 몬스터의  Look을 보내준다.
-			if (Room::isValidSession(s)) {
-				s->sendPacket(&p);
+		for (auto& a : parentRoom->sessions) {	// 모든 플레이어에게 변경된 몬스터의  Look을 보내준다.
+			std::shared_ptr<Session> session = a.load();
+			if (Room::isValidSession(session)) {
+				session->sendPacket(&p);
 			}
 		}
 	}
@@ -165,8 +163,9 @@ void MonsterObject::sendMonsterStatePacket()
 	p.monster_id = my_id;
 	p.state = state;
 
-	for (auto& s : parentRoom->sessions) {
-		if (Room::isValidSession(s))
-			s->sendPacket(&p);
+	for (auto& a : parentRoom->sessions) {
+		std::shared_ptr<Session> session = a.load();
+		if (Room::isValidSession(session))
+			session->sendPacket(&p);
 	}
 }

@@ -21,10 +21,10 @@ void StateMachine::enter()
 	p.type = SC_PLAYER_STATE;
 	p.player_id = player.my_id;
 	p.state = state;
-	// player update에서 호출되기 때문에, 락이 걸려있다.
-	for (auto& s : player.parentRoom->sessions) {			// 모든 플레이어에게 변경된 플레이어 State를 보내준다.
-		if (Room::isValidSession(s))
-			s->sendPacket(&p);
+	for (auto& a : player.parentRoom->sessions) {			// 모든 플레이어에게 변경된 플레이어 State를 보내준다.
+		std::shared_ptr<Session> session = a.load();
+		if (Room::isValidSession(session))
+			session->sendPacket(&p);
 	}
 }
 
@@ -156,10 +156,11 @@ void RUNState::update(float elapsedTime)
 		for (int i = 0; i < 4; ++i) {
 			if (i == player.my_id)
 				continue;
-			if (Room::isValidSession(player.parentRoom->sessions[i])) {
-				if (player.isCollide(*player.parentRoom->sessions[i]->player)) {
+			std::shared_ptr<Session> session = player.parentRoom->sessions[i].load();
+			if (Room::isValidSession(session)) {
+				if (player.isCollide(*session->player)) {
 					glm::vec3 myPos = player.getPosition();
-					glm::vec3 otherPos = player.parentRoom->sessions[i]->player->getPosition();
+					glm::vec3 otherPos = session->player->getPosition();
 					glm::vec3 dir = myPos - otherPos;
 					dir.y = 0.f;
 					player.move(dir, elapsedTime * moveSpeed);	// 움직인 방향과 무관하게, 상대와 나의 방향벡터를 구하면 슬라이딩 벡터가 가능하다
@@ -254,7 +255,6 @@ void AttackState::enter()
 
 void AttackState::update(float elapsedTime)
 {
-	// Room의 Update에서 락 걸어준다
 	auto now_time = std::chrono::steady_clock::now();
 	if (now_time > stateBeginTime + std::chrono::milliseconds{ 400 }) {
 		// 끝났으면 State 변경
@@ -304,7 +304,6 @@ void PlayerObject::initialize()
 
 bool PlayerObject::update(float elapsedTime)
 {
-	// Room의 Update에서 락 걸어준다
 	if (nextState) {
 		currentState->exit();
 		currentState = std::move(nextState);
