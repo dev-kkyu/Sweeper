@@ -151,5 +151,11 @@
     <None Include="shaders\boundingbox.vert">
       <Filter>소스 파일\Shader</Filter>
     </None>
+    <None Include="shaders\cloud.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\cloud.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

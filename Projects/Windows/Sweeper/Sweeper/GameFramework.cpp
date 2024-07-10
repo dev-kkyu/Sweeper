@@ -999,6 +999,8 @@ void GameFramework::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 		if (isDrawBoundingBox)
 			pScene->drawBoundingBox(commandBuffer, currentFrame);
 
+		pScene->drawUI(commandBuffer, currentFrame);
+
 		vkCmdEndRenderPass(commandBuffer);
 	}
 

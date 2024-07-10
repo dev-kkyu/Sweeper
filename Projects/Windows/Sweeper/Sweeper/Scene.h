@@ -42,7 +42,13 @@ private:
 		};
 		// 바운딩 박스 파이프라인
 		VkPipeline boundingBoxPipeline;
+		// 쿼드 백그라운드 파이프라인
+		VkPipeline cloudPipeline;
 	} pipeline;
+
+	VkDescriptorPool sceneSamplerDescriptorPool;
+	vkf::Texture cloudTexture;
+	float sceneElapsedTime = 0.f;	// 현재는 구름 애니메이션에 사용
 
 	struct {
 		union {
@@ -85,6 +91,7 @@ public:
 
 	void update(float elapsedTime, uint32_t currentFrame);
 	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen);
+	void drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 	void drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
 	void processKeyboard(int key, int action, int mods);
@@ -100,5 +107,7 @@ public:
 private:
 	void createDescriptorSetLayout();
 	void createGraphicsPipeline();
+
+	void createSamplerDescriptorPool(uint32_t setCount);
 
 };

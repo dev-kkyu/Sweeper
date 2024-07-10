@@ -12,9 +12,13 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 {
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
+	createSamplerDescriptorPool(1);
 
 	uniformBufferObject.scene.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 	uniformBufferObject.offscreen.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
+
+	// 배경 사각형 텍스처 생성
+	cloudTexture.loadFromFile(fDevice, "models/Textures/cloud.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 
 	// gltf 모델 로드
 	mapModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/map.glb");
@@ -78,6 +82,11 @@ Scene::~Scene()
 	uniformBufferObject.scene.destroy();
 	uniformBufferObject.offscreen.destroy();
 
+	cloudTexture.destroy();					// 구름 텍스처
+
+	vkDestroyDescriptorPool(fDevice.logicalDevice, sceneSamplerDescriptorPool, nullptr);
+
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.cloudPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.boundingBoxPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.model, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.skinModel, nullptr);
@@ -91,6 +100,8 @@ Scene::~Scene()
 
 void Scene::update(float elapsedTime, uint32_t currentFrame)
 {
+	sceneElapsedTime += (elapsedTime / 10.f);
+
 	glm::vec3 playerPos = pMyPlayer->getPosition();
 	lightPos = playerPos + glm::vec3(-2.f, 5.2f, -2.f);		// light는 플레이어 위치에 따라서 바뀐다
 
@@ -213,6 +224,20 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOf
 		if (player)
 			player->draw(commandBuffer, pipelineLayout, currentFrame);
 	}
+}
+
+void Scene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+{
+	// 배경 사각형 그리기
+	glm::mat4 matrix{ 1.f };
+	if (pMyPlayer) {
+		matrix[3] = glm::vec4(pMyPlayer->getPosition(), 1.f);
+	}
+	matrix[3][3] = sceneElapsedTime;
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.cloudPipeline);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &cloudTexture.samplerDescriptorSet, 0, nullptr);
+	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+	vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 }
 
 void Scene::drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -753,5 +778,37 @@ void Scene::createGraphicsPipeline()
 
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.boundingBoxPipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+	// 배경 구름 파이프라인 생성
+	vkf::Shader cloudShader{ fDevice, "shaders/cloud.vert.spv", "shaders/cloud.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(cloudShader.shaderStages.size());
+	pipelineInfo.pStages = cloudShader.shaderStages.data();
+
+	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+	depthStencil.depthTestEnable = VK_FALSE;
+	depthStencil.depthWriteEnable = VK_FALSE;
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.cloudPipeline) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+}
+
+void Scene::createSamplerDescriptorPool(uint32_t setCount)
+{
+	// 씬의 텍스처(구름 등) 샘플러에 사용할 descriptor pool 할당
+	std::array<VkDescriptorPoolSize, 1> poolSizes{};
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[0].descriptorCount = setCount;
+
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
+	poolInfo.maxSets = setCount;
+
+	if (vkCreateDescriptorPool(fDevice.logicalDevice, &poolInfo, nullptr, &sceneSamplerDescriptorPool) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create descriptor pool!");
 	}
 }

@@ -172,6 +172,8 @@
   <ItemGroup>
     <None Include="shaders\boundingbox.frag" />
     <None Include="shaders\boundingbox.vert" />
+    <None Include="shaders\cloud.frag" />
+    <None Include="shaders\cloud.vert" />
     <None Include="shaders\fragment.frag" />
     <None Include="shaders\model.vert" />
     <None Include="shaders\skinnedmodel.vert" />
