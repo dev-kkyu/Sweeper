@@ -92,6 +92,7 @@ public:
 	void update(float elapsedTime, uint32_t currentFrame);
 	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen);
 	void drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+	void drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 	void drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
 	void processKeyboard(int key, int action, int mods);

@@ -82,6 +82,10 @@ void WarriorObject::release()
 {
 }
 
+void WarriorObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
+{
+}
+
 void WarriorObject::changeATTACKState()
 {
 	currentState->exit();

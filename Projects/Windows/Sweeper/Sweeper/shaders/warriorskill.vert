@@ -30,7 +30,7 @@ void main()
 
 	vec2 tempUv = uv[gl_VertexIndex];
 	tempUv.x /= 2.f;								// 텍스처를 절반으로 나눈다
-	tempUv.x += fract((push.model[3].w / 10.f) - xOffset);	// w에 time을 넣어 두었다.
+	tempUv.x += fract(push.model[3].w - xOffset);	// w에 time을 넣어 두었다.
 	outUV = tempUv;
 
 	gl_Position = vec4(quad[gl_VertexIndex], 1.0);

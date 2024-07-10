@@ -120,7 +120,7 @@ Scene::~Scene()
 
 void Scene::update(float elapsedTime, uint32_t currentFrame)
 {
-	sceneElapsedTime += (elapsedTime / 10.f);
+	sceneElapsedTime += elapsedTime;
 
 	glm::vec3 playerPos = pMyPlayer->getPosition();
 	lightPos = playerPos + glm::vec3(-2.f, 5.2f, -2.f);		// light는 플레이어 위치에 따라서 바뀐다
@@ -207,6 +207,14 @@ void Scene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &cloudTexture.samplerDescriptorSet, 0, nullptr);
 	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 	vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+}
+
+void Scene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+{
+	for (auto& player : pPlayers) {
+		if (player)
+			player->drawEffect(commandBuffer, pipelineLayout, currentFrame);
+	}
 }
 
 void Scene::drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame)

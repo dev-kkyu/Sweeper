@@ -82,6 +82,10 @@ void HealerObject::release()
 {
 }
 
+void HealerObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
+{
+}
+
 void HealerObject::changeATTACKState()
 {
 	currentState->exit();

@@ -111,6 +111,8 @@ public:
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void release() override;
 
+	virtual void drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) = 0;
+
 	void processKeyInput(unsigned int key, bool is_pressed);
 
 	virtual void changeIDLEState() final;

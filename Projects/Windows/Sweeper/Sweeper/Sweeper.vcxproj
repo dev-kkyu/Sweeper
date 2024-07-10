@@ -185,6 +185,8 @@
     <None Include="shaders\fragment.frag" />
     <None Include="shaders\model.vert" />
     <None Include="shaders\skinnedmodel.vert" />
+    <None Include="shaders\warriorskill.frag" />
+    <None Include="shaders\warriorskill.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

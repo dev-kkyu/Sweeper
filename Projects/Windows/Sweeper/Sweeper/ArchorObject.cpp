@@ -82,6 +82,10 @@ void ArchorObject::release()
 {
 }
 
+void ArchorObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
+{
+}
+
 void ArchorObject::changeATTACKState()
 {
 	currentState->exit();

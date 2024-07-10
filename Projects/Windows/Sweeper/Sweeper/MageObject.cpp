@@ -82,6 +82,10 @@ void MageObject::release()
 {
 }
 
+void MageObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
+{
+}
+
 void MageObject::changeATTACKState()
 {
 	currentState->exit();
