@@ -42,7 +42,7 @@ void HealerSKILLState::enter()
 	StateMachine::enter();
 
 	player.setAnimationClip(PLAYER_CLIP_SKILL_HEALER);
-	player.setAnimateSpeed(0.4f);
+	player.setAnimateSpeed(1.f);
 }
 
 void HealerSKILLState::update(float elapsedTime, uint32_t currentFrame)
