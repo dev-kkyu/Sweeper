@@ -70,7 +70,7 @@ bool Session::processPacket(unsigned char* packet)
 			case PLAYER_TYPE::WARRIOR:
 				player = std::make_shared<WarriorObject>(parentRoom, player_id);
 				break;
-			case PLAYER_TYPE::ARCHER:	// Todo : æ∆∑° ¥Ÿ πŸ≤„¡‡æﬂ «‘
+			case PLAYER_TYPE::ARCHER:
 				player = std::make_shared<ArchorObject>(parentRoom, player_id);
 				break;
 			case PLAYER_TYPE::MAGE:

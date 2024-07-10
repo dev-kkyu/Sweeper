@@ -88,34 +88,36 @@ void RUNState::enter()
 
 void RUNState::update(float elapsedTime, uint32_t currentFrame)
 {
-	bool isKeyOn = player.keyState & KEY_UP or player.keyState & KEY_DOWN or
-		player.keyState & KEY_LEFT or player.keyState & KEY_RIGHT;
-	if (isKeyOn) {
-		// 가속도 적용
-		moveSpeed += acceleration * elapsedTime;
-		if (moveSpeed > maxMoveSpeed)
-			moveSpeed = maxMoveSpeed;
+	if (not (player.keyState & MOUSE_LEFT)) {
+		bool isKeyOn = player.keyState & KEY_UP or player.keyState & KEY_DOWN or
+			player.keyState & KEY_LEFT or player.keyState & KEY_RIGHT;
+		if (isKeyOn) {
+			// 가속도 적용
+			moveSpeed += acceleration * elapsedTime;
+			if (moveSpeed > maxMoveSpeed)
+				moveSpeed = maxMoveSpeed;
 
-		glm::vec3 direction{ 0.f };
-		if (player.keyState & KEY_UP) direction.z += 1.f;
-		if (player.keyState & KEY_DOWN) direction.z -= 1.f;
-		if (player.keyState & KEY_LEFT) direction.x += 1.f;
-		if (player.keyState & KEY_RIGHT) direction.x -= 1.f;
+			glm::vec3 direction{ 0.f };
+			if (player.keyState & KEY_UP) direction.z += 1.f;
+			if (player.keyState & KEY_DOWN) direction.z -= 1.f;
+			if (player.keyState & KEY_LEFT) direction.x += 1.f;
+			if (player.keyState & KEY_RIGHT) direction.x -= 1.f;
 
-		lastDirection = direction;
-	}
-	else {	// 키가 떼졌을 때
-		moveSpeed -= acceleration * elapsedTime;
-		if (moveSpeed < 0.f) {
-			moveSpeed = 0.f;
-			// 키가 떼지고 속도가 0이 되면 IDLE로 바뀐다 (서버에서 바뀜)
+			lastDirection = direction;
 		}
-	}
+		else {	// 키가 떼졌을 때
+			moveSpeed -= acceleration * elapsedTime;
+			if (moveSpeed < 0.f) {
+				moveSpeed = 0.f;
+				// 키가 떼지고 속도가 0이 되면 IDLE로 바뀐다 (서버에서 바뀜)
+			}
+		}
 
-	//move(direction, elapsedTime * moveSpeed);
-	// 입력된 방향으로 플레이어 방향을 점차 바꾸면서, 해당 방향으로 전진한다
-	// 이동하며 맵과 충돌체크를 하여 갈 수 있는 곳만 간다
-	player.moveAndCheckCollision(lastDirection, moveSpeed, elapsedTime);
+		//move(direction, elapsedTime * moveSpeed);
+		// 입력된 방향으로 플레이어 방향을 점차 바꾸면서, 해당 방향으로 전진한다
+		// 이동하며 맵과 충돌체크를 하여 갈 수 있는 곳만 간다
+		player.moveAndCheckCollision(lastDirection, moveSpeed, elapsedTime);
+	}
 
 	// 플레이어와 몬스터와의 충돌처리는 서버에서만
 
@@ -200,6 +202,7 @@ void PlayerObject::initialize()
 void PlayerObject::update(float elapsedTime, uint32_t currentFrame)
 {
 	// 키 입력에 따른 움직임은 서버에서 처리
+	// Run, Dash 등 각종 보정 처리
 	currentState->update(elapsedTime, currentFrame);
 
 	GLTFSkinModelObject::update(elapsedTime, currentFrame);
