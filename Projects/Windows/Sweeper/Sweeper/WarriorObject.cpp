@@ -33,11 +33,15 @@ void WarriorAttackState::exit()
 WarriorSKILLState::WarriorSKILLState(PlayerObject& player)
 	: StateMachine{ player }
 {
+	state = PLAYER_STATE::SKILL;
 }
 
 void WarriorSKILLState::enter()
 {
 	StateMachine::enter();
+
+	player.setAnimationClip(PLAYER_CLIP_ATTACK_KNIFE);
+	player.setAnimateSpeed(0.4f);
 }
 
 void WarriorSKILLState::update(float elapsedTime, uint32_t currentFrame)

@@ -308,8 +308,15 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		}
-		case GLFW_MOUSE_BUTTON_RIGHT:
+		case GLFW_MOUSE_BUTTON_RIGHT: {
+			CS_KEY_EVENT_PACKET p;
+			p.size = sizeof(p);
+			p.type = CS_KEY_EVENT;
+			p.is_pressed = true;
+			p.key = MOUSE_RIGHT;
+			NetworkManager::getInstance().sendPacket(&p);
 			break;
+		}
 		case GLFW_MOUSE_BUTTON_MIDDLE:
 			middleButtonPressed = true;
 			camera.setStartMousePos(xpos, ypos);			// 위아래 회전용 (위아래 회전은 플레이어 방향에 영향을 주지 않는다)
@@ -332,8 +339,15 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
 		}
-		case GLFW_MOUSE_BUTTON_RIGHT:
+		case GLFW_MOUSE_BUTTON_RIGHT: {
+			CS_KEY_EVENT_PACKET p;
+			p.size = sizeof(p);
+			p.type = CS_KEY_EVENT;
+			p.is_pressed = false;
+			p.key = MOUSE_RIGHT;
+			NetworkManager::getInstance().sendPacket(&p);
 			break;
+		}
 		case GLFW_MOUSE_BUTTON_MIDDLE:
 			middleButtonPressed = false;
 			break;
@@ -443,6 +457,10 @@ void Scene::processPacket(unsigned char* packet)
 		case PLAYER_STATE::ATTACK:
 			pPlayers[p->player_id]->changeATTACKState();
 			state = "ATTACK";
+			break;
+		case PLAYER_STATE::SKILL:
+			pPlayers[p->player_id]->changeSKILLState();
+			state = "SKILL";
 			break;
 		default:
 			std::cout << int(p->player_id) << ": STATE 에러" << std::endl;

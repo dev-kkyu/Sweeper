@@ -82,6 +82,9 @@ void IDLEState::update(float elapsedTime)
 	if (player.keyState & MOUSE_LEFT) {
 		player.changeATTACKState();
 	}
+	else if (player.keyState & MOUSE_RIGHT) {
+		player.changeSKILLState();
+	}
 	else if (player.keyState & KEY_UP or player.keyState & KEY_DOWN
 		or player.keyState & KEY_LEFT or player.keyState & KEY_RIGHT) {
 		player.changeRUNState();
@@ -116,6 +119,9 @@ void RUNState::update(float elapsedTime)
 {
 	if (player.keyState & MOUSE_LEFT) {
 		player.changeATTACKState();
+	}
+	else if (player.keyState & MOUSE_RIGHT) {
+		player.changeSKILLState();
 	}
 	else if (player.keyState & KEY_CTRL) {
 		player.changeDASHState();

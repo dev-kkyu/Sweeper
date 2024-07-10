@@ -88,7 +88,7 @@ void RUNState::enter()
 
 void RUNState::update(float elapsedTime, uint32_t currentFrame)
 {
-	if (not (player.keyState & MOUSE_LEFT)) {
+	if (not (player.keyState & MOUSE_LEFT) and not (player.keyState & MOUSE_RIGHT)) {
 		bool isKeyOn = player.keyState & KEY_UP or player.keyState & KEY_DOWN or
 			player.keyState & KEY_LEFT or player.keyState & KEY_RIGHT;
 		if (isKeyOn) {

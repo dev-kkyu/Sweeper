@@ -33,11 +33,15 @@ void ArchorAttackState::exit()
 ArchorSKILLState::ArchorSKILLState(PlayerObject& player)
 	: StateMachine{ player }
 {
+	state = PLAYER_STATE::SKILL;
 }
 
 void ArchorSKILLState::enter()
 {
 	StateMachine::enter();
+
+	player.setAnimationClip(PLAYER_CLIP_ATTACK_ARROW);
+	player.setAnimateSpeed(0.8f);
 }
 
 void ArchorSKILLState::update(float elapsedTime, uint32_t currentFrame)

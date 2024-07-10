@@ -33,11 +33,15 @@ void HealerAttackState::exit()
 HealerSKILLState::HealerSKILLState(PlayerObject& player)
 	: StateMachine{ player }
 {
+	state = PLAYER_STATE::SKILL;
 }
 
 void HealerSKILLState::enter()
 {
 	StateMachine::enter();
+
+	player.setAnimationClip(PLAYER_CLIP_ATTACK_KNIFE);
+	player.setAnimateSpeed(0.4f);
 }
 
 void HealerSKILLState::update(float elapsedTime, uint32_t currentFrame)

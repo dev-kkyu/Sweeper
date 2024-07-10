@@ -33,11 +33,15 @@ void MageAttackState::exit()
 MageSKILLState::MageSKILLState(PlayerObject& player)
 	: StateMachine{ player }
 {
+	state = PLAYER_STATE::SKILL;
 }
 
 void MageSKILLState::enter()
 {
 	StateMachine::enter();
+
+	player.setAnimationClip(PLAYER_CLIP_ATTACK_MAGE);
+	player.setAnimateSpeed(1.f);
 }
 
 void MageSKILLState::update(float elapsedTime, uint32_t currentFrame)
