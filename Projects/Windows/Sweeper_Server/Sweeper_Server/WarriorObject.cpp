@@ -92,6 +92,5 @@ void WarriorObject::changeATTACKState()
 
 void WarriorObject::changeSKILLState()
 {
-	// Todo
-	nextState;
+	nextState = std::make_unique<WarriorSKILLState>(*this);
 }

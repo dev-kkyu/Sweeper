@@ -4,6 +4,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include "WarriorObject.h"
+
 #include "NetworkManager.h"
 
 Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, int& width, int& height)
@@ -53,11 +55,23 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 			exit(-1);
 		}
 		player_type = static_cast<PLAYER_TYPE>(sel_type);
-
-		pMyPlayer = std::make_shared<PlayerObject>();		// Todo : 추후 타입에 따라 다르게 생성
+		switch (player_type)
+		{
+		case PLAYER_TYPE::WARRIOR:
+			pMyPlayer = std::make_shared<WarriorObject>(mapObject);		// Todo : 추후 타입에 따라 다르게 생성
+			break;
+		case PLAYER_TYPE::ARCHER:
+			break;
+		case PLAYER_TYPE::MAGE:
+			break;
+		case PLAYER_TYPE::HEALER:
+			break;
+		default:
+			throw std::runtime_error("ADD PLAYER ERROR : INVALID TYPE!\n");
+			break;
+		}
 		pMyPlayer->initModel(playerModel[static_cast<int>(player_type)], descriptorSetLayout.ssbo);
 		pMyPlayer->setScale(glm::vec3(1.3f));
-		pMyPlayer->setAnimationClip(PLAYER_CLIP_IDLE);	// Idle
 		camera.setPlayer(pMyPlayer);
 	}
 
@@ -138,59 +152,8 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	}
 
 	for (auto& player : pPlayers) {
-		if (player) {		// 플레이어 이동/대쉬 시 충돌처리
-			if (player->getAnimationClip() == PLAYER_CLIP_RUN or player->getAnimationClip() == PLAYER_CLIP_DASH) {
-				auto befPos = player->getPosition();
-				player->update(elapsedTime, currentFrame);
-				auto& boundBox = mapObject.getBoundingBox();
-				for (const auto& box : boundBox) {
-					if (box.isCollide(player->getBoundingBox())) {
-						player->setPosition(befPos);		// 충돌시 기존 위치로 돌아간다.
-						// 슬라이딩 벡터 구현
-						glm::vec3 pDir = player->getLook();	// 현재 보고있는 방향
-						pDir.y = 0.f;
-						glm::vec3 moveDir = pDir;			// 이동할 방향
-						auto pBox = player->getBoundingBox();// 충돌 전의 바운딩 박스
-						// 기존 지점에서 어느 방향이 충돌이었는지 확인 (충돌 전 위치로 돌아갔으니, 해당 방향에서는 현재 충돌이 아니다)
-						glm::vec3 newPos = befPos;
-						if (box.getBack() > pBox.getFront() or box.getFront() < pBox.getBack()) {
-							moveDir.z = 0.f;
-							if (box.getBack() > pBox.getFront()) {	// 플레이어가 박스의 뒤쪽
-								newPos.z = box.getBack() - player->getCollisionRadius() - 0.00001f;
-							}
-							else {									// 플레이어가 박스의 앞쪽
-								newPos.z = box.getFront() + player->getCollisionRadius() + 0.00001f;
-							}
-						}
-						if (box.getLeft() > pBox.getRight() or box.getRight() < pBox.getLeft()) {
-							moveDir.x = 0.f;
-							if (box.getLeft() > pBox.getRight()) {	// 플레이어가 박스의 왼쪽
-								newPos.x = box.getLeft() - player->getCollisionRadius() - 0.00001f;
-							}
-							else {									// 플레이어가 박스의 오른쪽
-								newPos.x = box.getRight() + player->getCollisionRadius() + 0.00001f;
-							}
-						}
-						player->setPosition(newPos);			// 충돌이 아닌 최대의 위치로 움직여 준다.
-						if (glm::length(moveDir) > 0.f) {
-							// 내적값의 두배를 하여 직각일 때를 제외하고 두배의 속도, 최대 1.f의 속도로 움직이도록 한다.
-							float moveOffset = glm::clamp(glm::dot(pDir, glm::normalize(moveDir)) * 2.f, 0.f, 1.f);
-							player->move(moveDir, moveOffset * player->getMoveSpeed() * elapsedTime);
-							// 슬라이딩을 하였음에도 충돌이면 기존 위치로 돌아가고, 더이상 움직이지 않는다.
-							for (const auto& box2 : boundBox) {
-								if (box2.isCollide(player->getBoundingBox())) {
-									player->setPosition(newPos);
-									break;
-								}
-							}
-						}
-						break;
-					}
-				}
-			}
-			else {
-				player->update(elapsedTime, currentFrame);
-			}
+		if (player) {
+			player->update(elapsedTime, currentFrame);
 		}
 	}
 }
@@ -420,10 +383,23 @@ void Scene::processPacket(unsigned char* packet)
 	case SC_ADD_PLAYER: {
 		auto p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
 		std::cout << "플레이어 추가 패킷 수신 ID:[" << int(p->player_id) << "]\n";
-		pPlayers[p->player_id] = std::make_shared<PlayerObject>();		// Todo : 추후 타입에 따라 다르게 생성
+		switch (p->player_type)
+		{
+		case PLAYER_TYPE::WARRIOR:
+			pPlayers[p->player_id] = std::make_shared<WarriorObject>(mapObject);		// Todo : 추후 타입에 따라 다르게 생성
+			break;
+		case PLAYER_TYPE::ARCHER:
+			break;
+		case PLAYER_TYPE::MAGE:
+			break;
+		case PLAYER_TYPE::HEALER:
+			break;
+		default:
+			throw std::runtime_error("ADD PLAYER ERROR : INVALID TYPE!\n");
+			break;
+		}
 		pPlayers[p->player_id]->initModel(playerModel[static_cast<int>(p->player_type)], descriptorSetLayout.ssbo);
 		pPlayers[p->player_id]->setScale(glm::vec3(1.3f));
-		pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_IDLE);
 		pPlayers[p->player_id]->setPosition(glm::vec3(p->pos_x, 0.f, p->pos_z));
 		pPlayers[p->player_id]->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
 		break;
@@ -444,23 +420,19 @@ void Scene::processPacket(unsigned char* packet)
 		std::string state;
 		switch (p->state) {
 		case PLAYER_STATE::IDLE:
-			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_IDLE);
-			pPlayers[p->player_id]->setAnimateSpeed(1.f);
+			pPlayers[p->player_id]->changeIDLEState();
 			state = "IDLE";
 			break;
 		case PLAYER_STATE::RUN:
-			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_RUN);
-			pPlayers[p->player_id]->setAnimateSpeed(1.f);
+			pPlayers[p->player_id]->changeRUNState();
 			state = "RUN";
 			break;
 		case PLAYER_STATE::DASH:
-			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_DASH);
-			pPlayers[p->player_id]->setAnimateSpeed(2.5f);
+			pPlayers[p->player_id]->changeDASHState();
 			state = "DASH";
 			break;
 		case PLAYER_STATE::ATTACK:
-			pPlayers[p->player_id]->setAnimationClip(PLAYER_CLIP_ATTACK_KNIFE);
-			pPlayers[p->player_id]->setAnimateSpeed(0.4f);
+			pPlayers[p->player_id]->changeATTACKState();
 			state = "ATTACK";
 			break;
 		default:

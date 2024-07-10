@@ -3,7 +3,6 @@
 #include <unordered_map>
 
 //#include "OBJModelObject.h"
-#include "PlayerObject.h"
 #include "MonsterObject.h"
 #include "GLTFModelObject.h"
 //#include "GLTFSkinModelObject.h"	// included PlayerObject, MonsterObject
@@ -11,6 +10,7 @@
 
 #include "NetworkManager.h"
 
+class PlayerObject;
 class Scene
 {
 private:

@@ -37,6 +37,18 @@
     <Filter Include="GameObjectBase\GLTFSkinModelObject\MonsterObject">
       <UniqueIdentifier>{751bad93-cb8e-4d3a-ab03-e6e5e94ffd55}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObjectBase\GLTFSkinModelObject\PlayerObject\WarriorObject">
+      <UniqueIdentifier>{70f98b72-839b-41aa-950b-8eb73329cf6b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\GLTFSkinModelObject\PlayerObject\ArchorObject">
+      <UniqueIdentifier>{0e7f9c92-510d-4cd1-b5ed-016c342fa202}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\GLTFSkinModelObject\PlayerObject\MageObject">
+      <UniqueIdentifier>{1da9819d-791f-45af-8c97-a896d65118d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\GLTFSkinModelObject\PlayerObject\HealerObject">
+      <UniqueIdentifier>{4a30c5a8-9dae-4ae0-8ba4-29053c4014ac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -87,6 +99,9 @@
     <ClCompile Include="BoundingBox.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="WarriorObject.cpp">
+      <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject\WarriorObject</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObjectBase.h">
@@ -133,6 +148,9 @@
     </ClInclude>
     <ClInclude Include="BoundingBox.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="WarriorObject.h">
+      <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject\WarriorObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

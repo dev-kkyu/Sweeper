@@ -4,27 +4,25 @@
 
 class WarriorAttackState : public StateMachine
 {
-private:
-	std::chrono::steady_clock::time_point stateBeginTime;
 public:
 	WarriorAttackState(PlayerObject& player);
 	virtual ~WarriorAttackState() = default;
 
 	virtual void enter() override;
-	virtual void update(float elapsedTime) override;
+	virtual void update(float elapsedTime, uint32_t currentFrame) override;
+	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void exit() override;
 };
 
 class WarriorSKILLState : public StateMachine
 {
-private:
-	std::chrono::steady_clock::time_point stateBeginTime;
 public:
 	WarriorSKILLState(PlayerObject& player);
 	virtual ~WarriorSKILLState() = default;
 
 	virtual void enter() override;
-	virtual void update(float elapsedTime) override;
+	virtual void update(float elapsedTime, uint32_t currentFrame) override;
+	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void exit() override;
 };
 
@@ -33,15 +31,14 @@ class WarriorObject : public PlayerObject
 private:
 
 public:
-	WarriorObject(Room* parentRoom, int p_id);
+	WarriorObject(GLTFModelObject& mapObject);
 	virtual ~WarriorObject() = default;
 
 	virtual void initialize() override;
-	virtual bool update(float elapsedTime) override;
+	virtual void update(float elapsedTime, uint32_t currentFrame) override;
+	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void release() override;
-	virtual void onHit(const GameObjectBase& other) override;
 
-private:
 	virtual void changeATTACKState() override;
 	virtual void changeSKILLState() override;
 

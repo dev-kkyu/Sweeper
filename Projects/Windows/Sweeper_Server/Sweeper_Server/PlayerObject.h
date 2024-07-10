@@ -81,6 +81,7 @@ class PlayerObject : public GameObjectBase
 	friend class RUNState;
 	friend class DASHState;
 	friend class WarriorAttackState;
+	friend class WarriorSKILLState;
 
 protected:
 	// 상태 관리

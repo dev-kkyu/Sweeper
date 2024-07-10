@@ -151,6 +151,7 @@
     <ClCompile Include="VulkanFramework.cpp" />
     <ClCompile Include="VulkanGLTFModel.cpp" />
     <ClCompile Include="VulkanGLTFSkinModel.cpp" />
+    <ClCompile Include="WarriorObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BoundingBox.h" />
@@ -168,6 +169,7 @@
     <ClInclude Include="VulkanFramework.h" />
     <ClInclude Include="VulkanGLTFModel.h" />
     <ClInclude Include="VulkanGLTFSkinModel.h" />
+    <ClInclude Include="WarriorObject.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\boundingbox.frag" />
