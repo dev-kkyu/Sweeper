@@ -1,6 +1,6 @@
 #include "MageObject.h"
 
-#define PLAYER_CLIP_ATTACK_KNIFE	16
+#define PLAYER_CLIP_ATTACK_MAGE		10
 
 MageAttackState::MageAttackState(PlayerObject& player)
 	: StateMachine{ player }
@@ -12,8 +12,8 @@ void MageAttackState::enter()
 {
 	StateMachine::enter();
 
-	player.setAnimationClip(PLAYER_CLIP_ATTACK_KNIFE);
-	player.setAnimateSpeed(0.4f);
+	player.setAnimationClip(PLAYER_CLIP_ATTACK_MAGE);
+	player.setAnimateSpeed(1.f);
 }
 
 void MageAttackState::update(float elapsedTime, uint32_t currentFrame)
