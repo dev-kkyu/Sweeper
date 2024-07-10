@@ -135,12 +135,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ArchorObject.cpp" />
     <ClCompile Include="BoundingBox.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="GameObjectBase.cpp" />
     <ClCompile Include="GLTFModelObject.cpp" />
     <ClCompile Include="GLTFSkinModelObject.cpp" />
+    <ClCompile Include="HealerObject.cpp" />
+    <ClCompile Include="MageObject.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MonsterObject.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
@@ -154,12 +157,15 @@
     <ClCompile Include="WarriorObject.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ArchorObject.h" />
     <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="GameObjectBase.h" />
     <ClInclude Include="GLTFModelObject.h" />
     <ClInclude Include="GLTFSkinModelObject.h" />
+    <ClInclude Include="HealerObject.h" />
+    <ClInclude Include="MageObject.h" />
     <ClInclude Include="MonsterObject.h" />
     <ClInclude Include="NetworkManager.h" />
     <ClInclude Include="OBJModelObject.h" />

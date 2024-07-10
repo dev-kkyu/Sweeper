@@ -69,6 +69,15 @@
     <ClCompile Include="WarriorObject.cpp">
       <Filter>GameObjectBase\PlayerObject\WarriorObject</Filter>
     </ClCompile>
+    <ClCompile Include="ArchorObject.cpp">
+      <Filter>GameObjectBase\PlayerObject\ArchorObject</Filter>
+    </ClCompile>
+    <ClCompile Include="MageObject.cpp">
+      <Filter>GameObjectBase\PlayerObject\MageObject</Filter>
+    </ClCompile>
+    <ClCompile Include="HealerObject.cpp">
+      <Filter>GameObjectBase\PlayerObject\HealerObject</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Session.h">
@@ -103,6 +112,15 @@
     </ClInclude>
     <ClInclude Include="WarriorObject.h">
       <Filter>GameObjectBase\PlayerObject\WarriorObject</Filter>
+    </ClInclude>
+    <ClInclude Include="ArchorObject.h">
+      <Filter>GameObjectBase\PlayerObject\ArchorObject</Filter>
+    </ClInclude>
+    <ClInclude Include="MageObject.h">
+      <Filter>GameObjectBase\PlayerObject\MageObject</Filter>
+    </ClInclude>
+    <ClInclude Include="HealerObject.h">
+      <Filter>GameObjectBase\PlayerObject\HealerObject</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

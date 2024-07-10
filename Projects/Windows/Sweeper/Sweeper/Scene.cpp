@@ -5,6 +5,9 @@
 #include <GLFW/glfw3.h>
 
 #include "WarriorObject.h"
+#include "ArchorObject.h"
+#include "MageObject.h"
+#include "HealerObject.h"
 
 #include "NetworkManager.h"
 
@@ -58,13 +61,16 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 		switch (player_type)
 		{
 		case PLAYER_TYPE::WARRIOR:
-			pMyPlayer = std::make_shared<WarriorObject>(mapObject);		// Todo : 추후 타입에 따라 다르게 생성
+			pMyPlayer = std::make_shared<WarriorObject>(mapObject);
 			break;
 		case PLAYER_TYPE::ARCHER:
+			pMyPlayer = std::make_shared<ArchorObject>(mapObject);
 			break;
 		case PLAYER_TYPE::MAGE:
+			pMyPlayer = std::make_shared<MageObject>(mapObject);
 			break;
 		case PLAYER_TYPE::HEALER:
+			pMyPlayer = std::make_shared<HealerObject>(mapObject);
 			break;
 		default:
 			throw std::runtime_error("ADD PLAYER ERROR : INVALID TYPE!\n");
@@ -386,13 +392,16 @@ void Scene::processPacket(unsigned char* packet)
 		switch (p->player_type)
 		{
 		case PLAYER_TYPE::WARRIOR:
-			pPlayers[p->player_id] = std::make_shared<WarriorObject>(mapObject);		// Todo : 추후 타입에 따라 다르게 생성
+			pPlayers[p->player_id] = std::make_shared<WarriorObject>(mapObject);
 			break;
 		case PLAYER_TYPE::ARCHER:
+			pPlayers[p->player_id] = std::make_shared<ArchorObject>(mapObject);
 			break;
 		case PLAYER_TYPE::MAGE:
+			pPlayers[p->player_id] = std::make_shared<MageObject>(mapObject);
 			break;
 		case PLAYER_TYPE::HEALER:
+			pPlayers[p->player_id] = std::make_shared<HealerObject>(mapObject);
 			break;
 		default:
 			throw std::runtime_error("ADD PLAYER ERROR : INVALID TYPE!\n");

@@ -82,6 +82,12 @@ class PlayerObject : public GameObjectBase
 	friend class DASHState;
 	friend class WarriorAttackState;
 	friend class WarriorSKILLState;
+	friend class ArchorAttackState;
+	friend class ArchorSKILLState;
+	friend class MageAttackState;
+	friend class MageSKILLState;
+	friend class HealerAttackState;
+	friend class HealerSKILLState;
 
 protected:
 	// 상태 관리

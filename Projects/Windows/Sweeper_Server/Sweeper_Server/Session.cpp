@@ -2,6 +2,9 @@
 
 #include "Room.h"
 #include "WarriorObject.h"
+#include "ArchorObject.h"
+#include "MageObject.h"
+#include "HealerObject.h"
 
 #include "MonsterObject.h"
 
@@ -68,13 +71,13 @@ bool Session::processPacket(unsigned char* packet)
 				player = std::make_shared<WarriorObject>(parentRoom, player_id);
 				break;
 			case PLAYER_TYPE::ARCHER:	// Todo : æ∆∑° ¥Ÿ πŸ≤„¡‡æﬂ «‘
-				player = std::make_shared<WarriorObject>(parentRoom, player_id);
+				player = std::make_shared<ArchorObject>(parentRoom, player_id);
 				break;
 			case PLAYER_TYPE::MAGE:
-				player = std::make_shared<WarriorObject>(parentRoom, player_id);
+				player = std::make_shared<MageObject>(parentRoom, player_id);
 				break;
 			case PLAYER_TYPE::HEALER:
-				player = std::make_shared<WarriorObject>(parentRoom, player_id);
+				player = std::make_shared<HealerObject>(parentRoom, player_id);
 				break;
 			}
 		}

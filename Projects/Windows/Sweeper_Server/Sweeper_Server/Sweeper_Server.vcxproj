@@ -131,9 +131,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ArchorObject.cpp" />
     <ClCompile Include="BoundingBox.cpp" />
     <ClCompile Include="GameObjectBase.cpp" />
     <ClCompile Include="GLTFCollisionModel.cpp" />
+    <ClCompile Include="HealerObject.cpp" />
+    <ClCompile Include="MageObject.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="MonsterObject.cpp" />
@@ -144,9 +147,12 @@
     <ClCompile Include="WarriorObject.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ArchorObject.h" />
     <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="GameObjectBase.h" />
     <ClInclude Include="GLTFCollisionModel.h" />
+    <ClInclude Include="HealerObject.h" />
+    <ClInclude Include="MageObject.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="MonsterObject.h" />
     <ClInclude Include="PlayerObject.h" />

@@ -85,6 +85,12 @@ class PlayerObject : public GLTFSkinModelObject
 	friend class DASHState;
 	friend class WarriorAttackState;
 	friend class WarriorSKILLState;
+	friend class ArchorAttackState;
+	friend class ArchorSKILLState;
+	friend class MageAttackState;
+	friend class MageSKILLState;
+	friend class HealerAttackState;
+	friend class HealerSKILLState;
 
 protected:
 	// 맵과의 충돌처리를 위한 MapObject

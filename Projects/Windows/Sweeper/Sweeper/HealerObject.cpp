@@ -1,0 +1,92 @@
+#include "HealerObject.h"
+
+#define PLAYER_CLIP_ATTACK_KNIFE	16
+
+HealerAttackState::HealerAttackState(PlayerObject& player)
+	: StateMachine{ player }
+{
+	state = PLAYER_STATE::ATTACK;
+}
+
+void HealerAttackState::enter()
+{
+	StateMachine::enter();
+
+	player.setAnimationClip(PLAYER_CLIP_ATTACK_KNIFE);
+	player.setAnimateSpeed(0.4f);
+}
+
+void HealerAttackState::update(float elapsedTime, uint32_t currentFrame)
+{
+	StateMachine::update(elapsedTime, currentFrame);
+}
+
+void HealerAttackState::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
+{
+}
+
+void HealerAttackState::exit()
+{
+	StateMachine::exit();
+}
+
+HealerSKILLState::HealerSKILLState(PlayerObject& player)
+	: StateMachine{ player }
+{
+}
+
+void HealerSKILLState::enter()
+{
+	StateMachine::enter();
+}
+
+void HealerSKILLState::update(float elapsedTime, uint32_t currentFrame)
+{
+	StateMachine::update(elapsedTime, currentFrame);
+}
+
+void HealerSKILLState::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
+{
+}
+
+void HealerSKILLState::exit()
+{
+	StateMachine::exit();
+}
+
+HealerObject::HealerObject(GLTFModelObject& mapObject)
+	: PlayerObject{ mapObject }
+{
+}
+
+void HealerObject::initialize()
+{
+}
+
+void HealerObject::update(float elapsedTime, uint32_t currentFrame)
+{
+	PlayerObject::update(elapsedTime, currentFrame);
+}
+
+void HealerObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
+{
+	PlayerObject::draw(commandBuffer, pipelineLayout, currentFrame);
+}
+
+void HealerObject::release()
+{
+}
+
+void HealerObject::changeATTACKState()
+{
+	currentState->exit();
+	currentState = std::make_unique<HealerAttackState>(*this);
+	currentState->enter();
+}
+
+void HealerObject::changeSKILLState()
+{
+	currentState->exit();
+	currentState = std::make_unique<HealerSKILLState>(*this);
+	currentState->enter();
+}
