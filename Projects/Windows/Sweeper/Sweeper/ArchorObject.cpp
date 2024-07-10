@@ -1,6 +1,6 @@
 #include "ArchorObject.h"
 
-#define PLAYER_CLIP_ATTACK_KNIFE	16
+#define PLAYER_CLIP_ATTACK_ARROW	26
 
 ArchorAttackState::ArchorAttackState(PlayerObject& player)
 	: StateMachine{ player }
@@ -12,8 +12,8 @@ void ArchorAttackState::enter()
 {
 	StateMachine::enter();
 
-	player.setAnimationClip(PLAYER_CLIP_ATTACK_KNIFE);
-	player.setAnimateSpeed(0.4f);
+	player.setAnimationClip(PLAYER_CLIP_ATTACK_ARROW);
+	player.setAnimateSpeed(0.8f);
 }
 
 void ArchorAttackState::update(float elapsedTime, uint32_t currentFrame)
