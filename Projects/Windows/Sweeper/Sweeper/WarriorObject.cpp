@@ -22,10 +22,6 @@ void WarriorAttackState::update(float elapsedTime, uint32_t currentFrame)
 	StateMachine::update(elapsedTime, currentFrame);
 }
 
-void WarriorAttackState::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
-{
-}
-
 void WarriorAttackState::exit()
 {
 	StateMachine::exit();
@@ -48,10 +44,6 @@ void WarriorSKILLState::enter()
 void WarriorSKILLState::update(float elapsedTime, uint32_t currentFrame)
 {
 	StateMachine::update(elapsedTime, currentFrame);
-}
-
-void WarriorSKILLState::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
-{
 }
 
 void WarriorSKILLState::exit()

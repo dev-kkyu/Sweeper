@@ -22,10 +22,6 @@ void HealerAttackState::update(float elapsedTime, uint32_t currentFrame)
 	StateMachine::update(elapsedTime, currentFrame);
 }
 
-void HealerAttackState::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
-{
-}
-
 void HealerAttackState::exit()
 {
 	StateMachine::exit();
@@ -48,10 +44,6 @@ void HealerSKILLState::enter()
 void HealerSKILLState::update(float elapsedTime, uint32_t currentFrame)
 {
 	StateMachine::update(elapsedTime, currentFrame);
-}
-
-void HealerSKILLState::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
-{
 }
 
 void HealerSKILLState::exit()

@@ -19,7 +19,6 @@ public:
 
 	virtual void enter() = 0;
 	virtual void update(float elapsedTime, uint32_t currentFrame) = 0;
-	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) = 0;
 	virtual void exit() = 0;
 	virtual PLAYER_STATE getState() const final;
 };
@@ -32,7 +31,6 @@ public:
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
-	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void exit() override;
 };
 
@@ -51,7 +49,6 @@ public:
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
-	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void exit() override;
 };
 
@@ -72,7 +69,6 @@ public:
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
-	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void exit() override;
 };
 

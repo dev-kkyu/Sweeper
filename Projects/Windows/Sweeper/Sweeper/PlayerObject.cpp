@@ -23,10 +23,6 @@ void StateMachine::update(float elapsedTime, uint32_t currentFrame)
 	// 클라는 현재 점프 처리를 따로 하지 않는다
 }
 
-void StateMachine::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
-{
-}
-
 void StateMachine::exit()
 {
 }
@@ -55,10 +51,6 @@ void IDLEState::update(float elapsedTime, uint32_t currentFrame)
 	// IDLE인 상태에서 할 일..
 
 	StateMachine::update(elapsedTime, currentFrame);
-}
-
-void IDLEState::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
-{
 }
 
 void IDLEState::exit()
@@ -124,10 +116,6 @@ void RUNState::update(float elapsedTime, uint32_t currentFrame)
 	StateMachine::update(elapsedTime, currentFrame);
 }
 
-void RUNState::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
-{
-}
-
 void RUNState::exit()
 {
 	StateMachine::exit();
@@ -178,10 +166,6 @@ void DASHState::update(float elapsedTime, uint32_t currentFrame)
 	StateMachine::update(elapsedTime, currentFrame);
 }
 
-void DASHState::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
-{
-}
-
 void DASHState::exit()
 {
 	StateMachine::exit();
@@ -211,8 +195,6 @@ void PlayerObject::update(float elapsedTime, uint32_t currentFrame)
 void PlayerObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
 	GLTFSkinModelObject::draw(commandBuffer, pipelineLayout, currentFrame);
-
-	currentState->draw(commandBuffer, pipelineLayout, currentFrame);
 }
 
 void PlayerObject::release()

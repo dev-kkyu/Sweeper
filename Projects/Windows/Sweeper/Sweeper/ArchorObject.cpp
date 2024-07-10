@@ -22,10 +22,6 @@ void ArchorAttackState::update(float elapsedTime, uint32_t currentFrame)
 	StateMachine::update(elapsedTime, currentFrame);
 }
 
-void ArchorAttackState::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
-{
-}
-
 void ArchorAttackState::exit()
 {
 	StateMachine::exit();
@@ -48,10 +44,6 @@ void ArchorSKILLState::enter()
 void ArchorSKILLState::update(float elapsedTime, uint32_t currentFrame)
 {
 	StateMachine::update(elapsedTime, currentFrame);
-}
-
-void ArchorSKILLState::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
-{
 }
 
 void ArchorSKILLState::exit()

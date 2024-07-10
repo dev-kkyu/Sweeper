@@ -22,10 +22,6 @@ void MageAttackState::update(float elapsedTime, uint32_t currentFrame)
 	StateMachine::update(elapsedTime, currentFrame);
 }
 
-void MageAttackState::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
-{
-}
-
 void MageAttackState::exit()
 {
 	StateMachine::exit();
@@ -48,10 +44,6 @@ void MageSKILLState::enter()
 void MageSKILLState::update(float elapsedTime, uint32_t currentFrame)
 {
 	StateMachine::update(elapsedTime, currentFrame);
-}
-
-void MageSKILLState::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
-{
 }
 
 void MageSKILLState::exit()

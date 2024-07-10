@@ -10,7 +10,6 @@ public:
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
-	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void exit() override;
 };
 
@@ -22,7 +21,6 @@ public:
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
-	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void exit() override;
 };
 
