@@ -13,6 +13,27 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="GameObjectBase">
+      <UniqueIdentifier>{8621b5d5-3be4-4a0d-a73f-796cf959133f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\MonsterObject">
+      <UniqueIdentifier>{fa0e3362-c5ef-486c-a43d-4ffe737e6bfa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\PlayerObject">
+      <UniqueIdentifier>{ab0249b2-bd13-4ee2-8703-20c8af3dfeba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\PlayerObject\WarriorObject">
+      <UniqueIdentifier>{f67dabbb-4ae2-4f89-ad35-228239897d08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\PlayerObject\ArchorObject">
+      <UniqueIdentifier>{37b9a53b-27b7-4dfa-85a9-57643fa28377}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\PlayerObject\MageObject">
+      <UniqueIdentifier>{0afe12df-6db2-40f2-9774-40bf9231461b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\PlayerObject\HealerObject">
+      <UniqueIdentifier>{b455cbaf-0051-4892-9597-943c485a288c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -27,15 +48,6 @@
     <ClCompile Include="Room.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="GameObjectBase.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerObject.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="MonsterObject.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="BoundingBox.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -44,6 +56,18 @@
     </ClCompile>
     <ClCompile Include="GLTFCollisionModel.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjectBase.cpp">
+      <Filter>GameObjectBase</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterObject.cpp">
+      <Filter>GameObjectBase\MonsterObject</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerObject.cpp">
+      <Filter>GameObjectBase\PlayerObject</Filter>
+    </ClCompile>
+    <ClCompile Include="WarriorObject.cpp">
+      <Filter>GameObjectBase\PlayerObject\WarriorObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -59,15 +83,6 @@
     <ClInclude Include="Room.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="GameObjectBase.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerObject.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="MonsterObject.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="BoundingBox.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -76,6 +91,18 @@
     </ClInclude>
     <ClInclude Include="GLTFCollisionModel.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjectBase.h">
+      <Filter>GameObjectBase</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterObject.h">
+      <Filter>GameObjectBase\MonsterObject</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerObject.h">
+      <Filter>GameObjectBase\PlayerObject</Filter>
+    </ClInclude>
+    <ClInclude Include="WarriorObject.h">
+      <Filter>GameObjectBase\PlayerObject\WarriorObject</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

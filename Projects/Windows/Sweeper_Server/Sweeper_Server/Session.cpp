@@ -1,7 +1,8 @@
 #include "Session.h"
 
 #include "Room.h"
-#include "PlayerObject.h"
+#include "WarriorObject.h"
+
 #include "MonsterObject.h"
 
 #include <iostream>
@@ -61,8 +62,21 @@ bool Session::processPacket(unsigned char* packet)
 			CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(packet);
 			player_type = p->player_type;
 
-			// 플레이어 생성, 추후 타입에 따른 다른 자식클래스로 생성
-			player = std::make_shared<PlayerObject>(parentRoom, player_id);
+			switch (player_type)
+			{
+			case PLAYER_TYPE::WARRIOR:
+				player = std::make_shared<WarriorObject>(parentRoom, player_id);
+				break;
+			case PLAYER_TYPE::ARCHER:	// Todo : 아래 다 바꿔줘야 함
+				player = std::make_shared<WarriorObject>(parentRoom, player_id);
+				break;
+			case PLAYER_TYPE::MAGE:
+				player = std::make_shared<WarriorObject>(parentRoom, player_id);
+				break;
+			case PLAYER_TYPE::HEALER:
+				player = std::make_shared<WarriorObject>(parentRoom, player_id);
+				break;
+			}
 		}
 		// 로그인 패킷 - id를 보내준다.
 		{

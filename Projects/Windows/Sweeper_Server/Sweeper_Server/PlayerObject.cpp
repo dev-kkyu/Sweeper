@@ -80,11 +80,11 @@ void IDLEState::update(float elapsedTime)
 
 	// 공격 혹은 이동
 	if (player.keyState & MOUSE_LEFT) {
-		player.nextState = std::make_unique<AttackState>(player);
+		player.changeATTACKState();
 	}
 	else if (player.keyState & KEY_UP or player.keyState & KEY_DOWN
 		or player.keyState & KEY_LEFT or player.keyState & KEY_RIGHT) {
-		player.nextState = std::make_unique<RUNState>(player);
+		player.changeRUNState();
 	}
 
 	StateMachine::update(elapsedTime);
@@ -115,10 +115,10 @@ void RUNState::enter()
 void RUNState::update(float elapsedTime)
 {
 	if (player.keyState & MOUSE_LEFT) {
-		player.nextState = std::make_unique<AttackState>(player);
+		player.changeATTACKState();
 	}
 	else if (player.keyState & KEY_CTRL) {
-		player.nextState = std::make_unique<DASHState>(player);
+		player.changeDASHState();
 	}
 	else {
 		bool isKeyOn = player.keyState & KEY_UP or player.keyState & KEY_DOWN or
@@ -142,7 +142,7 @@ void RUNState::update(float elapsedTime)
 			if (moveSpeed < 0.f) {
 				moveSpeed = 0.f;
 				// 키가 떼지고 속도가 0이 되면 IDLE로 바뀐다.
-				player.nextState = std::make_unique<IDLEState>(player);
+				player.changeIDLEState();
 			}
 		}
 
@@ -215,7 +215,7 @@ void DASHState::enter()
 void DASHState::update(float elapsedTime)
 {
 	if (stateBeginTime + std::chrono::milliseconds(400) <= std::chrono::steady_clock::now()) {
-		player.nextState = std::make_unique<IDLEState>(player);
+		player.changeIDLEState();
 	}
 
 	if (accFlag > 0) {
@@ -240,48 +240,6 @@ void DASHState::exit()
 	StateMachine::exit();
 }
 
-AttackState::AttackState(PlayerObject& player)
-	: StateMachine{ player }
-{
-	state = PLAYER_STATE::ATTACK;
-}
-
-void AttackState::enter()
-{
-	stateBeginTime = std::chrono::steady_clock::now();
-
-	StateMachine::enter();
-}
-
-void AttackState::update(float elapsedTime)
-{
-	auto now_time = std::chrono::steady_clock::now();
-	if (now_time > stateBeginTime + std::chrono::milliseconds{ 400 }) {
-		// 끝났으면 State 변경
-		player.nextState = std::make_unique<IDLEState>(player);
-	}
-	else if (now_time > stateBeginTime + std::chrono::milliseconds{ 200 }) {
-		// 충돌검사
-		auto myPos = player.getPosition();
-		myPos += player.getLook();	// 칼 범위를 플레이어 앞쪽으로 세팅해준다.
-		for (auto& m : player.parentRoom->monsters) {
-			auto monPos = m.second->getPosition();
-			float dist2 = (myPos.x - monPos.x) * (myPos.x - monPos.x) + (myPos.z - monPos.z) * (myPos.z - monPos.z);
-			if (dist2 <= 1.5f) {	// 충돌
-				m.second->onHit(player);
-				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
-			}
-		}
-	}
-
-	StateMachine::update(elapsedTime);
-}
-
-void AttackState::exit()
-{
-	StateMachine::exit();
-}
-
 PlayerObject::PlayerObject(Room* parentRoom, int p_id)
 	: GameObjectBase{ parentRoom, p_id }
 {
@@ -292,10 +250,6 @@ PlayerObject::PlayerObject(Room* parentRoom, int p_id)
 	velocity = 0.f;
 
 	collisionRadius = 0.4f;						// 캐릭터 충돌 반지름 조정
-}
-
-PlayerObject::~PlayerObject()
-{
 }
 
 void PlayerObject::initialize()
@@ -413,4 +367,19 @@ void PlayerObject::moveAndCheckCollision(const glm::vec3& direction, float moveS
 			break;
 		}
 	}
+}
+
+void PlayerObject::changeIDLEState()
+{
+	nextState = std::make_unique<IDLEState>(*this);
+}
+
+void PlayerObject::changeRUNState()
+{
+	nextState = std::make_unique<RUNState>(*this);
+}
+
+void PlayerObject::changeDASHState()
+{
+	nextState = std::make_unique<DASHState>(*this);
 }

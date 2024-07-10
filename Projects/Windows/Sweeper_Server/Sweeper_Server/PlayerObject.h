@@ -74,28 +74,15 @@ public:
 	virtual void exit() override;
 };
 
-class AttackState : public StateMachine
-{
-private:
-	std::chrono::steady_clock::time_point stateBeginTime;
-public:
-	AttackState(PlayerObject& player);
-	virtual ~AttackState() = default;
-
-	virtual void enter() override;
-	virtual void update(float elapsedTime) override;
-	virtual void exit() override;
-};
-
 class PlayerObject : public GameObjectBase
 {
 	friend class StateMachine;
 	friend class IDLEState;
 	friend class RUNState;
 	friend class DASHState;
-	friend class AttackState;
+	friend class WarriorAttackState;
 
-private:
+protected:
 	// 상태 관리
 	std::unique_ptr<StateMachine> currentState;
 	std::unique_ptr<StateMachine> nextState;
@@ -112,7 +99,7 @@ private:
 
 public:
 	PlayerObject(Room* parentRoom, int p_id);
-	virtual ~PlayerObject();
+	virtual ~PlayerObject() = default;
 
 	virtual void initialize() override;
 	virtual bool update(float elapsedTime) override;
@@ -123,8 +110,14 @@ public:
 
 	void processKeyInput(unsigned int key, bool is_pressed);
 
-private:
+protected:
 	void rotateAndMoveToDirection(const glm::vec3& direction, float moveSpeed, float elapsedTime);
 	void moveAndCheckCollision(const glm::vec3& direction, float moveSpeed, float elapsedTime);
+
+	virtual void changeIDLEState() final;
+	virtual void changeRUNState() final;
+	virtual void changeDASHState() final;
+	virtual void changeATTACKState() = 0;
+	virtual void changeSKILLState() = 0;
 
 };
