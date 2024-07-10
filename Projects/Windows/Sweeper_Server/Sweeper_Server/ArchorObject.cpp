@@ -20,7 +20,7 @@ void ArchorAttackState::enter()
 void ArchorAttackState::update(float elapsedTime)
 {
 	auto now_time = std::chrono::steady_clock::now();
-	if (now_time > stateBeginTime + std::chrono::milliseconds{ 562 }) {
+	if (now_time > stateBeginTime + std::chrono::milliseconds{ 560 }) {
 		// 끝났으면 State 변경
 		player.changeIDLEState();
 	}
@@ -62,7 +62,7 @@ void ArchorSKILLState::enter()
 void ArchorSKILLState::update(float elapsedTime)
 {
 	auto now_time = std::chrono::steady_clock::now();
-	if (now_time > stateBeginTime + std::chrono::milliseconds{ 400 }) {
+	if (now_time > stateBeginTime + std::chrono::milliseconds{ 560 }) {
 		// 끝났으면 State 변경
 		player.changeIDLEState();
 	}
