@@ -62,7 +62,7 @@ void WarriorSKILLState::enter()
 void WarriorSKILLState::update(float elapsedTime)
 {
 	auto now_time = std::chrono::steady_clock::now();
-	if (now_time > stateBeginTime + std::chrono::milliseconds{ 400 }) {
+	if (now_time > stateBeginTime + std::chrono::milliseconds{ 750 }) {
 		// 끝났으면 State 변경
 		player.changeIDLEState();
 	}

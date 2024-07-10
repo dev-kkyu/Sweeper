@@ -1,6 +1,7 @@
 #include "MageObject.h"
 
 #define PLAYER_CLIP_ATTACK_MAGE		10
+#define PLAYER_CLIP_SKILL_MAGE		11
 
 MageAttackState::MageAttackState(PlayerObject& player)
 	: StateMachine{ player }
@@ -40,7 +41,7 @@ void MageSKILLState::enter()
 {
 	StateMachine::enter();
 
-	player.setAnimationClip(PLAYER_CLIP_ATTACK_MAGE);
+	player.setAnimationClip(PLAYER_CLIP_SKILL_MAGE);
 	player.setAnimateSpeed(1.f);
 }
 

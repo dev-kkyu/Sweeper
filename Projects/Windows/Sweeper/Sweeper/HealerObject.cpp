@@ -1,6 +1,7 @@
 #include "HealerObject.h"
 
-#define PLAYER_CLIP_ATTACK_KNIFE	16
+#define PLAYER_CLIP_ATTACK_HEALER	16
+#define PLAYER_CLIP_SKILL_HEALER	31
 
 HealerAttackState::HealerAttackState(PlayerObject& player)
 	: StateMachine{ player }
@@ -12,7 +13,7 @@ void HealerAttackState::enter()
 {
 	StateMachine::enter();
 
-	player.setAnimationClip(PLAYER_CLIP_ATTACK_KNIFE);
+	player.setAnimationClip(PLAYER_CLIP_ATTACK_HEALER);
 	player.setAnimateSpeed(0.4f);
 }
 
@@ -40,7 +41,7 @@ void HealerSKILLState::enter()
 {
 	StateMachine::enter();
 
-	player.setAnimationClip(PLAYER_CLIP_ATTACK_KNIFE);
+	player.setAnimationClip(PLAYER_CLIP_SKILL_HEALER);
 	player.setAnimateSpeed(0.4f);
 }
 

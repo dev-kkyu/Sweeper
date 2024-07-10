@@ -1,6 +1,7 @@
 #include "ArchorObject.h"
 
-#define PLAYER_CLIP_ATTACK_ARROW	26
+#define PLAYER_CLIP_ATTACK_ARCHOR	26
+#define PLAYER_CLIP_SKILL_ARCHOR	26
 
 ArchorAttackState::ArchorAttackState(PlayerObject& player)
 	: StateMachine{ player }
@@ -12,7 +13,7 @@ void ArchorAttackState::enter()
 {
 	StateMachine::enter();
 
-	player.setAnimationClip(PLAYER_CLIP_ATTACK_ARROW);
+	player.setAnimationClip(PLAYER_CLIP_ATTACK_ARCHOR);
 	player.setAnimateSpeed(0.8f);
 }
 
@@ -40,7 +41,7 @@ void ArchorSKILLState::enter()
 {
 	StateMachine::enter();
 
-	player.setAnimationClip(PLAYER_CLIP_ATTACK_ARROW);
+	player.setAnimationClip(PLAYER_CLIP_SKILL_ARCHOR);
 	player.setAnimateSpeed(0.8f);
 }
 

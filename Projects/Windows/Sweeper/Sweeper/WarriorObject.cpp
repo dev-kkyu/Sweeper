@@ -1,6 +1,7 @@
 #include "WarriorObject.h"
 
-#define PLAYER_CLIP_ATTACK_KNIFE	16
+#define PLAYER_CLIP_ATTACK_WARRIOR	16
+#define PLAYER_CLIP_SKILL_WARRIOR	12
 
 WarriorAttackState::WarriorAttackState(PlayerObject& player)
 	: StateMachine{ player }
@@ -12,7 +13,7 @@ void WarriorAttackState::enter()
 {
 	StateMachine::enter();
 
-	player.setAnimationClip(PLAYER_CLIP_ATTACK_KNIFE);
+	player.setAnimationClip(PLAYER_CLIP_ATTACK_WARRIOR);
 	player.setAnimateSpeed(0.4f);
 }
 
@@ -40,8 +41,8 @@ void WarriorSKILLState::enter()
 {
 	StateMachine::enter();
 
-	player.setAnimationClip(PLAYER_CLIP_ATTACK_KNIFE);
-	player.setAnimateSpeed(0.4f);
+	player.setAnimationClip(PLAYER_CLIP_SKILL_WARRIOR);
+	player.setAnimateSpeed(1.175f);
 }
 
 void WarriorSKILLState::update(float elapsedTime, uint32_t currentFrame)
