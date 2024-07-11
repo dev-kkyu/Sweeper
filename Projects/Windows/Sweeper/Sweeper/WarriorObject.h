@@ -26,9 +26,16 @@ public:
 
 class WarriorObject : public PlayerObject
 {
+	friend WarriorSKILLState;
+
 private:
+	struct WarriorEffect {
+		glm::vec3 pos;
+		float accumTime = 0.f;
+	};
+
 	vkf::Effect& effect;
-	std::vector<float> effectTimes;
+	std::vector<WarriorEffect> warriorEffects;
 
 public:
 	WarriorObject(GLTFModelObject& mapObject, vkf::Effect& effect);
