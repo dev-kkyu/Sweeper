@@ -47,6 +47,9 @@ private:
 	} pipeline;
 
 	VkDescriptorPool sceneSamplerDescriptorPool;
+	struct {
+		vkf::Effect warrior;
+	} effect;
 	vkf::Texture cloudTexture;
 	float sceneElapsedTime = 0.f;	// 현재는 구름 애니메이션에 사용
 

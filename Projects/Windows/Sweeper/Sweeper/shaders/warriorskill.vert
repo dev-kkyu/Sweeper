@@ -33,5 +33,15 @@ layout (push_constant) uniform PushConstants {
 
 void main()
 {
-	gl_Position = vec4(quad[gl_VertexIndex], 1.0);
+	float time = fract(push.model[3][3] * 2.f) * 16.f;	// 0 ~ 15.99
+	int iu = int(time) % 4;
+	int iv = int(time) / 4;
+
+	outUV = (uv[gl_VertexIndex] + vec2(iu, iv)) * 0.25f;
+
+	vec3 movePos = quad[gl_VertexIndex];
+	movePos.y += 1.f;
+    vec3 finalPos = push.model[3].xyz + inverse(mat3(ubo.view)) * movePos;
+
+	gl_Position = ubo.projection * ubo.view * vec4(finalPos, 1.0);
 }

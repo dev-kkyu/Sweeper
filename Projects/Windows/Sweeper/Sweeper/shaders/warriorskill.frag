@@ -9,6 +9,5 @@ layout (location = 0) out vec4 outFragColor;
 void main()
 {
 	vec4 color = texture(texSampler, inUV);
-	float alpha = (color.x + color.y + color.z) / 3.f;
-	outFragColor = vec4(1.f, 0.32f, 0.f, alpha / 3.5f);
+	outFragColor = vec4(vec3(0.35f, 0.2f, 0.05f) * color.rgb, color.a * 2.f);
 }

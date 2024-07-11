@@ -17,13 +17,16 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 {
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
-	createSamplerDescriptorPool(1);
+	createSamplerDescriptorPool(2);		// 배경 구름, 이펙트1개
 
 	uniformBufferObject.scene.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 	uniformBufferObject.offscreen.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 
 	// 배경 사각형 텍스처 생성
 	cloudTexture.loadFromFile(fDevice, "models/Textures/cloud.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
+
+	// Warrrio Effect 생성
+	effect.warrior.texture.loadFromFile(fDevice, "models/Textures/smoke.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 
 	// gltf 모델 로드
 	mapModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/map.glb");
@@ -61,7 +64,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 		switch (player_type)
 		{
 		case PLAYER_TYPE::WARRIOR:
-			pMyPlayer = std::make_shared<WarriorObject>(mapObject);
+			pMyPlayer = std::make_shared<WarriorObject>(mapObject, effect.warrior);
 			break;
 		case PLAYER_TYPE::ARCHER:
 			pMyPlayer = std::make_shared<ArchorObject>(mapObject);
@@ -102,10 +105,13 @@ Scene::~Scene()
 	uniformBufferObject.scene.destroy();
 	uniformBufferObject.offscreen.destroy();
 
+	effect.warrior.texture.destroy();		// 전사 이펙트 텍스처
+
 	cloudTexture.destroy();					// 구름 텍스처
 
 	vkDestroyDescriptorPool(fDevice.logicalDevice, sceneSamplerDescriptorPool, nullptr);
 
+	vkDestroyPipeline(fDevice.logicalDevice, effect.warrior.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.cloudPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.boundingBoxPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.model, nullptr);
@@ -211,6 +217,8 @@ void Scene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 
 void Scene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
+
 	for (auto& player : pPlayers) {
 		if (player)
 			player->drawEffect(commandBuffer, pipelineLayout, currentFrame);
@@ -414,7 +422,7 @@ void Scene::processPacket(unsigned char* packet)
 		switch (p->player_type)
 		{
 		case PLAYER_TYPE::WARRIOR:
-			pPlayers[p->player_id] = std::make_shared<WarriorObject>(mapObject);
+			pPlayers[p->player_id] = std::make_shared<WarriorObject>(mapObject, effect.warrior);
 			break;
 		case PLAYER_TYPE::ARCHER:
 			pPlayers[p->player_id] = std::make_shared<ArchorObject>(mapObject);
@@ -798,6 +806,18 @@ void Scene::createGraphicsPipeline()
 	depthStencil.depthWriteEnable = VK_FALSE;
 
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.cloudPipeline) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+	vkf::Shader warriorShader{ fDevice, "shaders/warriorskill.vert.spv", "shaders/warriorskill.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(warriorShader.shaderStages.size());
+	pipelineInfo.pStages = warriorShader.shaderStages.data();
+
+	depthStencil.depthTestEnable = VK_TRUE;
+	depthStencil.depthWriteEnable = VK_TRUE;
+	rasterizer.cullMode = VK_CULL_MODE_NONE;
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &effect.warrior.pipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 }

@@ -27,9 +27,11 @@ public:
 class WarriorObject : public PlayerObject
 {
 private:
+	vkf::Effect& effect;
+	std::vector<float> effectTimes;
 
 public:
-	WarriorObject(GLTFModelObject& mapObject);
+	WarriorObject(GLTFModelObject& mapObject, vkf::Effect& effect);
 	virtual ~WarriorObject() = default;
 
 	virtual void initialize() override;
