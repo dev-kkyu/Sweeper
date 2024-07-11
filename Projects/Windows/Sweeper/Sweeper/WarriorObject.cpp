@@ -71,6 +71,15 @@ void WarriorObject::update(float elapsedTime, uint32_t currentFrame)
 	for (auto& wEffect : warriorEffects) {
 		wEffect.accumTime += elapsedTime;
 	}
+
+	std::list<std::vector<WarriorObject::WarriorEffect>::iterator> deleteEffects;
+	for (auto itr = warriorEffects.begin(); itr != warriorEffects.end(); ++itr) {
+		if (itr->accumTime >= 1.f)
+			deleteEffects.emplace_back(itr);
+	}
+	for (const auto& itr : deleteEffects) {
+		warriorEffects.erase(itr);
+	}
 }
 
 void WarriorObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
