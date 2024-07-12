@@ -18,7 +18,7 @@ void MageAttackState::enter()
 	player.setAnimationClip(PLAYER_CLIP_ATTACK_MAGE);
 	player.setAnimateSpeed(1.f);
 
-	dynamic_cast<MageObject*>(&player)->mageAttackEffects.push_back(MageObject::MageEffect{ player.getPosition(), 0.f });
+	dynamic_cast<MageObject*>(&player)->mageAttackEffects.push_back(MageObject::MageEffect{ player.getPosition() + player.getLook() * 3.f, -0.23f });
 }
 
 void MageAttackState::update(float elapsedTime, uint32_t currentFrame)
@@ -79,6 +79,14 @@ void MageObject::update(float elapsedTime, uint32_t currentFrame)
 	}
 
 	std::list<std::vector<MageObject::MageEffect>::iterator> deleteEffects;
+	for (auto itr = mageAttackEffects.begin(); itr != mageAttackEffects.end(); ++itr) {
+		if (itr->accumTime >= 0.625f)
+			deleteEffects.emplace_back(itr);
+	}
+	for (const auto& itr : deleteEffects) {
+		mageAttackEffects.erase(itr);
+	}
+	deleteEffects.clear();
 	for (auto itr = mageSkillEffects.begin(); itr != mageSkillEffects.end(); ++itr) {
 		if (itr->accumTime >= 1.f)
 			deleteEffects.emplace_back(itr);

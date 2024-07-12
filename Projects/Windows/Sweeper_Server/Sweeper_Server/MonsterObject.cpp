@@ -127,8 +127,8 @@ void MonsterObject::release()
 
 void MonsterObject::onHit(const GameObjectBase& other)
 {
-	// 중복 피격 방지시간 0.5초
-	if (attackBeginTime + std::chrono::milliseconds{ 500 } <= std::chrono::steady_clock::now())
+	// 중복 피격 방지시간 0.7초
+	if (attackBeginTime + std::chrono::milliseconds{ 700 } <= std::chrono::steady_clock::now())
 	{
 		hp -= 100;
 		attackBeginTime = std::chrono::steady_clock::now();

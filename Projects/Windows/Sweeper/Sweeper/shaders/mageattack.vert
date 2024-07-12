@@ -34,17 +34,18 @@ layout (push_constant) uniform PushConstants {
 void main()
 {
 	float time = push.model[3][3];				// 이곳에 시간 저장
-	int index = int(fract(time) * 25.f);		// 0 ~ 24
+	int index = int(fract(time * 1.6f) * 25.f);	// 0 ~ 24
 	int iu = index % 5;
 	int iv = index / 5;
 
 	outUV = vec2((uv[gl_VertexIndex].x + iu) / 5.f, (uv[gl_VertexIndex].y + iv) / 5.f);
 
 	vec3 quadPos = quad[gl_VertexIndex];		// 그려질 위치
-	quadPos.y += 1.f;							// 바닥에서 살짝 띄워주기
-	quadPos.x += 0.07f;
+	quadPos.y += 0.75f;							// 이미지에 맞추어 바닥 위로
+	quadPos.x += 0.07f;							// 이미지가 좌측으로 치우쳐져 있는 것 보정
 
-    vec3 finalPos = push.model[3].xyz + quadPos;	// 정해진 위치(월드 좌표)로 옮기기
+   vec3 finalPos = push.model[3].xyz + inverse(mat3(ubo.view)) * quadPos;	// 카메라 각도로 회전 후, 정해진 위치(월드 좌표)로 옮기기
+   finalPos.z -= 0.5f;							// 이미지에 맞추어 화면 아래로
 
 	gl_Position = ubo.projection * ubo.view * vec4(finalPos, 1.0);
 }

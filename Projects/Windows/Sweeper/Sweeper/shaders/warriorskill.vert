@@ -48,7 +48,7 @@ void main()
 	float offset = clamp(time, 0.f, 1.f);		// 1초까지 0 ~ 1
 	quadPos *= 0.7f + vec3(offset * 1.3f);		// 0.7 ~ 2배
 
-    vec3 finalPos = push.model[3].xyz + inverse(mat3(ubo.view)) * quadPos;	// 카메라 각도로 회전 후, 정해진 위치(월드 좌표)로 옮기기
+	vec3 finalPos = push.model[3].xyz + inverse(mat3(ubo.view)) * quadPos;	// 카메라 각도로 회전 후, 정해진 위치(월드 좌표)로 옮기기
 	finalPos.z -= 1.f;							// 화면 아래쪽으로 내려주기
 
 	gl_Position = ubo.projection * ubo.view * vec4(finalPos, 1.0);
