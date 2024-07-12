@@ -205,5 +205,11 @@
     <None Include="shaders\mageskill.frag">
       <Filter>소스 파일\Shader</Filter>
     </None>
+    <None Include="shaders\mageattack.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\mageattack.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

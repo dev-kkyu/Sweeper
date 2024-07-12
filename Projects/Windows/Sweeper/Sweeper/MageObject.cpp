@@ -42,7 +42,7 @@ void MageSKILLState::enter()
 	player.setAnimationClip(PLAYER_CLIP_SKILL_MAGE);
 	player.setAnimateSpeed(1.f);
 
-	dynamic_cast<MageObject*>(&player)->mageEffects.push_back(MageObject::MageEffect{ player.getPosition() + player.getLook() * 3.f, -0.3f });
+	dynamic_cast<MageObject*>(&player)->mageSkillEffects.push_back(MageObject::MageEffect{ player.getPosition() + player.getLook() * 3.f, -0.3f });
 }
 
 void MageSKILLState::update(float elapsedTime, uint32_t currentFrame)
@@ -68,17 +68,17 @@ void MageObject::update(float elapsedTime, uint32_t currentFrame)
 {
 	PlayerObject::update(elapsedTime, currentFrame);
 
-	for (auto& mEffect : mageEffects) {
+	for (auto& mEffect : mageSkillEffects) {
 		mEffect.accumTime += elapsedTime;
 	}
 
 	std::list<std::vector<MageObject::MageEffect>::iterator> deleteEffects;
-	for (auto itr = mageEffects.begin(); itr != mageEffects.end(); ++itr) {
+	for (auto itr = mageSkillEffects.begin(); itr != mageSkillEffects.end(); ++itr) {
 		if (itr->accumTime >= 1.f)
 			deleteEffects.emplace_back(itr);
 	}
 	for (const auto& itr : deleteEffects) {
-		mageEffects.erase(itr);
+		mageSkillEffects.erase(itr);
 	}
 }
 
@@ -93,11 +93,11 @@ void MageObject::release()
 
 void MageObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
-	if (mageEffects.size() > 0) {
+	if (mageSkillEffects.size() > 0) {
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, effect.pipeline);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &effect.texture.samplerDescriptorSet, 0, nullptr);
 
-		for (const auto& mEffect : mageEffects) {
+		for (const auto& mEffect : mageSkillEffects) {
 			if (mEffect.accumTime >= 0.f) {
 				glm::mat4 matrix = glm::translate(glm::mat4(1.f), mEffect.pos);
 				matrix[3][3] = mEffect.accumTime;

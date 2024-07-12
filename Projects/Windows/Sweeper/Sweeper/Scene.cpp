@@ -27,7 +27,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 
 	// 캐릭터 Effect 생성
 	effect.warrior.texture.loadFromFile(fDevice, "models/Textures/smoke.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
-	effect.mage.texture.loadFromFile(fDevice, "models/Textures/magic.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
+	effect.mage.texture.loadFromFile(fDevice, "models/Textures/magiccircle.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 
 	// gltf 모델 로드
 	mapModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/map.glb");

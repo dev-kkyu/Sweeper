@@ -35,7 +35,8 @@ private:
 	};
 
 	vkf::Effect& effect;
-	std::vector<MageEffect> mageEffects;
+	std::vector<MageEffect> mageAttackEffects;
+	std::vector<MageEffect> mageSkillEffects;
 
 public:
 	MageObject(GLTFModelObject& mapObject, vkf::Effect& effect);
