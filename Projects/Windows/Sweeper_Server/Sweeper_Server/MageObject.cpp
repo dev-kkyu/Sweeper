@@ -66,14 +66,14 @@ void MageSKILLState::update(float elapsedTime)
 		// 끝났으면 State 변경
 		player.changeIDLEState();
 	}
-	else if (now_time > stateBeginTime + std::chrono::milliseconds{ 200 }) {
+	else if (now_time > stateBeginTime + std::chrono::milliseconds{ 300 }) {
 		// 충돌검사
 		auto myPos = player.getPosition();
-		myPos += player.getLook();	// 칼 범위를 플레이어 앞쪽으로 세팅해준다.
+		myPos += player.getLook() * 3.f;	// 마법 공격 중앙
 		for (auto& m : player.parentRoom->monsters) {
 			auto monPos = m.second->getPosition();
 			float dist2 = (myPos.x - monPos.x) * (myPos.x - monPos.x) + (myPos.z - monPos.z) * (myPos.z - monPos.z);
-			if (dist2 <= 1.5f) {	// 충돌
+			if (dist2 <= (1.5f * 1.5f)) {	// 공격 범위 중심에서 1.5 거리 내
 				m.second->onHit(player);
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 			}

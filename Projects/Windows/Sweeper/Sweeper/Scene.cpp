@@ -17,7 +17,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 {
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
-	createSamplerDescriptorPool(2);		// 배경 구름, 이펙트1개
+	createSamplerDescriptorPool(3);		// 배경 구름, 이펙트2개
 
 	uniformBufferObject.scene.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 	uniformBufferObject.offscreen.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
@@ -25,8 +25,9 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 	// 배경 사각형 텍스처 생성
 	cloudTexture.loadFromFile(fDevice, "models/Textures/cloud.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 
-	// Warrrio Effect 생성
+	// 캐릭터 Effect 생성
 	effect.warrior.texture.loadFromFile(fDevice, "models/Textures/smoke.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
+	effect.mage.texture.loadFromFile(fDevice, "models/Textures/magic.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 
 	// gltf 모델 로드
 	mapModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/map.glb");
@@ -70,7 +71,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 			pMyPlayer = std::make_shared<ArchorObject>(mapObject);
 			break;
 		case PLAYER_TYPE::MAGE:
-			pMyPlayer = std::make_shared<MageObject>(mapObject);
+			pMyPlayer = std::make_shared<MageObject>(mapObject, effect.mage);
 			break;
 		case PLAYER_TYPE::HEALER:
 			pMyPlayer = std::make_shared<HealerObject>(mapObject);
@@ -106,12 +107,14 @@ Scene::~Scene()
 	uniformBufferObject.offscreen.destroy();
 
 	effect.warrior.texture.destroy();		// 전사 이펙트 텍스처
+	effect.mage.texture.destroy();			// 마법사 이펙트 텍스처
 
 	cloudTexture.destroy();					// 구름 텍스처
 
 	vkDestroyDescriptorPool(fDevice.logicalDevice, sceneSamplerDescriptorPool, nullptr);
 
 	vkDestroyPipeline(fDevice.logicalDevice, effect.warrior.pipeline, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, effect.mage.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.cloudPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.boundingBoxPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.model, nullptr);
@@ -428,7 +431,7 @@ void Scene::processPacket(unsigned char* packet)
 			pPlayers[p->player_id] = std::make_shared<ArchorObject>(mapObject);
 			break;
 		case PLAYER_TYPE::MAGE:
-			pPlayers[p->player_id] = std::make_shared<MageObject>(mapObject);
+			pPlayers[p->player_id] = std::make_shared<MageObject>(mapObject, effect.mage);
 			break;
 		case PLAYER_TYPE::HEALER:
 			pPlayers[p->player_id] = std::make_shared<HealerObject>(mapObject);
@@ -818,6 +821,14 @@ void Scene::createGraphicsPipeline()
 	rasterizer.cullMode = VK_CULL_MODE_NONE;
 
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &effect.warrior.pipeline) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+	vkf::Shader mageShader{ fDevice, "shaders/mageskill.vert.spv", "shaders/mageskill.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(mageShader.shaderStages.size());
+	pipelineInfo.pStages = mageShader.shaderStages.data();
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &effect.mage.pipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 }
