@@ -17,6 +17,8 @@ void MageAttackState::enter()
 
 	player.setAnimationClip(PLAYER_CLIP_ATTACK_MAGE);
 	player.setAnimateSpeed(1.f);
+
+	dynamic_cast<MageObject*>(&player)->mageAttackEffects.push_back(MageObject::MageEffect{ player.getPosition(), 0.f });
 }
 
 void MageAttackState::update(float elapsedTime, uint32_t currentFrame)
@@ -55,8 +57,8 @@ void MageSKILLState::exit()
 	StateMachine::exit();
 }
 
-MageObject::MageObject(GLTFModelObject& mapObject, vkf::Effect& effect)
-	: PlayerObject{ mapObject }, effect{ effect }
+MageObject::MageObject(GLTFModelObject& mapObject, vkf::Effect& aEffect, vkf::Effect& sEffect)
+	: PlayerObject{ mapObject }, attackEffect{ aEffect }, skillEffect{ sEffect }
 {
 }
 
@@ -67,6 +69,10 @@ void MageObject::initialize()
 void MageObject::update(float elapsedTime, uint32_t currentFrame)
 {
 	PlayerObject::update(elapsedTime, currentFrame);
+
+	for (auto& mEffect : mageAttackEffects) {
+		mEffect.accumTime += elapsedTime;
+	}
 
 	for (auto& mEffect : mageSkillEffects) {
 		mEffect.accumTime += elapsedTime;
@@ -93,9 +99,24 @@ void MageObject::release()
 
 void MageObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
+	if (mageAttackEffects.size() > 0) {
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, attackEffect.pipeline);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &attackEffect.texture.samplerDescriptorSet, 0, nullptr);
+
+		for (const auto& mEffect : mageAttackEffects) {
+			if (mEffect.accumTime >= 0.f) {
+				glm::mat4 matrix = glm::translate(glm::mat4(1.f), mEffect.pos);
+				matrix[3][3] = mEffect.accumTime;
+				vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+
+				vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+			}
+		}
+	}
+
 	if (mageSkillEffects.size() > 0) {
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, effect.pipeline);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &effect.texture.samplerDescriptorSet, 0, nullptr);
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skillEffect.pipeline);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &skillEffect.texture.samplerDescriptorSet, 0, nullptr);
 
 		for (const auto& mEffect : mageSkillEffects) {
 			if (mEffect.accumTime >= 0.f) {

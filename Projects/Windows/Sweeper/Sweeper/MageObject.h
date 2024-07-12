@@ -26,6 +26,7 @@ public:
 
 class MageObject : public PlayerObject
 {
+	friend MageAttackState;
 	friend MageSKILLState;
 
 private:
@@ -34,12 +35,13 @@ private:
 		float accumTime = 0.f;
 	};
 
-	vkf::Effect& effect;
+	vkf::Effect& attackEffect;
+	vkf::Effect& skillEffect;
 	std::vector<MageEffect> mageAttackEffects;
 	std::vector<MageEffect> mageSkillEffects;
 
 public:
-	MageObject(GLTFModelObject& mapObject, vkf::Effect& effect);
+	MageObject(GLTFModelObject& mapObject, vkf::Effect& aEffect, vkf::Effect& sEffect);
 	virtual ~MageObject() = default;
 
 	virtual void initialize() override;
