@@ -155,31 +155,30 @@ bool ArchorObject::update(float elapsedTime)
 {
 	// 화살 관련 업데이트
 	{
-		SC_MOVE_ARROW_PACKET p;
-		p.size = sizeof(p);
-		p.type = SC_MOVE_ARROW;
-
 		std::list<int> removeArrowList;
 		for (auto& arr : arrowObjects) {
 			auto nowTime = std::chrono::steady_clock::now();
 			// 3초가 경과되었으면 제거
 			if (arr.second.spawnTime + std::chrono::seconds(3) <= nowTime) {
-				SC_REMOVE_ARROW_PACKET rp;
-				rp.size = sizeof(rp);
-				rp.type = SC_REMOVE_ARROW;
-				rp.arrow_id = arr.first;
-				for (auto& a : parentRoom->sessions) {
-					std::shared_ptr<Session> session = a.load();
-					if (Room::isValidSession(session))
-						session->sendPacket(&rp);
-				}
 				removeArrowList.push_back(arr.first);
 			}
 			// 그게 아니고, 0.375초가 지났으면 위치 업데이트
 			else if (arr.second.spawnTime + std::chrono::milliseconds(375) <= nowTime) {
 				// 화살 위치 업데이트
 				arr.second.pos += arr.second.dir * 15.f * elapsedTime;		// 클라와 동기화 되어야 한다
+				// 화살과 몬스터의 충돌 검사
+				for (auto& m : parentRoom->monsters) {
+					BoundingBox arrBox;
+					arrBox.setBound(1.f, 0.1f, arr.second.pos.z + 0.5f, arr.second.pos.z - 0.5f, arr.second.pos.x - 0.5f, arr.second.pos.x + 0.5f);
+					if (arrBox.isCollide(m.second->getBoundingBox())) {
+						m.second->onHit(*this);
+						removeArrowList.push_back(arr.first);
+					}
+				}
 				// 모든 플레이어에게 화살의 새 위치 업데이트
+				SC_MOVE_ARROW_PACKET p;
+				p.size = sizeof(p);
+				p.type = SC_MOVE_ARROW;
 				p.arrow_id = arr.first;
 				p.pos_x = arr.second.pos.x;
 				p.pos_z = arr.second.pos.z;
@@ -190,7 +189,17 @@ bool ArchorObject::update(float elapsedTime)
 				}
 			}
 		}
+		// 제거될 화살 처리
 		for (auto arr : removeArrowList) {
+			SC_REMOVE_ARROW_PACKET rp;
+			rp.size = sizeof(rp);
+			rp.type = SC_REMOVE_ARROW;
+			rp.arrow_id = arr;
+			for (auto& a : parentRoom->sessions) {
+				std::shared_ptr<Session> session = a.load();
+				if (Room::isValidSession(session))
+					session->sendPacket(&rp);
+			}
 			arrowObjects.erase(arr);
 		}
 	}
