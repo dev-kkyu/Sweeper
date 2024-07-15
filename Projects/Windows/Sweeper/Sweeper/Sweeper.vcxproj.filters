@@ -49,6 +49,9 @@
     <Filter Include="GameObjectBase\GLTFSkinModelObject\PlayerObject\HealerObject">
       <UniqueIdentifier>{4a30c5a8-9dae-4ae0-8ba4-29053c4014ac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObjectBase\GLTFModelObject\ArrowObject">
+      <UniqueIdentifier>{1c75c3fa-1f75-4309-a69f-ce5fabd654de}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -111,6 +114,9 @@
     <ClCompile Include="HealerObject.cpp">
       <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject\HealerObject</Filter>
     </ClCompile>
+    <ClCompile Include="ArrowObject.cpp">
+      <Filter>GameObjectBase\GLTFModelObject\ArrowObject</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObjectBase.h">
@@ -169,6 +175,9 @@
     </ClInclude>
     <ClInclude Include="HealerObject.h">
       <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject\HealerObject</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrowObject.h">
+      <Filter>GameObjectBase\GLTFModelObject\ArrowObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

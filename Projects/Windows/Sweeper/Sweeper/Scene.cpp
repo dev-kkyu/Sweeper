@@ -168,8 +168,6 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	// 화살 오브젝트들 업데이트 (보정 포함)
 	for (auto& arr : arrowObjects) {
 		arr.second.update(elapsedTime, currentFrame);
-		arr.second.moveForward(15.f * elapsedTime);		// 화살 속도는 서버와 동기화 해줘야 함
-		arr.second.updateBoundingBox();
 	}
 
 	// 맵은 업데이트 X

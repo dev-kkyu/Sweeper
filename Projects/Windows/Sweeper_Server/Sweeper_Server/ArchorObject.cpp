@@ -161,8 +161,9 @@ bool ArchorObject::update(float elapsedTime)
 
 		std::list<int> removeArrowList;
 		for (auto& arr : arrowObjects) {
+			auto nowTime = std::chrono::steady_clock::now();
 			// 3초가 경과되었으면 제거
-			if (arr.second.spawnTime + std::chrono::seconds(3) <= std::chrono::steady_clock::now()) {
+			if (arr.second.spawnTime + std::chrono::seconds(3) <= nowTime) {
 				SC_REMOVE_ARROW_PACKET rp;
 				rp.size = sizeof(rp);
 				rp.type = SC_REMOVE_ARROW;
@@ -174,8 +175,8 @@ bool ArchorObject::update(float elapsedTime)
 				}
 				removeArrowList.push_back(arr.first);
 			}
-			// 그게 아니라면 위치 업데이트
-			else {
+			// 그게 아니고, 0.375초가 지났으면 위치 업데이트
+			else if (arr.second.spawnTime + std::chrono::milliseconds(375) <= nowTime) {
 				// 화살 위치 업데이트
 				arr.second.pos += arr.second.dir * 15.f * elapsedTime;		// 클라와 동기화 되어야 한다
 				// 모든 플레이어에게 화살의 새 위치 업데이트

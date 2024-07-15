@@ -4,8 +4,9 @@
 
 //#include "OBJModelObject.h"
 #include "MonsterObject.h"
-#include "GLTFModelObject.h"
-//#include "GLTFSkinModelObject.h"	// included PlayerObject, MonsterObject
+#include "ArrowObject.h"
+//#include "GLTFModelObject.h"		// included ArrowObject;
+//#include "GLTFSkinModelObject.h"	// included MonsterObject
 #include "Camera.h"
 
 #include "NetworkManager.h"
@@ -75,7 +76,7 @@ private:
 
 	// gltf 일반 화살들
 	VulkanGLTFModel arrowModel;
-	std::unordered_map<int, GLTFModelObject> arrowObjects;
+	std::unordered_map<int, ArrowObject> arrowObjects;
 
 	// gltf skin 몬스터 모델들
 	VulkanGLTFSkinModel mushroomModel;
