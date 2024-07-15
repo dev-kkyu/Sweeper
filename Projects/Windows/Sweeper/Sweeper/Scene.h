@@ -54,6 +54,7 @@ private:
 			vkf::Effect attack;
 			vkf::Effect skill;
 		} mage;
+		vkf::Effect arrow;
 	} effect;
 	vkf::Texture cloudTexture;
 	float sceneElapsedTime = 0.f;	// 현재는 구름 애니메이션에 사용
@@ -76,7 +77,7 @@ private:
 
 	// gltf 일반 화살들
 	VulkanGLTFModel arrowModel;
-	std::unordered_map<int, ArrowObject> arrowObjects;
+	std::unordered_map<int, std::shared_ptr<ArrowObject>> pArrowObjects;
 
 	// gltf skin 몬스터 모델들
 	VulkanGLTFSkinModel mushroomModel;

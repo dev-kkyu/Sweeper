@@ -220,5 +220,11 @@
     <None Include="shaders\mageattack.frag">
       <Filter>소스 파일\Shader</Filter>
     </None>
+    <None Include="shaders\arroweffect.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\arroweffect.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

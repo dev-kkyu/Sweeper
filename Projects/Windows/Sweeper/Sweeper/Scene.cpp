@@ -17,7 +17,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 {
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
-	createSamplerDescriptorPool(4);		// 배경 구름, 이펙트2개
+	createSamplerDescriptorPool(5);		// 배경 구름, 이펙트4개
 
 	uniformBufferObject.scene.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 	uniformBufferObject.offscreen.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
@@ -30,6 +30,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 	effect.warrior.texture.loadFromFile(fDevice, "models/Textures/smoke.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 	effect.mage.attack.texture.loadFromFile(fDevice, "models/Textures/magic.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 	effect.mage.skill.texture.loadFromFile(fDevice, "models/Textures/magiccircle.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
+	effect.arrow.texture.loadFromFile(fDevice, "models/Textures/arroweffect.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 
 	// gltf 모델 로드
 	mapModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/map.glb");
@@ -113,13 +114,15 @@ Scene::~Scene()
 	uniformBufferObject.offscreen.destroy();
 
 	effect.warrior.texture.destroy();		// 전사 이펙트 텍스처
-	effect.mage.attack.texture.destroy();			// 마법사 이펙트 텍스처
-	effect.mage.skill.texture.destroy();			// 마법사 이펙트 텍스처
+	effect.mage.attack.texture.destroy();	// 마법사 이펙트 텍스처
+	effect.mage.skill.texture.destroy();	// 마법사 이펙트 텍스처
+	effect.arrow.texture.destroy();			// 화살 이펙트 텍스처
 
 	cloudTexture.destroy();					// 구름 텍스처
 
 	vkDestroyDescriptorPool(fDevice.logicalDevice, sceneSamplerDescriptorPool, nullptr);
 
+	vkDestroyPipeline(fDevice.logicalDevice, effect.arrow.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.warrior.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.mage.attack.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.mage.skill.pipeline, nullptr);
@@ -166,8 +169,8 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	uniformBufferObject.offscreen.updateUniformBuffer(ubo, currentFrame);
 
 	// 화살 오브젝트들 업데이트 (보정 포함)
-	for (auto& arr : arrowObjects) {
-		arr.second.update(elapsedTime, currentFrame);
+	for (auto& arr : pArrowObjects) {
+		arr.second->update(elapsedTime, currentFrame);
 	}
 
 	// 맵은 업데이트 X
@@ -202,8 +205,8 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOf
 
 	mapObject.draw(commandBuffer, pipelineLayout, currentFrame);
 
-	for (auto& arr : arrowObjects) {
-		arr.second.draw(commandBuffer, pipelineLayout, currentFrame);
+	for (auto& arr : pArrowObjects) {
+		arr.second->draw(commandBuffer, pipelineLayout, currentFrame);
 	}
 
 	// skinModel Object들
@@ -243,6 +246,11 @@ void Scene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 		if (player)
 			player->drawEffect(commandBuffer, pipelineLayout, currentFrame);
 	}
+
+	// 화살의 이펙트도 같이 그려준다
+	for (const auto& arr : pArrowObjects) {
+		arr.second->drawEffect(commandBuffer, pipelineLayout, currentFrame);
+	}
 }
 
 void Scene::drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -254,8 +262,8 @@ void Scene::drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame
 		if (player)
 			player->drawBoundingBox(commandBuffer, pipelineLayout);
 	}
-	for (const auto& arr : arrowObjects) {
-		arr.second.drawBoundingBox(commandBuffer, pipelineLayout);
+	for (const auto& arr : pArrowObjects) {
+		arr.second->drawBoundingBox(commandBuffer, pipelineLayout);
 	}
 }
 
@@ -511,11 +519,12 @@ void Scene::processPacket(unsigned char* packet)
 	}
 	case SC_ADD_ARROW: {
 		auto p = reinterpret_cast<SC_ADD_ARROW_PACKET*>(packet);
-		if (arrowObjects.find(p->arrow_id) == arrowObjects.end()) {
-			arrowObjects[p->arrow_id].setModel(arrowModel);
-			arrowObjects[p->arrow_id].setPosition(glm::vec3(p->pos_x, 0.5f, p->pos_z));
-			arrowObjects[p->arrow_id].setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
-			arrowObjects[p->arrow_id].setScale(glm::vec3(4.f, 4.f, 4.5f));
+		if (pArrowObjects.find(p->arrow_id) == pArrowObjects.end()) {
+			pArrowObjects[p->arrow_id] = std::make_shared<ArrowObject>(effect.arrow);
+			pArrowObjects[p->arrow_id]->setModel(arrowModel);
+			pArrowObjects[p->arrow_id]->setPosition(glm::vec3(p->pos_x, 0.75f, p->pos_z));
+			pArrowObjects[p->arrow_id]->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
+			pArrowObjects[p->arrow_id]->setScale(glm::vec3(3.f));
 			std::cout << "화살 [" << int(p->arrow_id) << "] 추가" << std::endl;
 		}
 		else {
@@ -525,8 +534,8 @@ void Scene::processPacket(unsigned char* packet)
 	}
 	case SC_MOVE_ARROW: {
 		auto p = reinterpret_cast<SC_MOVE_ARROW_PACKET*>(packet);
-		if (arrowObjects.find(p->arrow_id) != arrowObjects.end()) {
-			arrowObjects[p->arrow_id].setPosition(glm::vec3(p->pos_x, 0.5f, p->pos_z));
+		if (pArrowObjects.find(p->arrow_id) != pArrowObjects.end()) {
+			pArrowObjects[p->arrow_id]->setPosition(glm::vec3(p->pos_x, 0.75f, p->pos_z));
 		}
 		else {
 			std::cerr << "ERROR : SC_MOVE_ARROW - 존재하지 않는 오브젝트!" << std::endl;
@@ -536,7 +545,7 @@ void Scene::processPacket(unsigned char* packet)
 	case SC_REMOVE_ARROW: {
 		auto p = reinterpret_cast<SC_REMOVE_ARROW_PACKET*>(packet);
 		vkDeviceWaitIdle(fDevice.logicalDevice);	// Vulkan 호출하는 오브젝트 삭제 전에는 무조건 해줘야 한다.
-		arrowObjects.erase(p->arrow_id);
+		pArrowObjects.erase(p->arrow_id);
 		std::cout << "화살 [" << int(p->arrow_id) << "] 제거" << std::endl;
 		break;
 	}
@@ -888,6 +897,14 @@ void Scene::createGraphicsPipeline()
 	pipelineInfo.pStages = mageSkillShader.shaderStages.data();
 
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &effect.mage.skill.pipeline) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+	vkf::Shader arrowShader{ fDevice, "shaders/arroweffect.vert.spv", "shaders/arroweffect.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(arrowShader.shaderStages.size());
+	pipelineInfo.pStages = arrowShader.shaderStages.data();
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &effect.arrow.pipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 }
