@@ -70,6 +70,6 @@ void GameObjectBase::move(glm::vec3 direction, float value)
 void GameObjectBase::rotate(float degree)
 {
 	glm::mat4 rotateMatrix = glm::rotate(glm::mat4(1.f), glm::radians(degree), glm::vec3(0.f, 1.f, 0.f));
-	modelTransform = rotateMatrix * modelTransform;
+	modelTransform = modelTransform * rotateMatrix;
 }
 
