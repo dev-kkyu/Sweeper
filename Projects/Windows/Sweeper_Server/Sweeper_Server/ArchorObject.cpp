@@ -1,6 +1,7 @@
 #include "ArchorObject.h"
 
 #include "Room.h"
+#include "Session.h"
 #include "MonsterObject.h"
 #include <iostream>
 
@@ -13,6 +14,25 @@ ArchorAttackState::ArchorAttackState(PlayerObject& player)
 void ArchorAttackState::enter()
 {
 	stateBeginTime = std::chrono::steady_clock::now();
+
+	{
+		SC_ADD_ARROW_PACKET p;
+		p.size = sizeof(p);
+		p.type = SC_ADD_ARROW;
+		static int iid;
+		p.arrow_id = iid++;
+		auto pos = player.getPosition();
+		auto dir = player.getLook();
+		p.pos_x = pos.x; p.pos_z = pos.z;
+		p.dir_x = dir.x; p.dir_z = dir.z;
+
+		// 모든 플레이어에게 화살 추가 명령을 보냄
+		for (auto& a : player.parentRoom->sessions) {
+			std::shared_ptr<Session> session = a.load();
+			if (Room::isValidSession(session))
+				session->sendPacket(&p);
+		}
+	}
 
 	StateMachine::enter();
 }

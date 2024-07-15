@@ -33,6 +33,8 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 
 	// gltf 모델 로드
 	mapModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/map.glb");
+	// 화살 모델 로드
+	arrowModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Arrow.glb");
 
 	// gltf skin모델 로드
 	mushroomModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/blue_mushroom.glb");
@@ -101,6 +103,8 @@ Scene::~Scene()
 	pMonsterObjects.clear();				// 몬스터 객체들
 	mushroomModel.destroy();				// 몬스터-버섯 모델
 
+	arrowModel.destroy();					// 화살 모델
+
 	mapModel.destroy();						// 맵 모델
 
 	// 플레이어와 맵 오브젝트는 알아서 삭제
@@ -161,6 +165,13 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	ubo.projection = lightProjection;
 	uniformBufferObject.offscreen.updateUniformBuffer(ubo, currentFrame);
 
+	// 화살 오브젝트들 업데이트
+	for (auto& arr : arrowObjects) {
+		arr.second.update(elapsedTime, currentFrame);
+		arr.second.moveForward(3.f * elapsedTime);
+		arr.second.updateBoundingBox();
+	}
+
 	// 맵은 업데이트 X
 
 	// 오브젝트 업데이트
@@ -192,6 +203,10 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOf
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.sceneOnOff[idx].model);
 
 	mapObject.draw(commandBuffer, pipelineLayout, currentFrame);
+
+	for (auto& arr : arrowObjects) {
+		arr.second.draw(commandBuffer, pipelineLayout, currentFrame);
+	}
 
 	// skinModel Object들
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.sceneOnOff[idx].skinModel);
@@ -240,6 +255,9 @@ void Scene::drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame
 	for (const auto& player : pPlayers) {
 		if (player)
 			player->drawBoundingBox(commandBuffer, pipelineLayout);
+	}
+	for (const auto& arr : arrowObjects) {
+		arr.second.drawBoundingBox(commandBuffer, pipelineLayout);
 	}
 }
 
@@ -491,6 +509,29 @@ void Scene::processPacket(unsigned char* packet)
 		}
 		if (not state.empty())
 			std::cout << "PLAYER[" << int(p->player_id) << "]의 상태가 " << state << "로 변경" << std::endl;
+		break;
+	}
+	case SC_ADD_ARROW: {
+		auto p = reinterpret_cast<SC_ADD_ARROW_PACKET*>(packet);
+		if (arrowObjects.find(p->arrow_id) == arrowObjects.end()) {
+			arrowObjects[p->arrow_id].setModel(arrowModel);
+			arrowObjects[p->arrow_id].setPosition(glm::vec3(p->pos_x, 0.5f, p->pos_z));
+			arrowObjects[p->arrow_id].setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
+			arrowObjects[p->arrow_id].setScale(glm::vec3(4.f, 4.f, 4.5f));
+		}
+		break;
+	}
+	case SC_MOVE_ARROW: {
+		auto p = reinterpret_cast<SC_MOVE_ARROW_PACKET*>(packet);
+		if (arrowObjects.find(p->arrow_id) != arrowObjects.end()) {
+			arrowObjects[p->arrow_id].setPosition(glm::vec3(p->pos_x, 0.5f, p->pos_z));
+		}
+		break;
+	}
+	case SC_REMOVE_ARROW: {
+		auto p = reinterpret_cast<SC_REMOVE_ARROW_PACKET*>(packet);
+		vkDeviceWaitIdle(fDevice.logicalDevice);	// Vulkan 호출하는 오브젝트 삭제 전에는 무조건 해줘야 한다.
+		arrowObjects.erase(p->arrow_id);
 		break;
 	}
 	case SC_CLIENT_KEY_EVENT: {

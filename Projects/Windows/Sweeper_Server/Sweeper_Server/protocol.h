@@ -11,12 +11,15 @@ constexpr char SC_ADD_PLAYER = 4;
 constexpr char SC_MOVE_PLAYER = 5;
 constexpr char SC_PLAYER_LOOK = 6;
 constexpr char SC_PLAYER_STATE = 7;
-constexpr char SC_CLIENT_KEY_EVENT = 8;
-constexpr char SC_ADD_MONSTER = 9;
-constexpr char SC_MOVE_MONSTER = 10;
-constexpr char SC_MONSTER_LOOK = 11;
-constexpr char SC_REMOVE_MONSTER = 12;
-constexpr char SC_MONSTER_STATE = 13;
+constexpr char SC_ADD_ARROW = 8;
+constexpr char SC_MOVE_ARROW = 9;
+constexpr char SC_REMOVE_ARROW = 10;
+constexpr char SC_CLIENT_KEY_EVENT = 11;
+constexpr char SC_ADD_MONSTER = 12;
+constexpr char SC_MOVE_MONSTER = 13;
+constexpr char SC_MONSTER_LOOK = 14;
+constexpr char SC_REMOVE_MONSTER = 15;
+constexpr char SC_MONSTER_STATE = 16;
 
 constexpr char CS_LOGIN = 1;
 constexpr char CS_KEY_EVENT = 2;
@@ -124,6 +127,33 @@ struct SC_PLAYER_STATE_PACKET
 	char type;
 	char player_id;
 	PLAYER_STATE state;
+};
+
+struct SC_ADD_ARROW_PACKET
+{
+	unsigned char size;
+	char type;
+	unsigned char arrow_id;
+	float pos_x;
+	float pos_z;
+	float dir_x;
+	float dir_z;
+};
+
+struct SC_MOVE_ARROW_PACKET
+{
+	unsigned char size;
+	char type;
+	unsigned char arrow_id;
+	float pos_x;
+	float pos_z;
+};
+
+struct SC_REMOVE_ARROW_PACKET
+{
+	unsigned char size;
+	char type;
+	unsigned char arrow_id;
 };
 
 struct SC_CLIENT_KEY_EVENT_PACKET

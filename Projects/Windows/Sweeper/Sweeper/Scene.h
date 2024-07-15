@@ -73,6 +73,10 @@ private:
 	VulkanGLTFModel mapModel;
 	GLTFModelObject mapObject;
 
+	// gltf 일반 화살들
+	VulkanGLTFModel arrowModel;
+	std::unordered_map<int, GLTFModelObject> arrowObjects;
+
 	// gltf skin 몬스터 모델들
 	VulkanGLTFSkinModel mushroomModel;
 	std::unordered_map<int, std::shared_ptr<MonsterObject>> pMonsterObjects;	// 다형성을 위한 포인터 사용
