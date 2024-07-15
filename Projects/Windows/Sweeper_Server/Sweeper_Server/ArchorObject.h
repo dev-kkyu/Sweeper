@@ -2,6 +2,8 @@
 
 #include "PlayerObject.h"
 
+#include <unordered_map>
+
 class ArchorAttackState : public StateMachine
 {
 private:
@@ -30,11 +32,24 @@ public:
 
 class ArchorObject : public PlayerObject
 {
+	friend class ArchorAttackState;
+	friend class ArchorSkillState;
+
 private:
+	static int arrowID;
+
+	struct Arrow {
+		std::chrono::steady_clock::time_point spawnTime;
+		glm::vec3 pos;
+		glm::vec3 dir;
+		Arrow();
+		Arrow(glm::vec3 pos, glm::vec3 dir);
+	};
+	std::unordered_map<int, Arrow> arrowObjects;
 
 public:
 	ArchorObject(Room* parentRoom, int p_id);
-	virtual ~ArchorObject() = default;
+	virtual ~ArchorObject();
 
 	virtual void initialize() override;
 	virtual bool update(float elapsedTime) override;

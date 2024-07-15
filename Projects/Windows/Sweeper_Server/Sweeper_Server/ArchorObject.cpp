@@ -4,6 +4,7 @@
 #include "Session.h"
 #include "MonsterObject.h"
 #include <iostream>
+#include <list>
 
 ArchorAttackState::ArchorAttackState(PlayerObject& player)
 	: StateMachine{ player }
@@ -16,13 +17,16 @@ void ArchorAttackState::enter()
 	stateBeginTime = std::chrono::steady_clock::now();
 
 	{
+		auto pos = player.getPosition();
+		auto dir = player.getLook();
+
+		int newID = dynamic_cast<ArchorObject*>(&player)->arrowID++;
+		dynamic_cast<ArchorObject*>(&player)->arrowObjects.try_emplace(newID, pos, dir);
+
 		SC_ADD_ARROW_PACKET p;
 		p.size = sizeof(p);
 		p.type = SC_ADD_ARROW;
-		static int iid;
-		p.arrow_id = iid++;
-		auto pos = player.getPosition();
-		auto dir = player.getLook();
+		p.arrow_id = newID;
 		p.pos_x = pos.x; p.pos_z = pos.z;
 		p.dir_x = dir.x; p.dir_z = dir.z;
 
@@ -108,9 +112,39 @@ void ArchorSKILLState::exit()
 	StateMachine::exit();
 }
 
+ArchorObject::Arrow::Arrow()
+{
+	std::cerr << "호출되면 안됨!" << std::endl;
+}
+
+ArchorObject::Arrow::Arrow(glm::vec3 pos, glm::vec3 dir)
+	: pos{ pos }, dir{ dir }
+{
+	spawnTime = std::chrono::steady_clock::now();
+}
+
+// static 변수 (화살은 클라 입장에서 하나의 자료구조로 간주된다)
+int ArchorObject::arrowID;
+
 ArchorObject::ArchorObject(Room* parentRoom, int p_id)
 	: PlayerObject{ parentRoom, p_id }
 {
+}
+
+ArchorObject::~ArchorObject()
+{
+	// 궁수가 소멸될 때는 화살도 같이 소멸된다
+	for (auto& arr : arrowObjects) {
+		SC_REMOVE_ARROW_PACKET rp;
+		rp.size = sizeof(rp);
+		rp.type = SC_REMOVE_ARROW;
+		rp.arrow_id = arr.first;
+		for (auto& a : parentRoom->sessions) {
+			std::shared_ptr<Session> session = a.load();
+			if (Room::isValidSession(session))
+				session->sendPacket(&rp);
+		}
+	}
 }
 
 void ArchorObject::initialize()
@@ -119,6 +153,47 @@ void ArchorObject::initialize()
 
 bool ArchorObject::update(float elapsedTime)
 {
+	// 화살 관련 업데이트
+	{
+		SC_MOVE_ARROW_PACKET p;
+		p.size = sizeof(p);
+		p.type = SC_MOVE_ARROW;
+
+		std::list<int> removeArrowList;
+		for (auto& arr : arrowObjects) {
+			// 3초가 경과되었으면 제거
+			if (arr.second.spawnTime + std::chrono::seconds(3) <= std::chrono::steady_clock::now()) {
+				SC_REMOVE_ARROW_PACKET rp;
+				rp.size = sizeof(rp);
+				rp.type = SC_REMOVE_ARROW;
+				rp.arrow_id = arr.first;
+				for (auto& a : parentRoom->sessions) {
+					std::shared_ptr<Session> session = a.load();
+					if (Room::isValidSession(session))
+						session->sendPacket(&rp);
+				}
+				removeArrowList.push_back(arr.first);
+			}
+			// 그게 아니라면 위치 업데이트
+			else {
+				// 화살 위치 업데이트
+				arr.second.pos += arr.second.dir * 15.f * elapsedTime;		// 클라와 동기화 되어야 한다
+				// 모든 플레이어에게 화살의 새 위치 업데이트
+				p.arrow_id = arr.first;
+				p.pos_x = arr.second.pos.x;
+				p.pos_z = arr.second.pos.z;
+				for (auto& a : parentRoom->sessions) {
+					std::shared_ptr<Session> session = a.load();
+					if (Room::isValidSession(session))
+						session->sendPacket(&p);
+				}
+			}
+		}
+		for (auto arr : removeArrowList) {
+			arrowObjects.erase(arr);
+		}
+	}
+
 	return PlayerObject::update(elapsedTime);
 }
 

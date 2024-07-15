@@ -165,10 +165,10 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	ubo.projection = lightProjection;
 	uniformBufferObject.offscreen.updateUniformBuffer(ubo, currentFrame);
 
-	// 화살 오브젝트들 업데이트
+	// 화살 오브젝트들 업데이트 (보정 포함)
 	for (auto& arr : arrowObjects) {
 		arr.second.update(elapsedTime, currentFrame);
-		arr.second.moveForward(3.f * elapsedTime);
+		arr.second.moveForward(15.f * elapsedTime);		// 화살 속도는 서버와 동기화 해줘야 함
 		arr.second.updateBoundingBox();
 	}
 
@@ -518,6 +518,10 @@ void Scene::processPacket(unsigned char* packet)
 			arrowObjects[p->arrow_id].setPosition(glm::vec3(p->pos_x, 0.5f, p->pos_z));
 			arrowObjects[p->arrow_id].setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
 			arrowObjects[p->arrow_id].setScale(glm::vec3(4.f, 4.f, 4.5f));
+			std::cout << "화살 [" << int(p->arrow_id) << "] 추가" << std::endl;
+		}
+		else {
+			std::cerr << "ERROR : SC_ADD_ARROW - 이미 존재하는 오브젝트!" << std::endl;
 		}
 		break;
 	}
@@ -526,12 +530,16 @@ void Scene::processPacket(unsigned char* packet)
 		if (arrowObjects.find(p->arrow_id) != arrowObjects.end()) {
 			arrowObjects[p->arrow_id].setPosition(glm::vec3(p->pos_x, 0.5f, p->pos_z));
 		}
+		else {
+			std::cerr << "ERROR : SC_MOVE_ARROW - 존재하지 않는 오브젝트!" << std::endl;
+		}
 		break;
 	}
 	case SC_REMOVE_ARROW: {
 		auto p = reinterpret_cast<SC_REMOVE_ARROW_PACKET*>(packet);
 		vkDeviceWaitIdle(fDevice.logicalDevice);	// Vulkan 호출하는 오브젝트 삭제 전에는 무조건 해줘야 한다.
 		arrowObjects.erase(p->arrow_id);
+		std::cout << "화살 [" << int(p->arrow_id) << "] 제거" << std::endl;
 		break;
 	}
 	case SC_CLIENT_KEY_EVENT: {
