@@ -10,7 +10,7 @@
 #include <string>
 #include <sstream>
 
-#define MONSTER_FILE_NAME "resources/MushroomData.txt"
+#define MONSTER_FILE_NAME "resources/MonsterData.txt"
 
 Server::Server(asio::io_context& io_context, int port)
 	: io_context{ io_context }
@@ -44,7 +44,9 @@ void Server::loadMonsterInfo()
 	while (std::getline(in, line)) {
 		std::stringstream ss{ line };
 		char ignore;
+		int mosterType;
 		float posx, posy, posz, rotx, roty, rotz;
+		ss >> ignore >> mosterType >> ignore;
 		ss >> ignore >> posx >> ignore >> posy >> ignore >> posz >> ignore;
 		ss >> ignore >> rotx >> ignore >> roty >> ignore >> rotz >> ignore;
 		MonsterInfo info{ posx, posy, posz, roty };
