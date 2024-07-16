@@ -49,7 +49,7 @@ void Server::loadMonsterInfo()
 		ss >> ignore >> mosterType >> ignore;
 		ss >> ignore >> posx >> ignore >> posy >> ignore >> posz >> ignore;
 		ss >> ignore >> rotx >> ignore >> roty >> ignore >> rotz >> ignore;
-		MonsterInfo info{ posx, posy, posz, roty };
+		MonsterInfo info{ static_cast<MONSTER_TYPE>(mosterType), posx, posy, posz, roty };
 		initMonsterInfo.push_back(info);
 	}
 	std::cout << "몬스터 초기화 파일 로드 완료" << std::endl;

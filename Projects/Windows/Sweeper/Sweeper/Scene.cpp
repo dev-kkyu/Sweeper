@@ -39,9 +39,13 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 	arrowModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Arrow.glb");
 
 	// gltf skin모델 로드
-	mushroomModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/blue_mushroom.glb");
-	bossModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/boss_golem.glb");
-	// 플레이어 모델 로드 (skin model)
+	// 몬스터 모델 로드
+	monsterModel[static_cast<int>(MONSTER_TYPE::MUSHROOM)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/Mushroom.glb");
+	monsterModel[static_cast<int>(MONSTER_TYPE::BORNDOG)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/Mushroom.glb");	// Todo
+	monsterModel[static_cast<int>(MONSTER_TYPE::GOBLIN)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/Mushroom.glb");	// Todo
+	monsterModel[static_cast<int>(MONSTER_TYPE::BOOGIE)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/Boogie.glb");
+	bossModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/Boss_Golem.glb");
+	// 플레이어 모델 로드
 	playerModel[static_cast<int>(PLAYER_TYPE::WARRIOR)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Dragoon.glb");
 	playerModel[static_cast<int>(PLAYER_TYPE::ARCHER)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Archer.glb");
 	playerModel[static_cast<int>(PLAYER_TYPE::MAGE)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Mage.glb");
@@ -103,7 +107,9 @@ Scene::~Scene()
 	bossModel.destroy();
 
 	pMonsterObjects.clear();				// 몬스터 객체들
-	mushroomModel.destroy();				// 몬스터-버섯 모델
+	for (auto& model : monsterModel) {
+		model.destroy();					// 몬스터 모델들
+	}
 
 	arrowModel.destroy();					// 화살 모델
 
@@ -560,10 +566,10 @@ void Scene::processPacket(unsigned char* packet)
 	case SC_ADD_MONSTER: {
 		auto p = reinterpret_cast<SC_ADD_MONSTER_PACKET*>(packet);
 		pMonsterObjects.try_emplace(p->monster_id, std::make_shared<MonsterObject>());
-		pMonsterObjects[p->monster_id]->initModel(mushroomModel, descriptorSetLayout.ssbo);
+		pMonsterObjects[p->monster_id]->initModel(monsterModel[static_cast<int>(p->monster_type)], descriptorSetLayout.ssbo);
 		pMonsterObjects[p->monster_id]->setPosition({ p->pos_x, 0.f, p->pos_z });
 		pMonsterObjects[p->monster_id]->setLook({ p->dir_x, 0.f, p->dir_z });
-		std::cout << "몬스터 [" << int(p->monster_id) << "] 추가" << std::endl;
+		std::cout << "몬스터 [" << int(p->monster_id) << "], 타입 [" << static_cast<int>(p->monster_type) << "] 추가" << std::endl;
 		break;
 	}
 	case SC_MOVE_MONSTER: {

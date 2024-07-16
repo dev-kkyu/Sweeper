@@ -81,7 +81,7 @@ private:
 	std::unordered_map<int, std::shared_ptr<ArrowObject>> pArrowObjects;
 
 	// gltf skin 몬스터 모델들
-	VulkanGLTFSkinModel mushroomModel;
+	std::array<VulkanGLTFSkinModel, 4> monsterModel;	// 몬스터 종류 4가지
 	std::unordered_map<int, std::shared_ptr<MonsterObject>> pMonsterObjects;	// 다형성을 위한 포인터 사용
 
 	VulkanGLTFSkinModel bossModel;

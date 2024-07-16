@@ -40,7 +40,7 @@ enum class PLAYER_TYPE : char
 	WARRIOR = 0,
 	ARCHER = 1,
 	MAGE = 2,
-	HEALER = 3,
+	HEALER = 3
 };
 
 enum class PLAYER_STATE : char
@@ -50,6 +50,14 @@ enum class PLAYER_STATE : char
 	DASH = 2,
 	ATTACK = 3,
 	SKILL = 4
+};
+
+enum class MONSTER_TYPE : char
+{
+	MUSHROOM = 0,
+	BORNDOG = 1,
+	GOBLIN = 2,
+	BOOGIE = 3
 };
 
 enum class MONSTER_STATE : char
@@ -170,6 +178,7 @@ struct SC_ADD_MONSTER_PACKET
 	unsigned char size;
 	char type;
 	char monster_id;
+	MONSTER_TYPE monster_type;
 	float pos_x;		// 몬스터 위치
 	float pos_z;
 	float dir_x;		// 현재 보고있는 방향

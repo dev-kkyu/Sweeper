@@ -6,8 +6,8 @@
 
 #include <limits>
 
-MonsterObject::MonsterObject(Room* parentRoom, int m_id)
-	: GameObjectBase{ parentRoom, m_id }
+MonsterObject::MonsterObject(Room* parentRoom, int m_id, MONSTER_TYPE type)
+	: GameObjectBase{ parentRoom, m_id }, type{ type }
 {
 	state = MONSTER_STATE::IDLE;
 	hp = 300;
@@ -153,6 +153,11 @@ void MonsterObject::onHit(const GameObjectBase& other)
 			}
 		}
 	}
+}
+
+MONSTER_TYPE MonsterObject::getMonsterType() const
+{
+	return type;
 }
 
 void MonsterObject::sendMonsterStatePacket()

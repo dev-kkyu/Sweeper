@@ -152,6 +152,7 @@ bool Session::processPacket(unsigned char* packet)
 			std::lock_guard<std::mutex> ml{ parentRoom->monster_mutex };
 			for (auto& m : parentRoom->monsters) {
 				p.monster_id = m.first;
+				p.monster_type = m.second->getMonsterType();
 				auto pos = m.second->getPosition();
 				auto dir = m.second->getLook();
 				p.pos_x = pos.x;

@@ -7,8 +7,11 @@
 #include <unordered_map>
 #include <list>
 
+#include "protocol.h"
+
 struct MonsterInfo
 {
+	MONSTER_TYPE type;
 	float posX, posY, posZ;
 	float rotationY;
 };
