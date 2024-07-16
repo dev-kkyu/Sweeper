@@ -5,13 +5,13 @@
 #define PLAYER_CLIP_ATTACK_WARRIOR	16
 #define PLAYER_CLIP_SKILL_WARRIOR	12
 
-WarriorAttackState::WarriorAttackState(PlayerObject& player)
+WarriorATTACKState::WarriorATTACKState(PlayerObject& player)
 	: StateMachine{ player }
 {
 	state = PLAYER_STATE::ATTACK;
 }
 
-void WarriorAttackState::enter()
+void WarriorATTACKState::enter()
 {
 	StateMachine::enter();
 
@@ -19,12 +19,12 @@ void WarriorAttackState::enter()
 	player.setAnimateSpeed(0.4f);
 }
 
-void WarriorAttackState::update(float elapsedTime, uint32_t currentFrame)
+void WarriorATTACKState::update(float elapsedTime, uint32_t currentFrame)
 {
 	StateMachine::update(elapsedTime, currentFrame);
 }
 
-void WarriorAttackState::exit()
+void WarriorATTACKState::exit()
 {
 	StateMachine::exit();
 }
@@ -119,7 +119,7 @@ void WarriorObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout p
 void WarriorObject::changeATTACKState()
 {
 	currentState->exit();
-	currentState = std::make_unique<WarriorAttackState>(*this);
+	currentState = std::make_unique<WarriorATTACKState>(*this);
 	currentState->enter();
 }
 

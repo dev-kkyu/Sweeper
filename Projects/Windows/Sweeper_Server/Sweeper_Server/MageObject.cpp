@@ -4,20 +4,20 @@
 #include "MonsterObject.h"
 #include <iostream>
 
-MageAttackState::MageAttackState(PlayerObject& player)
+MageATTACKState::MageATTACKState(PlayerObject& player)
 	: StateMachine{ player }
 {
 	state = PLAYER_STATE::ATTACK;
 }
 
-void MageAttackState::enter()
+void MageATTACKState::enter()
 {
 	stateBeginTime = std::chrono::steady_clock::now();
 
 	StateMachine::enter();
 }
 
-void MageAttackState::update(float elapsedTime)
+void MageATTACKState::update(float elapsedTime)
 {
 	auto now_time = std::chrono::steady_clock::now();
 	if (now_time > stateBeginTime + std::chrono::milliseconds{ 800 }) {
@@ -41,7 +41,7 @@ void MageAttackState::update(float elapsedTime)
 	StateMachine::update(elapsedTime);
 }
 
-void MageAttackState::exit()
+void MageATTACKState::exit()
 {
 	StateMachine::exit();
 }
@@ -112,7 +112,7 @@ void MageObject::onHit(const GameObjectBase& other)
 
 void MageObject::changeATTACKState()
 {
-	nextState = std::make_unique<MageAttackState>(*this);
+	nextState = std::make_unique<MageATTACKState>(*this);
 }
 
 void MageObject::changeSKILLState()

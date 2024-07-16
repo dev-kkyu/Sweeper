@@ -2,11 +2,11 @@
 
 #include "PlayerObject.h"
 
-class MageAttackState : public StateMachine
+class MageATTACKState : public StateMachine
 {
 public:
-	MageAttackState(PlayerObject& player);
-	virtual ~MageAttackState() = default;
+	MageATTACKState(PlayerObject& player);
+	virtual ~MageATTACKState() = default;
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
@@ -26,7 +26,7 @@ public:
 
 class MageObject : public PlayerObject
 {
-	friend MageAttackState;
+	friend MageATTACKState;
 	friend MageSKILLState;
 
 private:

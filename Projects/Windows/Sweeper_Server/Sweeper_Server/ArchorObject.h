@@ -4,13 +4,13 @@
 
 #include <unordered_map>
 
-class ArchorAttackState : public StateMachine
+class ArchorATTACKState : public StateMachine
 {
 private:
 	std::chrono::steady_clock::time_point stateBeginTime;
 public:
-	ArchorAttackState(PlayerObject& player);
-	virtual ~ArchorAttackState() = default;
+	ArchorATTACKState(PlayerObject& player);
+	virtual ~ArchorATTACKState() = default;
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime) override;
@@ -32,7 +32,7 @@ public:
 
 class ArchorObject : public PlayerObject
 {
-	friend class ArchorAttackState;
+	friend class ArchorATTACKState;
 	friend class ArchorSKILLState;
 
 private:

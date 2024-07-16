@@ -2,13 +2,13 @@
 
 #include "PlayerObject.h"
 
-class WarriorAttackState : public StateMachine
+class WarriorATTACKState : public StateMachine
 {
 private:
 	std::chrono::steady_clock::time_point stateBeginTime;
 public:
-	WarriorAttackState(PlayerObject& player);
-	virtual ~WarriorAttackState() = default;
+	WarriorATTACKState(PlayerObject& player);
+	virtual ~WarriorATTACKState() = default;
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime) override;

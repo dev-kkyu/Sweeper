@@ -2,11 +2,11 @@
 
 #include "PlayerObject.h"
 
-class ArchorAttackState : public StateMachine
+class ArchorATTACKState : public StateMachine
 {
 public:
-	ArchorAttackState(PlayerObject& player);
-	virtual ~ArchorAttackState() = default;
+	ArchorATTACKState(PlayerObject& player);
+	virtual ~ArchorATTACKState() = default;
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;

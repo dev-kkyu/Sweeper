@@ -2,13 +2,13 @@
 
 #include "PlayerObject.h"
 
-class MageAttackState : public StateMachine
+class MageATTACKState : public StateMachine
 {
 private:
 	std::chrono::steady_clock::time_point stateBeginTime;
 public:
-	MageAttackState(PlayerObject& player);
-	virtual ~MageAttackState() = default;
+	MageATTACKState(PlayerObject& player);
+	virtual ~MageATTACKState() = default;
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime) override;

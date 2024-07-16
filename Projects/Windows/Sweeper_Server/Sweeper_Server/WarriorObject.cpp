@@ -4,20 +4,20 @@
 #include "MonsterObject.h"
 #include <iostream>
 
-WarriorAttackState::WarriorAttackState(PlayerObject& player)
+WarriorATTACKState::WarriorATTACKState(PlayerObject& player)
 	: StateMachine{ player }
 {
 	state = PLAYER_STATE::ATTACK;
 }
 
-void WarriorAttackState::enter()
+void WarriorATTACKState::enter()
 {
 	stateBeginTime = std::chrono::steady_clock::now();
 
 	StateMachine::enter();
 }
 
-void WarriorAttackState::update(float elapsedTime)
+void WarriorATTACKState::update(float elapsedTime)
 {
 	auto now_time = std::chrono::steady_clock::now();
 	if (now_time > stateBeginTime + std::chrono::milliseconds{ 400 }) {
@@ -41,7 +41,7 @@ void WarriorAttackState::update(float elapsedTime)
 	StateMachine::update(elapsedTime);
 }
 
-void WarriorAttackState::exit()
+void WarriorATTACKState::exit()
 {
 	StateMachine::exit();
 }
@@ -112,7 +112,7 @@ void WarriorObject::onHit(const GameObjectBase& other)
 
 void WarriorObject::changeATTACKState()
 {
-	nextState = std::make_unique<WarriorAttackState>(*this);
+	nextState = std::make_unique<WarriorATTACKState>(*this);
 }
 
 void WarriorObject::changeSKILLState()

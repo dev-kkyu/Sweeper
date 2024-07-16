@@ -3,13 +3,13 @@
 #define PLAYER_CLIP_ATTACK_HEALER	16
 #define PLAYER_CLIP_SKILL_HEALER	31
 
-HealerAttackState::HealerAttackState(PlayerObject& player)
+HealerATTACKState::HealerATTACKState(PlayerObject& player)
 	: StateMachine{ player }
 {
 	state = PLAYER_STATE::ATTACK;
 }
 
-void HealerAttackState::enter()
+void HealerATTACKState::enter()
 {
 	StateMachine::enter();
 
@@ -17,12 +17,12 @@ void HealerAttackState::enter()
 	player.setAnimateSpeed(0.4f);
 }
 
-void HealerAttackState::update(float elapsedTime, uint32_t currentFrame)
+void HealerATTACKState::update(float elapsedTime, uint32_t currentFrame)
 {
 	StateMachine::update(elapsedTime, currentFrame);
 }
 
-void HealerAttackState::exit()
+void HealerATTACKState::exit()
 {
 	StateMachine::exit();
 }
@@ -81,7 +81,7 @@ void HealerObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pi
 void HealerObject::changeATTACKState()
 {
 	currentState->exit();
-	currentState = std::make_unique<HealerAttackState>(*this);
+	currentState = std::make_unique<HealerATTACKState>(*this);
 	currentState->enter();
 }
 

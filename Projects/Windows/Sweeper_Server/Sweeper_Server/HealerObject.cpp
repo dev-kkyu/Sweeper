@@ -4,20 +4,20 @@
 #include "MonsterObject.h"
 #include <iostream>
 
-HealerAttackState::HealerAttackState(PlayerObject& player)
+HealerATTACKState::HealerATTACKState(PlayerObject& player)
 	: StateMachine{ player }
 {
 	state = PLAYER_STATE::ATTACK;
 }
 
-void HealerAttackState::enter()
+void HealerATTACKState::enter()
 {
 	stateBeginTime = std::chrono::steady_clock::now();
 
 	StateMachine::enter();
 }
 
-void HealerAttackState::update(float elapsedTime)
+void HealerATTACKState::update(float elapsedTime)
 {
 	auto now_time = std::chrono::steady_clock::now();
 	if (now_time > stateBeginTime + std::chrono::milliseconds{ 730 }) {
@@ -41,7 +41,7 @@ void HealerAttackState::update(float elapsedTime)
 	StateMachine::update(elapsedTime);
 }
 
-void HealerAttackState::exit()
+void HealerATTACKState::exit()
 {
 	StateMachine::exit();
 }
@@ -112,7 +112,7 @@ void HealerObject::onHit(const GameObjectBase& other)
 
 void HealerObject::changeATTACKState()
 {
-	nextState = std::make_unique<HealerAttackState>(*this);
+	nextState = std::make_unique<HealerATTACKState>(*this);
 }
 
 void HealerObject::changeSKILLState()

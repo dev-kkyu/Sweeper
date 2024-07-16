@@ -6,13 +6,13 @@
 #include <iostream>
 #include <list>
 
-ArchorAttackState::ArchorAttackState(PlayerObject& player)
+ArchorATTACKState::ArchorATTACKState(PlayerObject& player)
 	: StateMachine{ player }
 {
 	state = PLAYER_STATE::ATTACK;
 }
 
-void ArchorAttackState::enter()
+void ArchorATTACKState::enter()
 {
 	stateBeginTime = std::chrono::steady_clock::now();
 
@@ -41,7 +41,7 @@ void ArchorAttackState::enter()
 	StateMachine::enter();
 }
 
-void ArchorAttackState::update(float elapsedTime)
+void ArchorATTACKState::update(float elapsedTime)
 {
 	auto now_time = std::chrono::steady_clock::now();
 	if (now_time > stateBeginTime + std::chrono::milliseconds{ 560 }) {
@@ -65,7 +65,7 @@ void ArchorAttackState::update(float elapsedTime)
 	StateMachine::update(elapsedTime);
 }
 
-void ArchorAttackState::exit()
+void ArchorATTACKState::exit()
 {
 	StateMachine::exit();
 }
@@ -248,7 +248,7 @@ void ArchorObject::onHit(const GameObjectBase& other)
 
 void ArchorObject::changeATTACKState()
 {
-	nextState = std::make_unique<ArchorAttackState>(*this);
+	nextState = std::make_unique<ArchorATTACKState>(*this);
 }
 
 void ArchorObject::changeSKILLState()

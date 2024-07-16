@@ -2,13 +2,13 @@
 
 #include "PlayerObject.h"
 
-class HealerAttackState : public StateMachine
+class HealerATTACKState : public StateMachine
 {
 private:
 	std::chrono::steady_clock::time_point stateBeginTime;
 public:
-	HealerAttackState(PlayerObject& player);
-	virtual ~HealerAttackState() = default;
+	HealerATTACKState(PlayerObject& player);
+	virtual ~HealerATTACKState() = default;
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime) override;

@@ -5,13 +5,13 @@
 #define PLAYER_CLIP_ATTACK_MAGE		10
 #define PLAYER_CLIP_SKILL_MAGE		11
 
-MageAttackState::MageAttackState(PlayerObject& player)
+MageATTACKState::MageATTACKState(PlayerObject& player)
 	: StateMachine{ player }
 {
 	state = PLAYER_STATE::ATTACK;
 }
 
-void MageAttackState::enter()
+void MageATTACKState::enter()
 {
 	StateMachine::enter();
 
@@ -21,12 +21,12 @@ void MageAttackState::enter()
 	dynamic_cast<MageObject*>(&player)->mageAttackEffects.push_back(MageObject::MageEffect{ player.getPosition() + player.getLook() * 3.f, -0.23f });
 }
 
-void MageAttackState::update(float elapsedTime, uint32_t currentFrame)
+void MageATTACKState::update(float elapsedTime, uint32_t currentFrame)
 {
 	StateMachine::update(elapsedTime, currentFrame);
 }
 
-void MageAttackState::exit()
+void MageATTACKState::exit()
 {
 	StateMachine::exit();
 }
@@ -141,7 +141,7 @@ void MageObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipe
 void MageObject::changeATTACKState()
 {
 	currentState->exit();
-	currentState = std::make_unique<MageAttackState>(*this);
+	currentState = std::make_unique<MageATTACKState>(*this);
 	currentState->enter();
 }
 

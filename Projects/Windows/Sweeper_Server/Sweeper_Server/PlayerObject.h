@@ -80,13 +80,13 @@ class PlayerObject : public GameObjectBase
 	friend class IDLEState;
 	friend class RUNState;
 	friend class DASHState;
-	friend class WarriorAttackState;
+	friend class WarriorATTACKState;
 	friend class WarriorSKILLState;
-	friend class ArchorAttackState;
+	friend class ArchorATTACKState;
 	friend class ArchorSKILLState;
-	friend class MageAttackState;
+	friend class MageATTACKState;
 	friend class MageSKILLState;
-	friend class HealerAttackState;
+	friend class HealerATTACKState;
 	friend class HealerSKILLState;
 
 protected:

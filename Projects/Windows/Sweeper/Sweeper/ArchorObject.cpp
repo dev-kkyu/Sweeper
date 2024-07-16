@@ -5,13 +5,13 @@
 #define PLAYER_CLIP_ATTACK_ARCHOR	26
 #define PLAYER_CLIP_SKILL_ARCHOR	26
 
-ArchorAttackState::ArchorAttackState(PlayerObject& player)
+ArchorATTACKState::ArchorATTACKState(PlayerObject& player)
 	: StateMachine{ player }
 {
 	state = PLAYER_STATE::ATTACK;
 }
 
-void ArchorAttackState::enter()
+void ArchorATTACKState::enter()
 {
 	StateMachine::enter();
 
@@ -19,12 +19,12 @@ void ArchorAttackState::enter()
 	player.setAnimateSpeed(0.8f);
 }
 
-void ArchorAttackState::update(float elapsedTime, uint32_t currentFrame)
+void ArchorATTACKState::update(float elapsedTime, uint32_t currentFrame)
 {
 	StateMachine::update(elapsedTime, currentFrame);
 }
 
-void ArchorAttackState::exit()
+void ArchorATTACKState::exit()
 {
 	StateMachine::exit();
 }
@@ -121,7 +121,7 @@ void ArchorObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pi
 void ArchorObject::changeATTACKState()
 {
 	currentState->exit();
-	currentState = std::make_unique<ArchorAttackState>(*this);
+	currentState = std::make_unique<ArchorATTACKState>(*this);
 	currentState->enter();
 }
 

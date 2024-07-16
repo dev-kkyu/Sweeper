@@ -2,11 +2,11 @@
 
 #include "PlayerObject.h"
 
-class WarriorAttackState : public StateMachine
+class WarriorATTACKState : public StateMachine
 {
 public:
-	WarriorAttackState(PlayerObject& player);
-	virtual ~WarriorAttackState() = default;
+	WarriorATTACKState(PlayerObject& player);
+	virtual ~WarriorATTACKState() = default;
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
