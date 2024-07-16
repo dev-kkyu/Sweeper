@@ -180,6 +180,8 @@
     <ClInclude Include="WarriorObject.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\archorskill.frag" />
+    <None Include="shaders\archorskill.vert" />
     <None Include="shaders\arroweffect.frag" />
     <None Include="shaders\arroweffect.vert" />
     <None Include="shaders\boundingbox.frag" />

@@ -26,10 +26,20 @@ public:
 
 class ArchorObject : public PlayerObject
 {
+	friend class ArchorSKILLState;
+
 private:
+	struct ArchorEffect {
+		glm::vec3 pos;
+		glm::vec3 dir;
+		float accumTime = 0.f;
+	};
+
+	vkf::Effect& effect;
+	std::vector<ArchorEffect> archorEffects;
 
 public:
-	ArchorObject(GLTFModelObject& mapObject);
+	ArchorObject(GLTFModelObject& mapObject, vkf::Effect& effect);
 	virtual ~ArchorObject() = default;
 
 	virtual void initialize() override;
