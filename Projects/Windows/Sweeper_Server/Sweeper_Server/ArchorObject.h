@@ -33,7 +33,7 @@ public:
 class ArchorObject : public PlayerObject
 {
 	friend class ArchorAttackState;
-	friend class ArchorSkillState;
+	friend class ArchorSKILLState;
 
 private:
 	static int arrowID;
@@ -46,6 +46,13 @@ private:
 		Arrow(glm::vec3 pos, glm::vec3 dir);
 	};
 	std::unordered_map<int, Arrow> arrowObjects;
+
+	struct ArchorEffect {
+		glm::vec3 pos;
+		glm::vec3 dir;
+		float accumTime = 0.f;
+	};
+	std::vector<ArchorEffect> archorEffects;
 
 public:
 	ArchorObject(Room* parentRoom, int p_id);

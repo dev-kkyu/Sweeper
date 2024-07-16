@@ -80,6 +80,8 @@ void ArchorSKILLState::enter()
 {
 	stateBeginTime = std::chrono::steady_clock::now();
 
+	dynamic_cast<ArchorObject*>(&player)->archorEffects.push_back(ArchorObject::ArchorEffect{ player.getPosition(), player.getLook(), -0.375f });
+
 	StateMachine::enter();
 }
 
@@ -115,6 +117,7 @@ void ArchorSKILLState::exit()
 ArchorObject::Arrow::Arrow()
 {
 	std::cerr << "호출되면 안됨!" << std::endl;
+	exit(-1);
 }
 
 ArchorObject::Arrow::Arrow(glm::vec3 pos, glm::vec3 dir)
@@ -201,6 +204,34 @@ bool ArchorObject::update(float elapsedTime)
 					session->sendPacket(&rp);
 			}
 			arrowObjects.erase(arr);
+		}
+	}
+	// 스킬 관련 업데이트
+	{
+		// 업데이트
+		for (auto& aEffect : archorEffects) {
+			aEffect.accumTime += elapsedTime;
+			if (aEffect.accumTime > 0.f) {
+				// 이동
+				aEffect.pos += aEffect.dir * 12.f * elapsedTime;		// 클라와 같은 값
+				// 충돌검사
+				for (auto& m : parentRoom->monsters) {
+					BoundingBox boundingBox;
+					boundingBox.setBound(1.f, 0.1f, aEffect.pos.z + 0.5f, aEffect.pos.z - 0.5f, aEffect.pos.x - 0.5f, aEffect.pos.x + 0.5f);
+					if (boundingBox.isCollide(m.second->getBoundingBox())) {
+						m.second->onHit(*this);		// 충돌이면 알려주기
+					}
+				}
+			}
+		}
+		// 제거
+		std::list<std::vector<ArchorObject::ArchorEffect>::iterator> deleteEffects;
+		for (auto itr = archorEffects.begin(); itr != archorEffects.end(); ++itr) {
+			if (itr->accumTime >= 0.625f)		// 시간 경과시
+				deleteEffects.emplace_back(itr);
+		}
+		for (const auto& itr : deleteEffects) {
+			archorEffects.erase(itr);
 		}
 	}
 
