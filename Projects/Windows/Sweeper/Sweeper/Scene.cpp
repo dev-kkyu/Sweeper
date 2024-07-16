@@ -52,7 +52,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 	// 보스 모델 생성
 	bossObject.initModel(bossModel, descriptorSetLayout.ssbo);
 	bossObject.setAnimationClip(2);
-	bossObject.setPosition({ 12.25f, -0.8f, 115.f });
+	bossObject.setPosition({ 12.25f, 0.f, 115.f });
 	bossObject.setLook({ 0.f, 0.f, -1.f });
 	bossObject.setScale(glm::vec3{ 2.25f });
 	bossObject.setAnimateSpeed(0.7f);
