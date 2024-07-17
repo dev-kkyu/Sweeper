@@ -15,6 +15,8 @@ MonsterObject::MonsterObject(Room* parentRoom, int m_id)
 	collisionRadius = 0.4f;
 
 	attackBeginTime = std::chrono::steady_clock::now();
+
+	targetPlayer = -1;	// 0 ~ 3
 }
 
 MonsterObject::~MonsterObject()
@@ -51,71 +53,148 @@ bool MonsterObject::update(float elapsedTime)
 		return false;
 	}
 
-	// 공격받고 있을 때는 별도 처리를 하지 않는다
-	if (state == MONSTER_STATE::HIT) {
-		if (attackBeginTime + std::chrono::milliseconds{ 1300 } < std::chrono::steady_clock::now()) {
-			state = MONSTER_STATE::IDLE;
-			sendMonsterStatePacket();
-		}
-		else {
-			return false;
-		}
-	}
+	// 상태에 따라 다른 로직
+	switch (state)
+	{
+	case MONSTER_STATE::IDLE: {
+		for (int i = 0; i < 4; ++i) {
+			std::shared_ptr<Session> session = parentRoom->sessions[i].load();
+			if (Room::isValidSession(session)) {
+				auto playerPos = session->player->getPosition();
+				auto myPos = getPosition();
 
-	for (int i = 0; i < 4; ++i) {
-		std::shared_ptr<Session> session = parentRoom->sessions[i].load();
-		if (Room::isValidSession(session)) {		// Todo: 0번 플레이어 대신, 제일 가까운 플레이어에게 가도록 해야한다
-			auto playerPos = session->player->getPosition();
-			auto myPos = getPosition();
-			float dist2 = (myPos.x - playerPos.x) * (myPos.x - playerPos.x) + (myPos.z - playerPos.z) * (myPos.z - playerPos.z);
-			float targetDist2 = 3.f * 3.f;
-			if (dist2 <= std::numeric_limits<float>::epsilon())	// 거리가 너무 작으면 처리하지 않는다, Todo: 나중에 삭제할수도 있다
-				return false;
-			if (dist2 <= targetDist2) {		// 3.f 거리 내에 있으면
-				auto newDir = playerPos - myPos;
-				newDir.y = 0.f;
-				setLook(newDir);
-				moveForward(2.f * elapsedTime);		// 초당 2m 거리로 플레이어를 향해 간다
+				// 나와 플레이어 사이의 거리
+				float dist2 = glm::pow(myPos.x - playerPos.x, 2.f) + glm::pow(myPos.z - playerPos.z, 2.f);
+				if (dist2 < std::numeric_limits<float>::epsilon())	// 거리가 너무 작으면 처리하지 않는다, Todo: 나중에 삭제할수도 있다
+					continue;
 
-				auto bef_state = state;
-				// 기본은 Move
-				state = MONSTER_STATE::MOVE;
+				float targetDist2 = glm::pow(3.f, 2.f);				// 찾는 거리 3.f
 
-				// 이동 후 충돌처리
-				// 플레이어와 충돌
-				if (isCollide(*session->player)) {
-					// 충돌 상태이면 attack
-					state = MONSTER_STATE::ATTACK;
-					// 밀려나게 하기
-					move(-newDir, 2.f * elapsedTime);
-				}
+				if (dist2 <= targetDist2) {							// 찾는 거리 내에 있으면
+					targetPlayer = i;								// 타겟을 정해주고
 
-				// 상태에 변화가 생겼으면 보내주기
-				if (bef_state != state) {
+					state = MONSTER_STATE::MOVE;					// 상태를 바꾼다
 					sendMonsterStatePacket();
-				}
 
-				// 타 몬스터와 충돌
-				for (auto& m : parentRoom->monsters) {
-					if (m.first == my_id)	// 나와의 충돌처리는 하면 안된다
-						continue;
-					if (isCollide(*m.second)) {
-						glm::vec3 otherPos = m.second->getPosition();
-						glm::vec3 dir = myPos - otherPos;
-						dir.y = 0.f;
-						move(dir, elapsedTime * 2.f);
-					}
+					break;
 				}
-
-				return true;
 			}
 		}
+		break;
 	}
+	case MONSTER_STATE::MOVE: {
+		if (targetPlayer >= 0) {
+			std::shared_ptr<Session> session = parentRoom->sessions[targetPlayer].load();
+			if (Room::isValidSession(session)) {
+				auto playerPos = session->player->getPosition();
+				auto myPos = getPosition();
 
-	// Move 상태인데 타겟 플레이어가 없다면
-	if (state == MONSTER_STATE::MOVE) {
-		state = MONSTER_STATE::IDLE;
-		sendMonsterStatePacket();
+				// 나와 플레이어 사이의 거리
+				float dist2 = glm::pow(myPos.x - playerPos.x, 2.f) + glm::pow(myPos.z - playerPos.z, 2.f);
+				float targetDist2 = glm::pow(3.f, 2.f);				// 찾는 거리 3.f
+				if (dist2 > targetDist2) {			// 거리가 멀어지면
+					state = MONSTER_STATE::IDLE;	// IDLE 상태로 복귀
+					targetPlayer = -1;
+					sendMonsterStatePacket();
+				}
+				else {
+					// 플레이어와 충돌
+					if (isCollide(*session->player)) {
+						// 타겟 플레이어와 충돌이면 attack
+						state = MONSTER_STATE::ATTACK;
+						sendMonsterStatePacket();
+					}
+					else {	// 충돌이 아니면 이동
+						auto newDir = playerPos - myPos;
+						newDir.y = 0.f;
+						setLook(newDir);
+						moveForward(2.f * elapsedTime);		// 초당 2m 거리로 플레이어를 향해 간다
+
+						// 충돌처리
+						// 타 몬스터와 충돌
+						for (auto& m : parentRoom->monsters) {
+							if (m.first == my_id)	// 나와의 충돌처리는 하면 안된다
+								continue;
+							if (isCollide(*m.second)) {
+								glm::vec3 otherPos = m.second->getPosition();
+								glm::vec3 dir = myPos - otherPos;
+								dir.y = 0.f;
+								move(dir, elapsedTime * 2.f);
+							}
+						}
+
+						return true;		// 움직였으니 패킷을 보내야 한다
+					}
+				}
+			}
+			else {
+				targetPlayer = -1;
+				state = MONSTER_STATE::IDLE;				// 상태를 바꾼다
+				sendMonsterStatePacket();
+			}
+		}
+		else {
+			state = MONSTER_STATE::IDLE;					// 상태를 바꾼다
+			sendMonsterStatePacket();
+		}
+		break;
+	}
+	case MONSTER_STATE::HIT: {
+		if (attackBeginTime + std::chrono::milliseconds{ 1300 } < std::chrono::steady_clock::now()) {
+			state = MONSTER_STATE::IDLE;
+			if (targetPlayer >= 0) {			// 타겟이 있고 아직도 충돌이면 Attack
+				std::shared_ptr<Session> session = parentRoom->sessions[targetPlayer].load();
+				if (Room::isValidSession(session)) {
+					auto playerPos = session->player->getPosition();
+					auto myPos = getPosition();
+					// 나와 플레이어 사이의 거리
+					float dist2 = glm::pow(myPos.x - playerPos.x, 2.f) + glm::pow(myPos.z - playerPos.z, 2.f);
+					if (dist2 <= 1.5f) {		// 일정 거리 안이라면 바로 ATTACK
+						state = MONSTER_STATE::ATTACK;
+					}
+				}
+				else {
+					targetPlayer = -1;
+				}
+			}
+			sendMonsterStatePacket();
+		}
+		break;
+	}
+	case MONSTER_STATE::DIE: {
+		// 사라지기만을 기다린다...
+		break;
+	}
+	case MONSTER_STATE::ATTACK: {
+		if (targetPlayer >= 0) {
+			std::shared_ptr<Session> session = parentRoom->sessions[targetPlayer].load();
+			if (Room::isValidSession(session)) {
+				auto playerPos = session->player->getPosition();
+				auto myPos = getPosition();
+				// 나와 플레이어 사이의 거리
+				float dist2 = glm::pow(myPos.x - playerPos.x, 2.f) + glm::pow(myPos.z - playerPos.z, 2.f);
+				if (dist2 > 1.5f) {							// 일정 거리 밖으로 플레이어가 움직이면
+					state = MONSTER_STATE::MOVE;			// 다시 움직인다
+					sendMonsterStatePacket();
+				}
+				else {
+					// Todo: 플레이어에게 데미지를 주는 로직 추가
+				}
+			}
+			else {
+				targetPlayer = -1;
+				state = MONSTER_STATE::IDLE;				// 상태를 바꾼다
+				sendMonsterStatePacket();
+			}
+		}
+		else {
+			state = MONSTER_STATE::IDLE;					// 상태를 바꾼다
+			sendMonsterStatePacket();
+		}
+		break;
+	}
+	default:
+		break;
 	}
 
 	return false;

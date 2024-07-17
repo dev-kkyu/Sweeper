@@ -13,6 +13,8 @@ protected:
 	MONSTER_STATE state;
 	std::chrono::steady_clock::time_point attackBeginTime;
 
+	int targetPlayer;
+
 	int hp;
 
 public:
