@@ -1,7 +1,10 @@
 #include "Room.h"
 
 #include "Session.h"
-#include "MonsterObject.h"
+#include "MushroomObject.h"
+#include "BornDogObject.h"
+#include "GoblinObject.h"
+#include "BoogieObject.h"
 
 #include <iostream>
 
@@ -13,7 +16,25 @@ Room::Room(asio::io_context& io_context, int room_id, const std::list<MonsterInf
 	// 버섯 생성
 	// 생성자는 싱글 스레드에서 호출 (락 X)
 	for (const auto& info : initMonsterInfo) {
-		monsters.try_emplace(monster_ids, std::make_shared<MonsterObject>(this, monster_ids, info.type));
+		switch (info.type)
+		{
+		case MONSTER_TYPE::MUSHROOM:
+			monsters.try_emplace(monster_ids, std::make_shared<MushroomObject>(this, monster_ids));
+			break;
+		case MONSTER_TYPE::BORNDOG:
+			monsters.try_emplace(monster_ids, std::make_shared<BornDogObject>(this, monster_ids));
+			break;
+		case MONSTER_TYPE::GOBLIN:
+			monsters.try_emplace(monster_ids, std::make_shared<GoblinObject>(this, monster_ids));
+			break;
+		case MONSTER_TYPE::BOOGIE:
+			monsters.try_emplace(monster_ids, std::make_shared<BoogieObject>(this, monster_ids));
+			break;
+		default:
+			std::cout << "ERROR: INVALID MONSTER TYPE!" << std::endl;
+			continue;
+			break;
+		}
 		// 유니티의 왼손 좌표계와 호환되도록 바꿔준다.
 		monsters[monster_ids]->setPosition({ -info.posX, info.posY, info.posZ });
 		monsters[monster_ids]->rotate(-info.rotationY);

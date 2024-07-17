@@ -6,8 +6,8 @@
 
 #include <limits>
 
-MonsterObject::MonsterObject(Room* parentRoom, int m_id, MONSTER_TYPE type)
-	: GameObjectBase{ parentRoom, m_id }, type{ type }
+MonsterObject::MonsterObject(Room* parentRoom, int m_id)
+	: GameObjectBase{ parentRoom, m_id }
 {
 	state = MONSTER_STATE::IDLE;
 	hp = 300;

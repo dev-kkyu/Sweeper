@@ -34,6 +34,18 @@
     <Filter Include="GameObjectBase\PlayerObject\HealerObject">
       <UniqueIdentifier>{b455cbaf-0051-4892-9597-943c485a288c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObjectBase\MonsterObject\MushroomObject">
+      <UniqueIdentifier>{7ec9996a-ca74-4fe6-9d30-0880f7673d08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\MonsterObject\BornDogObject">
+      <UniqueIdentifier>{60a70735-57b6-4a9c-a4b4-90891912be16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\MonsterObject\GoblinObject">
+      <UniqueIdentifier>{4744574e-e195-408e-a2d0-bb22be44ed57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\MonsterObject\BoogieObject">
+      <UniqueIdentifier>{48395de1-9f36-4732-a21a-757765cf2d4f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -78,6 +90,18 @@
     <ClCompile Include="HealerObject.cpp">
       <Filter>GameObjectBase\PlayerObject\HealerObject</Filter>
     </ClCompile>
+    <ClCompile Include="MushroomObject.cpp">
+      <Filter>GameObjectBase\MonsterObject\MushroomObject</Filter>
+    </ClCompile>
+    <ClCompile Include="BornDogObject.cpp">
+      <Filter>GameObjectBase\MonsterObject\BornDogObject</Filter>
+    </ClCompile>
+    <ClCompile Include="GoblinObject.cpp">
+      <Filter>GameObjectBase\MonsterObject\GoblinObject</Filter>
+    </ClCompile>
+    <ClCompile Include="BoogieObject.cpp">
+      <Filter>GameObjectBase\MonsterObject\BoogieObject</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Session.h">
@@ -121,6 +145,18 @@
     </ClInclude>
     <ClInclude Include="HealerObject.h">
       <Filter>GameObjectBase\PlayerObject\HealerObject</Filter>
+    </ClInclude>
+    <ClInclude Include="MushroomObject.h">
+      <Filter>GameObjectBase\MonsterObject\MushroomObject</Filter>
+    </ClInclude>
+    <ClInclude Include="BornDogObject.h">
+      <Filter>GameObjectBase\MonsterObject\BornDogObject</Filter>
+    </ClInclude>
+    <ClInclude Include="GoblinObject.h">
+      <Filter>GameObjectBase\MonsterObject\GoblinObject</Filter>
+    </ClInclude>
+    <ClInclude Include="BoogieObject.h">
+      <Filter>GameObjectBase\MonsterObject\BoogieObject</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

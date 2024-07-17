@@ -8,7 +8,7 @@
 
 class MonsterObject : public GameObjectBase
 {
-private:
+protected:
 	MONSTER_TYPE type;
 	MONSTER_STATE state;
 	std::chrono::steady_clock::time_point attackBeginTime;
@@ -16,17 +16,17 @@ private:
 	int hp;
 
 public:
-	MonsterObject(Room* parentRoom, int m_id, MONSTER_TYPE type);
+	MonsterObject(Room* parentRoom, int m_id);
 	virtual ~MonsterObject();
 
-	virtual void initialize() override;
-	virtual bool update(float elapsedTime) override;
-	virtual void release() override;
-	virtual void onHit(const GameObjectBase& other) override;
+	virtual void initialize() override = 0;
+	virtual bool update(float elapsedTime) override = 0;
+	virtual void release() override = 0;
+	virtual void onHit(const GameObjectBase& other) override = 0;
 
 	MONSTER_TYPE getMonsterType() const;
 
-private:
+protected:
 	void sendMonsterStatePacket();
 
 };
