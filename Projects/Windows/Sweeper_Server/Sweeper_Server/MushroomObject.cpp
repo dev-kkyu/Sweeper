@@ -4,6 +4,8 @@ MushroomObject::MushroomObject(Room* parentRoom, int m_id)
 	: MonsterObject{ parentRoom, m_id }
 {
 	type = MONSTER_TYPE::MUSHROOM;
+
+	collisionRadius = 0.4f;
 }
 
 MushroomObject::~MushroomObject()

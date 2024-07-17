@@ -12,7 +12,7 @@ MonsterObject::MonsterObject(Room* parentRoom, int m_id)
 	state = MONSTER_STATE::IDLE;
 	hp = 300;
 
-	collisionRadius = 0.4f;
+	collisionRadius = 10.f;		// 자식이 항상 값을 정해줘야 함
 
 	attackBeginTime = std::chrono::steady_clock::now();
 
@@ -173,7 +173,7 @@ bool MonsterObject::update(float elapsedTime)
 				auto myPos = getPosition();
 				// 나와 플레이어 사이의 거리
 				float dist2 = glm::pow(myPos.x - playerPos.x, 2.f) + glm::pow(myPos.z - playerPos.z, 2.f);
-				if (dist2 > 1.5f) {							// 일정 거리 밖으로 플레이어가 움직이면
+				if (dist2 > glm::pow(0.5f + collisionRadius, 2.f)) {							// 일정 거리 밖으로 플레이어가 움직이면
 					state = MONSTER_STATE::MOVE;			// 다시 움직인다
 					sendMonsterStatePacket();
 				}

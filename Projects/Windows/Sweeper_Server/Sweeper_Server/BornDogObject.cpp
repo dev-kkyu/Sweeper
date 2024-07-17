@@ -4,6 +4,8 @@ BornDogObject::BornDogObject(Room* parentRoom, int m_id)
 	: MonsterObject{ parentRoom, m_id }
 {
 	type = MONSTER_TYPE::BORNDOG;
+
+	collisionRadius = 1.375f;
 }
 
 BornDogObject::~BornDogObject()
