@@ -15,7 +15,7 @@ void ArrowObject::initialize()
 void ArrowObject::update(float elapsedTime, uint32_t currentFrame)
 {
 	if (spawnTime + std::chrono::milliseconds(375) <= std::chrono::steady_clock::now()) {
-		moveForward(15.f * elapsedTime);		// 화살 속도는 서버와 동기화 해줘야 함
+		moveForward(20.f * elapsedTime);		// 화살 속도는 서버와 동기화 해줘야 함
 		updateBoundingBox();
 	}
 }

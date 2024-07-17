@@ -162,13 +162,13 @@ bool ArchorObject::update(float elapsedTime)
 		for (auto& arr : arrowObjects) {
 			auto nowTime = std::chrono::steady_clock::now();
 			// 3초가 경과되었으면 제거
-			if (arr.second.spawnTime + std::chrono::seconds(3) <= nowTime) {
+			if (arr.second.spawnTime + std::chrono::seconds(1) <= nowTime) {
 				removeArrowList.push_back(arr.first);
 			}
 			// 그게 아니고, 0.375초가 지났으면 위치 업데이트
 			else if (arr.second.spawnTime + std::chrono::milliseconds(375) <= nowTime) {
 				// 화살 위치 업데이트
-				arr.second.pos += arr.second.dir * 15.f * elapsedTime;		// 클라와 동기화 되어야 한다
+				arr.second.pos += arr.second.dir * 20.f * elapsedTime;		// 클라와 동기화 되어야 한다
 				// 화살과 몬스터의 충돌 검사
 				for (auto& m : parentRoom->monsters) {
 					BoundingBox arrBox;
