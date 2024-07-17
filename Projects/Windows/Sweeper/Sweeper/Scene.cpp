@@ -41,8 +41,8 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 	// gltf skin모델 로드
 	// 몬스터 모델 로드
 	monsterModel[static_cast<int>(MONSTER_TYPE::MUSHROOM)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/Mushroom.glb");
-	monsterModel[static_cast<int>(MONSTER_TYPE::BORNDOG)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/Mushroom.glb");	// Todo
-	monsterModel[static_cast<int>(MONSTER_TYPE::GOBLIN)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/Mushroom.glb");	// Todo
+	monsterModel[static_cast<int>(MONSTER_TYPE::BORNDOG)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/BornDog.glb");
+	monsterModel[static_cast<int>(MONSTER_TYPE::GOBLIN)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/Goblin.glb");
 	monsterModel[static_cast<int>(MONSTER_TYPE::BOOGIE)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/Boogie.glb");
 	bossModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/Boss_Golem.glb");
 	// 플레이어 모델 로드
@@ -566,6 +566,21 @@ void Scene::processPacket(unsigned char* packet)
 	case SC_ADD_MONSTER: {
 		auto p = reinterpret_cast<SC_ADD_MONSTER_PACKET*>(packet);
 		pMonsterObjects.try_emplace(p->monster_id, std::make_shared<MonsterObject>());
+		switch (p->monster_type)
+		{
+		case MONSTER_TYPE::MUSHROOM:
+			break;
+		case MONSTER_TYPE::BORNDOG:
+			break;
+		case MONSTER_TYPE::GOBLIN:
+			pMonsterObjects[p->monster_id]->setScale(glm::vec3(1.3f));
+			break;
+		case MONSTER_TYPE::BOOGIE:
+			break;
+		default:
+			std::cout << "ERROR: INVALID MONSTER TYPE!" << std::endl;
+			break;
+		}
 		pMonsterObjects[p->monster_id]->initModel(monsterModel[static_cast<int>(p->monster_type)], descriptorSetLayout.ssbo);
 		pMonsterObjects[p->monster_id]->setPosition({ p->pos_x, 0.f, p->pos_z });
 		pMonsterObjects[p->monster_id]->setLook({ p->dir_x, 0.f, p->dir_z });
