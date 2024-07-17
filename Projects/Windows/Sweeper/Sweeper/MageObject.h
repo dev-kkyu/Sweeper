@@ -26,8 +26,8 @@ public:
 
 class MageObject : public PlayerObject
 {
-	friend MageATTACKState;
-	friend MageSKILLState;
+	friend class MageATTACKState;
+	friend class MageSKILLState;
 
 private:
 	struct MageEffect {

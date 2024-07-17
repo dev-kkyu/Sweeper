@@ -17,7 +17,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 {
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
-	createSamplerDescriptorPool(6);		// 배경 구름, 이펙트5개
+	createSamplerDescriptorPool(7);		// 배경 구름, 이펙트6개
 
 	uniformBufferObject.scene.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 	uniformBufferObject.offscreen.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
@@ -29,6 +29,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 	// 캐릭터 Effect 생성
 	effect.warrior.texture.loadFromFile(fDevice, "models/Textures/smoke.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 	effect.archor.texture.loadFromFile(fDevice, "models/Textures/tornado.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
+	effect.healer.texture.loadFromFile(fDevice, "models/Textures/healcircle.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 	effect.mage.attack.texture.loadFromFile(fDevice, "models/Textures/magic.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 	effect.mage.skill.texture.loadFromFile(fDevice, "models/Textures/magiccircle.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 	effect.arrow.texture.loadFromFile(fDevice, "models/Textures/arroweffect.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
@@ -84,7 +85,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 			pMyPlayer = std::make_shared<MageObject>(mapObject, effect.mage.attack, effect.mage.skill);
 			break;
 		case PLAYER_TYPE::HEALER:
-			pMyPlayer = std::make_shared<HealerObject>(mapObject);
+			pMyPlayer = std::make_shared<HealerObject>(mapObject, effect.healer);
 			break;
 		default:
 			throw std::runtime_error("ADD PLAYER ERROR : INVALID TYPE!\n");
@@ -122,6 +123,7 @@ Scene::~Scene()
 
 	effect.warrior.texture.destroy();		// 전사 이펙트 텍스처
 	effect.archor.texture.destroy();		// 궁수 이펙트 텍스처
+	effect.healer.texture.destroy();		// 힐러 이펙트 텍스처
 	effect.mage.attack.texture.destroy();	// 마법사 이펙트 텍스처
 	effect.mage.skill.texture.destroy();	// 마법사 이펙트 텍스처
 	effect.arrow.texture.destroy();			// 화살 이펙트 텍스처
@@ -133,6 +135,7 @@ Scene::~Scene()
 	vkDestroyPipeline(fDevice.logicalDevice, effect.arrow.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.mage.attack.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.mage.skill.pipeline, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, effect.healer.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.archor.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.warrior.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.cloudPipeline, nullptr);
@@ -471,7 +474,7 @@ void Scene::processPacket(unsigned char* packet)
 			pPlayers[p->player_id] = std::make_shared<MageObject>(mapObject, effect.mage.attack, effect.mage.skill);
 			break;
 		case PLAYER_TYPE::HEALER:
-			pPlayers[p->player_id] = std::make_shared<HealerObject>(mapObject);
+			pPlayers[p->player_id] = std::make_shared<HealerObject>(mapObject, effect.healer);
 			break;
 		default:
 			throw std::runtime_error("ADD PLAYER ERROR : INVALID TYPE!\n");
@@ -913,6 +916,14 @@ void Scene::createGraphicsPipeline()
 	pipelineInfo.pStages = archorShader.shaderStages.data();
 
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &effect.archor.pipeline) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+	vkf::Shader healerShader{ fDevice, "shaders/healerskill.vert.spv", "shaders/healerskill.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(healerShader.shaderStages.size());
+	pipelineInfo.pStages = healerShader.shaderStages.data();
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &effect.healer.pipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 

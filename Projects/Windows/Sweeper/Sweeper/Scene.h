@@ -51,6 +51,7 @@ private:
 	struct {
 		vkf::Effect warrior;
 		vkf::Effect archor;
+		vkf::Effect healer;
 		struct {
 			vkf::Effect attack;
 			vkf::Effect skill;

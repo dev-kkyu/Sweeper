@@ -26,10 +26,19 @@ public:
 
 class HealerObject : public PlayerObject
 {
+	friend class HealerSKILLState;
+
 private:
+	struct HealerEffect {
+		glm::vec3 pos;
+		float accumTime = 0.f;
+	};
+
+	vkf::Effect& effect;
+	std::vector<HealerEffect> healerEffects;
 
 public:
-	HealerObject(GLTFModelObject& mapObject);
+	HealerObject(GLTFModelObject& mapObject, vkf::Effect& effect);
 	virtual ~HealerObject() = default;
 
 	virtual void initialize() override;

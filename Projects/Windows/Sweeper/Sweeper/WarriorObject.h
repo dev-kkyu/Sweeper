@@ -26,7 +26,7 @@ public:
 
 class WarriorObject : public PlayerObject
 {
-	friend WarriorSKILLState;
+	friend class WarriorSKILLState;
 
 private:
 	struct WarriorEffect {
