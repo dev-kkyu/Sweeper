@@ -2,10 +2,15 @@
 
 #include "PlayerObject.h"
 
+#include <unordered_set>
+
 class HealerATTACKState : public StateMachine
 {
 private:
 	std::chrono::steady_clock::time_point stateBeginTime;
+
+	std::unordered_set<GameObjectBase*> attackedObject;
+
 public:
 	HealerATTACKState(PlayerObject& player);
 	virtual ~HealerATTACKState() = default;

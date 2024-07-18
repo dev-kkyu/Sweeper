@@ -3,6 +3,7 @@
 #include "PlayerObject.h"
 
 #include <unordered_map>
+#include <unordered_set>
 
 class ArchorATTACKState : public StateMachine
 {
@@ -51,6 +52,7 @@ private:
 		glm::vec3 pos;
 		glm::vec3 dir;
 		float accumTime = 0.f;
+		std::unordered_set<GameObjectBase*> attackedObject;
 	};
 	std::vector<ArchorEffect> archorEffects;
 

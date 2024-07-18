@@ -12,7 +12,7 @@ protected:
 	MONSTER_TYPE type;
 	MONSTER_STATE state;
 
-	std::chrono::steady_clock::time_point attackBeginTime;
+	std::chrono::steady_clock::time_point lastHitStateTime;	// 마지막으로 Hit 상태가 된 시간
 	int hitDelayTime_ms;
 
 	int targetPlayer;

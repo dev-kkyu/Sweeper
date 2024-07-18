@@ -2,10 +2,15 @@
 
 #include "PlayerObject.h"
 
+#include <unordered_set>
+
 class MageATTACKState : public StateMachine
 {
 private:
 	std::chrono::steady_clock::time_point stateBeginTime;
+
+	std::unordered_set<GameObjectBase*> attackedObject;
+
 public:
 	MageATTACKState(PlayerObject& player);
 	virtual ~MageATTACKState() = default;
@@ -19,6 +24,9 @@ class MageSKILLState : public StateMachine
 {
 private:
 	std::chrono::steady_clock::time_point stateBeginTime;
+
+	std::unordered_set<GameObjectBase*> attackedObject;
+
 public:
 	MageSKILLState(PlayerObject& player);
 	virtual ~MageSKILLState() = default;

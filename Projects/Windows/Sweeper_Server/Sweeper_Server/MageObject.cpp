@@ -29,10 +29,13 @@ void MageATTACKState::update(float elapsedTime)
 		auto myPos = player.getPosition();
 		myPos += player.getLook() * 3.f;	// 마법 공격 중앙
 		for (auto& m : player.parentRoom->monsters) {
+			if (0 != attackedObject.count(m.second.get()))		// 이미 이전에 공격을 했으면 넘어간다
+				continue;
 			auto monPos = m.second->getPosition();
 			float dist2 = (myPos.x - monPos.x) * (myPos.x - monPos.x) + (myPos.z - monPos.z) * (myPos.z - monPos.z);
 			if (dist2 <= (1.f * 1.f)) {	// 공격 범위 중심에서 1.f 거리 내
 				m.second->onHit(player, 100);
+				attackedObject.insert(m.second.get());			// 한번만 공격이 들어가도록 한다
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 			}
 		}
@@ -71,10 +74,13 @@ void MageSKILLState::update(float elapsedTime)
 		auto myPos = player.getPosition();
 		myPos += player.getLook() * 3.f;	// 마법 공격 중앙
 		for (auto& m : player.parentRoom->monsters) {
+			if (0 != attackedObject.count(m.second.get()))		// 이미 이전에 공격을 했으면 넘어간다
+				continue;
 			auto monPos = m.second->getPosition();
 			float dist2 = (myPos.x - monPos.x) * (myPos.x - monPos.x) + (myPos.z - monPos.z) * (myPos.z - monPos.z);
 			if (dist2 <= (1.5f * 1.5f)) {	// 공격 범위 중심에서 1.5 거리 내
 				m.second->onHit(player, 100);
+				attackedObject.insert(m.second.get());			// 한번만 공격이 들어가도록 한다
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 			}
 		}

@@ -14,7 +14,7 @@ MonsterObject::MonsterObject(Room* parentRoom, int m_id)
 
 	collisionRadius = 10.f;		// 자식이 항상 값을 정해줘야 함
 
-	attackBeginTime = std::chrono::steady_clock::now();
+	lastHitStateTime = std::chrono::steady_clock::now();
 
 	hitDelayTime_ms = 10000;	// 자식이 항상 값을 정해줘야 함
 
@@ -142,7 +142,7 @@ bool MonsterObject::update(float elapsedTime)
 		break;
 	}
 	case MONSTER_STATE::HIT: {
-		if (attackBeginTime + std::chrono::milliseconds{ hitDelayTime_ms } < std::chrono::steady_clock::now()) {
+		if (lastHitStateTime + std::chrono::milliseconds{ hitDelayTime_ms } < std::chrono::steady_clock::now()) {
 			state = MONSTER_STATE::IDLE;
 			if (targetPlayer >= 0) {			// 타겟이 있고 아직도 충돌이면 Attack
 				std::shared_ptr<Session> session = parentRoom->sessions[targetPlayer].load();
@@ -208,30 +208,26 @@ void MonsterObject::release()
 
 void MonsterObject::onHit(const GameObjectBase& other, int damage)
 {
-	// 중복 피격 방지시간 0.7초
-	if (attackBeginTime + std::chrono::milliseconds{ 700 } <= std::chrono::steady_clock::now())
-	{
-		hp -= damage;
-		attackBeginTime = std::chrono::steady_clock::now();
-		state = MONSTER_STATE::HIT;
-		sendMonsterStatePacket();
+	hp -= damage;
+	lastHitStateTime = std::chrono::steady_clock::now();
+	state = MONSTER_STATE::HIT;
+	sendMonsterStatePacket();
 
-		auto newDir = other.getPosition() - getPosition();
-		newDir.y = 0.f;
-		setLook(newDir);		// 플레이어 방향으로, look을 바꿔준다
+	auto newDir = other.getPosition() - getPosition();
+	newDir.y = 0.f;
+	setLook(newDir);		// 플레이어 방향으로, look을 바꿔준다
 
-		SC_MONSTER_LOOK_PACKET p;
-		p.size = sizeof(p);
-		p.type = SC_MONSTER_LOOK;
-		p.monster_id = my_id;
-		p.dir_x = newDir.x;
-		p.dir_z = newDir.z;
+	SC_MONSTER_LOOK_PACKET p;
+	p.size = sizeof(p);
+	p.type = SC_MONSTER_LOOK;
+	p.monster_id = my_id;
+	p.dir_x = newDir.x;
+	p.dir_z = newDir.z;
 
-		for (auto& a : parentRoom->sessions) {	// 모든 플레이어에게 변경된 몬스터의  Look을 보내준다.
-			std::shared_ptr<Session> session = a.load();
-			if (Room::isValidSession(session)) {
-				session->sendPacket(&p);
-			}
+	for (auto& a : parentRoom->sessions) {	// 모든 플레이어에게 변경된 몬스터의  Look을 보내준다.
+		std::shared_ptr<Session> session = a.load();
+		if (Room::isValidSession(session)) {
+			session->sendPacket(&p);
 		}
 	}
 }

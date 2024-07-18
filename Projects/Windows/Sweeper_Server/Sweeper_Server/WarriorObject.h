@@ -2,10 +2,15 @@
 
 #include "PlayerObject.h"
 
+#include <unordered_set>
+
 class WarriorATTACKState : public StateMachine
 {
 private:
 	std::chrono::steady_clock::time_point stateBeginTime;
+
+	std::unordered_set<GameObjectBase*> attackedObject;
+
 public:
 	WarriorATTACKState(PlayerObject& player);
 	virtual ~WarriorATTACKState() = default;
@@ -19,6 +24,9 @@ class WarriorSKILLState : public StateMachine
 {
 private:
 	std::chrono::steady_clock::time_point stateBeginTime;
+
+	std::unordered_set<GameObjectBase*> attackedObject;
+
 public:
 	WarriorSKILLState(PlayerObject& player);
 	virtual ~WarriorSKILLState() = default;

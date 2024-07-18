@@ -190,10 +190,14 @@ bool ArchorObject::update(float elapsedTime)
 				aEffect.pos += aEffect.dir * 12.f * elapsedTime;		// 클라와 같은 값
 				// 충돌검사
 				for (auto& m : parentRoom->monsters) {
+					if (0 != aEffect.attackedObject.count(m.second.get()))		// 이미 이전에 공격을 했으면 넘어간다
+						continue;
 					BoundingBox boundingBox;
 					boundingBox.setBound(1.f, 0.1f, aEffect.pos.z + 0.5f, aEffect.pos.z - 0.5f, aEffect.pos.x - 0.5f, aEffect.pos.x + 0.5f);
 					if (boundingBox.isCollide(m.second->getBoundingBox())) {
-						m.second->onHit(*this, 100);		// 충돌이면 알려주기
+						m.second->onHit(*this, 100);					// 충돌이면 알려주기
+						aEffect.attackedObject.insert(m.second.get());			// 한번만 공격이 들어가도록 한다
+						std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 					}
 				}
 			}
