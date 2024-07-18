@@ -653,6 +653,7 @@ void Scene::processPacket(unsigned char* packet)
 		switch (p->state) {
 		case BOSS_STATE::SLEEP:
 			bossObject.setAnimationClip(BOSS_CLIP_SLEEP);
+			bossObject.setAnimateSpeed(1.f);
 			break;
 		case BOSS_STATE::WAKEUP:
 			bossObject.setAnimationClip(BOSS_CLIP_WAKE_UP);
@@ -660,15 +661,19 @@ void Scene::processPacket(unsigned char* packet)
 			break;
 		case BOSS_STATE::IDLE:
 			bossObject.setAnimationClip(BOSS_CLIP_IDLE);
+			bossObject.setAnimateSpeed(0.7f);
 			break;
 		case BOSS_STATE::MOVE:
 			bossObject.setAnimationClip(BOSS_CLIP_MOVE);
+			bossObject.setAnimateSpeed(0.7f);
 			break;
 		case BOSS_STATE::LEFT_PUNCH:
 			bossObject.setAnimationClip(BOSS_CLIP_LEFT_PUNCH);
+			bossObject.setAnimateSpeed(0.7f);
 			break;
 		case BOSS_STATE::RIGHT_PUNCH:
 			bossObject.setAnimationClip(BOSS_CLIP_RIGHT_PUNCH);
+			bossObject.setAnimateSpeed(0.7f);
 			break;
 		case BOSS_STATE::PUNCH_DOWN:
 			bossObject.setAnimationClip(BOSS_CLIP_PUNCH_DOWN);
@@ -676,6 +681,7 @@ void Scene::processPacket(unsigned char* packet)
 			break;
 		case BOSS_STATE::DIE:
 			bossObject.setAnimationClip(BOSS_CLIP_DIE);
+			bossObject.setAnimateSpeed(0.7f);
 			break;
 		default:
 			std::cerr << "ERROR : INVALID BOSS STATE!" << std::endl;
