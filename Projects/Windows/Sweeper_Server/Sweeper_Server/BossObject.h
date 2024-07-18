@@ -112,6 +112,14 @@ public:
 class BossObject : public GameObjectBase
 {
 	friend class BossState;
+	friend class BossSLEEP;
+	friend class BossWAKEUP;
+	friend class BossIDLE;
+	friend class BossMOVE;
+	friend class BossLEFTPUNCH;
+	friend class BossRIGHTPUNCH;
+	friend class BossPUNCHDOWN;
+	friend class BossDIE;
 
 private:
 	// 상태 관리

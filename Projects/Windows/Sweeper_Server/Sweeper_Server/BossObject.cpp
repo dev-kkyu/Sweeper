@@ -2,6 +2,7 @@
 
 #include "Room.h"
 #include "Session.h"
+#include "PlayerObject.h"
 
 BossState::BossState(BossObject& boss)
 	: boss{ boss }
@@ -47,6 +48,22 @@ void BossSLEEP::enter()
 
 void BossSLEEP::update(float elapsedTime)
 {
+	for (auto& a : boss.parentRoom->sessions) {
+		std::shared_ptr<Session> session = a.load();
+		if (Room::isValidSession(session)) {
+			auto myPos = boss.getPosition();
+			auto playerPos = session->player->getPosition();
+
+			float dist2 = glm::pow(myPos.x - playerPos.x, 2.f) + glm::pow(myPos.z - playerPos.z, 2.f);
+			float targetDist2 = glm::pow(8.f, 2.f);
+
+			if (dist2 <= targetDist2) {		// 플레이어가 접근하면
+				boss.changeWAKEUPState();
+				break;
+			}
+		}
+	}
+
 	BossState::update(elapsedTime);
 }
 
