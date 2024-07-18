@@ -5,6 +5,8 @@ GoblinObject::GoblinObject(Room* parentRoom, int m_id)
 {
 	type = MONSTER_TYPE::GOBLIN;
 
+	hitDelayTime_ms = 1550;
+
 	collisionRadius = 0.4f;
 }
 

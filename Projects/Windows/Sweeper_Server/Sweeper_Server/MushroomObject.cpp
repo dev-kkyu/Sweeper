@@ -5,6 +5,8 @@ MushroomObject::MushroomObject(Room* parentRoom, int m_id)
 {
 	type = MONSTER_TYPE::MUSHROOM;
 
+	hitDelayTime_ms = 1300;
+
 	collisionRadius = 0.4f;
 }
 

@@ -5,6 +5,8 @@ BoogieObject::BoogieObject(Room* parentRoom, int m_id)
 {
 	type = MONSTER_TYPE::BOOGIE;
 
+	hitDelayTime_ms = 1100;
+
 	collisionRadius = 0.4f;
 }
 

@@ -5,6 +5,8 @@ BornDogObject::BornDogObject(Room* parentRoom, int m_id)
 {
 	type = MONSTER_TYPE::BORNDOG;
 
+	hitDelayTime_ms = 1200;
+
 	collisionRadius = 1.375f;
 }
 

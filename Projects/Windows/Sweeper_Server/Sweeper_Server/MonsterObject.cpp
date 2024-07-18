@@ -16,6 +16,8 @@ MonsterObject::MonsterObject(Room* parentRoom, int m_id)
 
 	attackBeginTime = std::chrono::steady_clock::now();
 
+	hitDelayTime_ms = 10000;	// 자식이 항상 값을 정해줘야 함
+
 	targetPlayer = -1;	// 0 ~ 3
 }
 
@@ -140,7 +142,7 @@ bool MonsterObject::update(float elapsedTime)
 		break;
 	}
 	case MONSTER_STATE::HIT: {
-		if (attackBeginTime + std::chrono::milliseconds{ 1300 } < std::chrono::steady_clock::now()) {
+		if (attackBeginTime + std::chrono::milliseconds{ hitDelayTime_ms } < std::chrono::steady_clock::now()) {
 			state = MONSTER_STATE::IDLE;
 			if (targetPlayer >= 0) {			// 타겟이 있고 아직도 충돌이면 Attack
 				std::shared_ptr<Session> session = parentRoom->sessions[targetPlayer].load();

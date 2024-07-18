@@ -11,7 +11,9 @@ class MonsterObject : public GameObjectBase
 protected:
 	MONSTER_TYPE type;
 	MONSTER_STATE state;
+
 	std::chrono::steady_clock::time_point attackBeginTime;
+	int hitDelayTime_ms;
 
 	int targetPlayer;
 
