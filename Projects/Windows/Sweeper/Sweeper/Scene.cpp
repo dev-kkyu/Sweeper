@@ -67,7 +67,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 	// 보스 모델 생성
 	bossObject.initModel(bossModel, descriptorSetLayout.ssbo);
 	bossObject.setAnimationClip(BOSS_CLIP_SLEEP);
-	bossObject.setPosition({ 12.25f, 0.f, 115.f });
+	bossObject.setPosition({ 12.25f, 0.f, 115.f });		// 서버와 동기화 해야함
 	bossObject.setLook({ 0.f, 0.f, -1.f });
 	bossObject.setScale(glm::vec3{ 2.25f });
 
@@ -656,6 +656,7 @@ void Scene::processPacket(unsigned char* packet)
 			break;
 		case BOSS_STATE::WAKEUP:
 			bossObject.setAnimationClip(BOSS_CLIP_WAKE_UP);
+			bossObject.setAnimateSpeed(0.7f);
 			break;
 		case BOSS_STATE::IDLE:
 			bossObject.setAnimationClip(BOSS_CLIP_IDLE);
