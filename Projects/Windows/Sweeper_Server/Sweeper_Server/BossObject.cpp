@@ -76,6 +76,8 @@ BossWAKEUP::BossWAKEUP(BossObject& boss)
 	: BossState{ boss }
 {
 	state = BOSS_STATE::WAKEUP;
+
+	stateAccumTime = 0.f;
 }
 
 void BossWAKEUP::enter()
@@ -85,6 +87,12 @@ void BossWAKEUP::enter()
 
 void BossWAKEUP::update(float elapsedTime)
 {
+	stateAccumTime += elapsedTime;
+
+	if (stateAccumTime >= 2.825f) {
+		boss.changeIDLEState();
+	}
+
 	BossState::update(elapsedTime);
 }
 

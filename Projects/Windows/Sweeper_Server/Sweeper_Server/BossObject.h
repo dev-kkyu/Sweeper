@@ -34,6 +34,8 @@ public:
 
 class BossWAKEUP : public BossState
 {
+	float stateAccumTime;
+
 public:
 	BossWAKEUP(BossObject& boss);
 	virtual ~BossWAKEUP() = default;
