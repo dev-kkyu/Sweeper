@@ -211,7 +211,7 @@ void MonsterObject::onHit(const GameObjectBase& other, int damage)
 	// 중복 피격 방지시간 0.7초
 	if (attackBeginTime + std::chrono::milliseconds{ 700 } <= std::chrono::steady_clock::now())
 	{
-		hp -= 100;
+		hp -= damage;
 		attackBeginTime = std::chrono::steady_clock::now();
 		state = MONSTER_STATE::HIT;
 		sendMonsterStatePacket();
