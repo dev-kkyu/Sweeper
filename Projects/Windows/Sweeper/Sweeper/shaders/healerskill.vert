@@ -50,7 +50,7 @@ void main()
 
 	vec3 quadPos = quad[gl_VertexIndex];		// 그려질 위치
 	quadPos *= 2.5f;							// 확대
-	quadPos.y += 0.001f;						// 바닥에서 살짝 띄워주기
+	quadPos.y += 0.1f;							// 바닥에서 살짝 띄워주기
 
     vec3 finalPos = push.model[3].xyz + quadPos;	// 정해진 위치(월드 좌표)로 옮기기
 
