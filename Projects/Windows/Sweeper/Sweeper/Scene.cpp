@@ -904,7 +904,7 @@ void Scene::createGraphicsPipeline()
 	pipelineInfo.pStages = warriorShader.shaderStages.data();
 
 	depthStencil.depthTestEnable = VK_TRUE;
-	depthStencil.depthWriteEnable = VK_TRUE;
+	depthStencil.depthWriteEnable = VK_FALSE;	// ¿Ã∆Â∆Æ¥¬ Depth Write Off, ¿Ã∆Â∆Æ≥¢∏Æ ¡ﬂ√∏«œµµ∑œ
 	rasterizer.cullMode = VK_CULL_MODE_NONE;
 
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &effect.warrior.pipeline) != VK_SUCCESS) {
