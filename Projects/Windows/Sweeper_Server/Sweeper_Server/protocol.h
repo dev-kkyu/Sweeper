@@ -69,6 +69,18 @@ enum class MONSTER_STATE : char
 	ATTACK = 4
 };
 
+enum class BOSS_STATE : char
+{
+	SLEEP = 0,
+	WAKEUP = 1,
+	IDLE = 2,
+	MOVE = 3,
+	LEFT_PUNCH = 4,
+	RIGHT_PUNCH = 5,
+	PUNCH_DOWN = 6,
+	DIE = 7
+};
+
 #pragma pack(push, 1)
 
 struct SC_LOGIN_INFO_PACKET
