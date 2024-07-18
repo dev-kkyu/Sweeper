@@ -11,6 +11,15 @@
 
 #include "NetworkManager.h"
 
+#define BOSS_CLIP_SLEEP			0
+#define BOSS_CLIP_WAKE_UP		6
+#define BOSS_CLIP_IDLE			5
+#define BOSS_CLIP_MOVE			8
+#define BOSS_CLIP_LEFT_PUNCH	1
+#define BOSS_CLIP_RIGHT_PUNCH	7
+#define BOSS_CLIP_PUNCH_DOWN	2
+#define BOSS_CLIP_DIE			3
+
 Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, int& width, int& height)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }
 	, camera{ width, height }
@@ -57,11 +66,11 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 
 	// 보스 모델 생성
 	bossObject.initModel(bossModel, descriptorSetLayout.ssbo);
-	bossObject.setAnimationClip(2);
+	bossObject.setAnimationClip(BOSS_CLIP_SLEEP);
 	bossObject.setPosition({ 12.25f, 0.f, 115.f });
 	bossObject.setLook({ 0.f, 0.f, -1.f });
 	bossObject.setScale(glm::vec3{ 2.25f });
-	bossObject.setAnimateSpeed(0.7f);
+	//bossObject.setAnimateSpeed(0.7f);
 
 	// 플레이어 선택 및 생성
 	{

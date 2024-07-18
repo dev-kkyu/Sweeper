@@ -205,6 +205,7 @@ void BossDIE::exit()
 BossObject::BossObject(Room* parentRoom)
 	: GameObjectBase{ parentRoom, 0 }		// 보스는 하나이기 때문에, id가 필요 없다
 {
+	setPosition({ 12.25f, 0.f, 115.f });	// 클라와 동기화 해야 함
 	setLook(glm::vec3{ 0.f, 0.f, -1.f });
 
 	currentState = std::make_unique<BossSLEEP>(*this);
