@@ -119,7 +119,7 @@ private:
 	std::unique_ptr<BossState> nextState;
 
 public:
-	BossObject(Room* parentRoom, int m_id);
+	BossObject(Room* parentRoom);
 	virtual ~BossObject();
 
 	virtual void initialize() override;

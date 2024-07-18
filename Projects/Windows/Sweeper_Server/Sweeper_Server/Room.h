@@ -9,6 +9,8 @@
 
 #include "protocol.h"
 
+#include "BossObject.h"
+
 struct MonsterInfo
 {
 	MONSTER_TYPE type;
@@ -36,6 +38,7 @@ public:
 	std::unordered_map<int, std::shared_ptr<MonsterObject>> monsters;
 	std::list<int> reserved_monster_ids;
 
+	std::unique_ptr<BossObject> boss;
 
 public:
 	Room(asio::io_context& io_context, int room_id, const std::list<MonsterInfo>& initMonsterInfo);

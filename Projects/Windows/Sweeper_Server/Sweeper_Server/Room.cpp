@@ -40,6 +40,9 @@ Room::Room(asio::io_context& io_context, int room_id, const std::list<MonsterInf
 		monsters[monster_ids]->rotate(-info.rotationY);
 		++monster_ids;
 	}
+
+	boss = std::make_unique<BossObject>(this);
+
 }
 
 void Room::addSession(std::shared_ptr<Session> session)
@@ -101,6 +104,24 @@ void Room::update(float elapsedTime)
 				if (isValidSession(session))
 					session->sendPacket(&p);
 			}
+		}
+	}
+
+	// 보스 업데이트
+	if (boss->update(elapsedTime)) {
+		SC_MOVE_BOSS_PACKET p;
+		p.size = sizeof(p);
+		p.type = SC_MOVE_BOSS;
+		auto pos = boss->getPosition();
+		auto look = boss->getLook();
+		p.pos_x = pos.x;
+		p.pos_z = pos.z;
+		p.dir_x = look.x;
+		p.dir_z = look.z;
+		for (auto& a : sessions) {		// 모든 세션에게 변화된 보스 위치 정보를 보내준다
+			std::shared_ptr<Session> session = a.load();
+			if (isValidSession(session))
+				session->sendPacket(&p);
 		}
 	}
 }

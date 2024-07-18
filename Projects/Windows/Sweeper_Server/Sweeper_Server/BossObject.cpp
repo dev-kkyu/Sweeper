@@ -202,9 +202,13 @@ void BossDIE::exit()
 	BossState::exit();
 }
 
-BossObject::BossObject(Room* parentRoom, int m_id)
-	: GameObjectBase{ parentRoom, m_id }
+BossObject::BossObject(Room* parentRoom)
+	: GameObjectBase{ parentRoom, 0 }		// 보스는 하나이기 때문에, id가 필요 없다
 {
+	setLook(glm::vec3{ 0.f, 0.f, -1.f });
+
+	currentState = std::make_unique<BossSLEEP>(*this);
+
 	hp = 100000;
 }
 
