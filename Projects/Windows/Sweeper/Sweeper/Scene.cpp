@@ -324,6 +324,12 @@ void Scene::processKeyboard(int key, int action, int mods)
 			p.key = KEY_CTRL;
 			NetworkManager::getInstance().sendPacket(&p);
 			break;
+		case GLFW_KEY_P:
+			if (pMyPlayer) {	// P 키 누를 시 플레이어의 위치를 콘솔에 출력한다
+				auto pos = pMyPlayer->getPosition();
+				std::cout << "Position - (" << pos.x << ", " << pos.y << ", " << pos.z << ")" << std::endl;
+			}
+			break;
 		}
 		break;
 	case GLFW_RELEASE:
