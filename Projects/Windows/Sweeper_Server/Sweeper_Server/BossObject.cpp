@@ -261,6 +261,11 @@ void BossObject::onHit(const GameObjectBase& other, int damage)
 {
 }
 
+BOSS_STATE BossObject::getBossState() const
+{
+	return currentState->getState();
+}
+
 void BossObject::changeSLEEPState()
 {
 	nextState = std::make_unique<BossSLEEP>(*this);

@@ -135,6 +135,8 @@ public:
 	virtual void release() override;
 	virtual void onHit(const GameObjectBase& other, int damage) override;
 
+	BOSS_STATE getBossState() const;
+
 private:
 	virtual void changeSLEEPState() final;
 	virtual void changeWAKEUPState() final;

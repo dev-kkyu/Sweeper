@@ -162,6 +162,14 @@ bool Session::processPacket(unsigned char* packet)
 				sendPacket(&p);
 			}
 		}
+		// 현재 보스 몬스터의 상태를 보내준다
+		{
+			SC_BOSS_STATE_PACKET p;
+			p.size = sizeof(p);
+			p.type = SC_BOSS_STATE;
+			p.state = parentRoom->boss->getBossState();
+			sendPacket(&p);
+		}
 		break;
 	}
 	case CS_KEY_EVENT: {
