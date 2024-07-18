@@ -153,14 +153,37 @@ void BossMOVE::enter()
 void BossMOVE::update(float elapsedTime)
 {
 	if (boss.targetPlayer >= 0) {
-		std::shared_ptr<Session> session = boss.parentRoom->sessions[boss.targetPlayer].load();
-		if (Room::isValidSession(session)) {
-			auto myPos = boss.getPosition();
-			auto playerPos = session->player->getPosition();
-			auto dir = playerPos - myPos;
-			if (glm::length(dir) >= glm::epsilon<float>()) {
-				boss.setLook(dir);
-				boss.moveForward(2.f * elapsedTime);		// 타겟을 향해 움직인다
+		std::shared_ptr<Session> session1 = boss.parentRoom->sessions[boss.targetPlayer].load();
+		if (Room::isValidSession(session1)) {
+			auto myPos1 = boss.getPosition();
+			auto playerPos1 = session1->player->getPosition();
+			auto dir = playerPos1 - myPos1;
+			auto dist = glm::length(dir);
+			if (dist >= glm::epsilon<float>()) {			// 정상적인 거리일 때
+				bool isNewTarget = false;
+				if (dist > 5.f) {	// 거리가 조금 멀 때 새로운 타겟이 존재하면 타겟을 변경한다
+					for (int i = 0; i < 4; ++i) {
+						if (i == boss.targetPlayer)
+							continue;
+						std::shared_ptr<Session> session2 = boss.parentRoom->sessions[i].load();
+						if (Room::isValidSession(session2)) {
+							auto myPos2 = boss.getPosition();
+							auto playerPos2 = session2->player->getPosition();
+
+							float dist2 = glm::pow(myPos2.x - playerPos2.x, 2.f) + glm::pow(myPos2.z - playerPos2.z, 2.f);
+							float targetDist2 = glm::pow(4.f, 2.f);
+							if (dist2 <= targetDist2) {		// 새 타겟이 일정 거리 안이면
+								boss.targetPlayer = i;		// 타겟을 변경해 준다
+								isNewTarget = true;
+								break;
+							}
+						}
+					}
+				}
+				if (not isNewTarget) {
+					boss.setLook(dir);
+					boss.moveForward(2.f * elapsedTime);		// 타겟을 향해 움직인다
+				}
 			}
 		}
 		else {
