@@ -111,6 +111,8 @@ public:
 
 class BossObject : public GameObjectBase
 {
+	friend class BossState;
+
 private:
 
 public:

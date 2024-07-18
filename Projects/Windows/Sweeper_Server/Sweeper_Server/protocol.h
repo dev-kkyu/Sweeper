@@ -20,6 +20,8 @@ constexpr char SC_MOVE_MONSTER = 13;
 constexpr char SC_MONSTER_LOOK = 14;
 constexpr char SC_REMOVE_MONSTER = 15;
 constexpr char SC_MONSTER_STATE = 16;
+constexpr char SC_MOVE_BOSS = 17;
+constexpr char SC_BOSS_STATE = 18;
 
 constexpr char CS_LOGIN = 1;
 constexpr char CS_KEY_EVENT = 2;
@@ -230,6 +232,23 @@ struct SC_MONSTER_STATE_PACKET
 	char type;
 	char monster_id;
 	MONSTER_STATE state;
+};
+
+struct SC_MOVE_BOSS_PACKET
+{
+	unsigned char size;
+	char type;
+	float pos_x;
+	float pos_z;
+	float dir_x;
+	float dir_z;
+};
+
+struct SC_BOSS_STATE_PACKET
+{
+	unsigned char size;
+	char type;
+	BOSS_STATE state;
 };
 
 struct CS_LOGIN_PACKET
