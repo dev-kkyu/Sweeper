@@ -128,6 +128,8 @@ private:
 	std::unique_ptr<BossState> currentState;
 	std::unique_ptr<BossState> nextState;
 
+	int targetPlayer;
+
 public:
 	BossObject(Room* parentRoom);
 	virtual ~BossObject();

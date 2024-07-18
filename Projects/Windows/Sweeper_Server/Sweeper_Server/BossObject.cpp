@@ -114,6 +114,23 @@ void BossIDLE::enter()
 
 void BossIDLE::update(float elapsedTime)
 {
+	for (int i = 0; i < 4; ++i) {
+		std::shared_ptr<Session> session = boss.parentRoom->sessions[i].load();
+		if (Room::isValidSession(session)) {
+			auto myPos = boss.getPosition();
+			auto playerPos = session->player->getPosition();
+
+			float dist2 = glm::pow(myPos.x - playerPos.x, 2.f) + glm::pow(myPos.z - playerPos.z, 2.f);
+			float targetDist2 = glm::pow(6.5f, 2.f);
+
+			if (dist2 <= targetDist2) {		// 플레이어가 일정 거리 안이면
+				boss.targetPlayer = i;
+				boss.changeMOVEState();		// 타겟이 정해지고, MOVE 상태로 바뀐다
+				break;
+			}
+		}
+	}
+
 	BossState::update(elapsedTime);
 }
 
@@ -135,6 +152,26 @@ void BossMOVE::enter()
 
 void BossMOVE::update(float elapsedTime)
 {
+	if (boss.targetPlayer >= 0) {
+		std::shared_ptr<Session> session = boss.parentRoom->sessions[boss.targetPlayer].load();
+		if (Room::isValidSession(session)) {
+			auto myPos = boss.getPosition();
+			auto playerPos = session->player->getPosition();
+			auto dir = playerPos - myPos;
+			if (glm::length(dir) >= glm::epsilon<float>()) {
+				boss.setLook(dir);
+				boss.moveForward(2.f * elapsedTime);		// 타겟을 향해 움직인다
+			}
+		}
+		else {
+			boss.targetPlayer = -1;
+			boss.changeIDLEState();
+		}
+	}
+	else {
+		boss.changeIDLEState();
+	}
+
 	BossState::update(elapsedTime);
 }
 
@@ -233,9 +270,11 @@ BossObject::BossObject(Room* parentRoom)
 	setPosition({ 12.25f, 0.f, 115.f });	// 클라와 동기화 해야 함
 	setLook(glm::vec3{ 0.f, 0.f, -1.f });
 
+	hp = 100000;
+
 	currentState = std::make_unique<BossSLEEP>(*this);
 
-	hp = 100000;
+	targetPlayer = -1;
 }
 
 BossObject::~BossObject()
