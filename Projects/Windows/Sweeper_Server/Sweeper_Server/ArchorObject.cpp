@@ -56,7 +56,7 @@ void ArchorATTACKState::update(float elapsedTime)
 			auto monPos = m.second->getPosition();
 			float dist2 = (myPos.x - monPos.x) * (myPos.x - monPos.x) + (myPos.z - monPos.z) * (myPos.z - monPos.z);
 			if (dist2 <= 1.5f) {	// 충돌
-				m.second->onHit(player);
+				m.second->onHit(player, 100);
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 			}
 		}
@@ -100,7 +100,7 @@ void ArchorSKILLState::update(float elapsedTime)
 			auto monPos = m.second->getPosition();
 			float dist2 = (myPos.x - monPos.x) * (myPos.x - monPos.x) + (myPos.z - monPos.z) * (myPos.z - monPos.z);
 			if (dist2 <= 1.5f) {	// 충돌
-				m.second->onHit(player);
+				m.second->onHit(player, 100);
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 			}
 		}
@@ -174,7 +174,7 @@ bool ArchorObject::update(float elapsedTime)
 					BoundingBox arrBox;
 					arrBox.setBound(1.f, 0.1f, arr.second.pos.z + 0.5f, arr.second.pos.z - 0.5f, arr.second.pos.x - 0.5f, arr.second.pos.x + 0.5f);
 					if (arrBox.isCollide(m.second->getBoundingBox())) {
-						m.second->onHit(*this);
+						m.second->onHit(*this, 100);
 						removeArrowList.push_back(arr.first);
 					}
 				}
@@ -219,7 +219,7 @@ bool ArchorObject::update(float elapsedTime)
 					BoundingBox boundingBox;
 					boundingBox.setBound(1.f, 0.1f, aEffect.pos.z + 0.5f, aEffect.pos.z - 0.5f, aEffect.pos.x - 0.5f, aEffect.pos.x + 0.5f);
 					if (boundingBox.isCollide(m.second->getBoundingBox())) {
-						m.second->onHit(*this);		// 충돌이면 알려주기
+						m.second->onHit(*this, 100);		// 충돌이면 알려주기
 					}
 				}
 			}
@@ -242,7 +242,7 @@ void ArchorObject::release()
 {
 }
 
-void ArchorObject::onHit(const GameObjectBase& other)
+void ArchorObject::onHit(const GameObjectBase& other, int damage)
 {
 }
 

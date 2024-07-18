@@ -27,7 +27,7 @@ public:
 	virtual void initialize() = 0;
 	virtual bool update(float elapsedTime) = 0;		// 업데이트 된 것이 없으면 false
 	virtual void release() = 0;
-	virtual void onHit(const GameObjectBase& other) = 0;
+	virtual void onHit(const GameObjectBase& other, int damage) = 0;
 
 	virtual void setPosition(glm::vec3 position) final;
 	virtual void setLook(glm::vec3 look) final;					// y는 항상 0으로 가정

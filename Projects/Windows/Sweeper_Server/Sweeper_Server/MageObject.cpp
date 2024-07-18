@@ -32,7 +32,7 @@ void MageATTACKState::update(float elapsedTime)
 			auto monPos = m.second->getPosition();
 			float dist2 = (myPos.x - monPos.x) * (myPos.x - monPos.x) + (myPos.z - monPos.z) * (myPos.z - monPos.z);
 			if (dist2 <= (1.f * 1.f)) {	// 공격 범위 중심에서 1.f 거리 내
-				m.second->onHit(player);
+				m.second->onHit(player, 100);
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 			}
 		}
@@ -74,7 +74,7 @@ void MageSKILLState::update(float elapsedTime)
 			auto monPos = m.second->getPosition();
 			float dist2 = (myPos.x - monPos.x) * (myPos.x - monPos.x) + (myPos.z - monPos.z) * (myPos.z - monPos.z);
 			if (dist2 <= (1.5f * 1.5f)) {	// 공격 범위 중심에서 1.5 거리 내
-				m.second->onHit(player);
+				m.second->onHit(player, 100);
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 			}
 		}
@@ -106,7 +106,7 @@ void MageObject::release()
 {
 }
 
-void MageObject::onHit(const GameObjectBase& other)
+void MageObject::onHit(const GameObjectBase& other, int damage)
 {
 }
 

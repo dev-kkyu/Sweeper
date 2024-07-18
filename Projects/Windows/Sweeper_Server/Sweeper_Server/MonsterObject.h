@@ -26,7 +26,7 @@ public:
 	virtual void initialize() override = 0;
 	virtual bool update(float elapsedTime) override = 0;
 	virtual void release() override = 0;
-	virtual void onHit(const GameObjectBase& other) override = 0;
+	virtual void onHit(const GameObjectBase& other, int damage) override = 0;
 
 	MONSTER_TYPE getMonsterType() const;
 

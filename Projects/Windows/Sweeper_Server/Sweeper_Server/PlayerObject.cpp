@@ -281,7 +281,7 @@ void PlayerObject::release()
 {
 }
 
-void PlayerObject::onHit(const GameObjectBase& other)
+void PlayerObject::onHit(const GameObjectBase& other, int damage)
 {
 }
 

@@ -22,6 +22,6 @@ void BossObject::release()
 {
 }
 
-void BossObject::onHit(const GameObjectBase& other)
+void BossObject::onHit(const GameObjectBase& other, int damage)
 {
 }

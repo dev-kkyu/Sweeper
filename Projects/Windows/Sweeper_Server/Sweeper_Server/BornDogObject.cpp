@@ -27,7 +27,7 @@ void BornDogObject::release()
 {
 }
 
-void BornDogObject::onHit(const GameObjectBase& other)
+void BornDogObject::onHit(const GameObjectBase& other, int damage)
 {
-	MonsterObject::onHit(other);
+	MonsterObject::onHit(other, damage);
 }

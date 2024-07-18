@@ -27,7 +27,7 @@ void MushroomObject::release()
 {
 }
 
-void MushroomObject::onHit(const GameObjectBase& other)
+void MushroomObject::onHit(const GameObjectBase& other, int damage)
 {
-	MonsterObject::onHit(other);
+	MonsterObject::onHit(other, damage);
 }

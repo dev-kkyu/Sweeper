@@ -206,7 +206,7 @@ void MonsterObject::release()
 {
 }
 
-void MonsterObject::onHit(const GameObjectBase& other)
+void MonsterObject::onHit(const GameObjectBase& other, int damage)
 {
 	// 중복 피격 방지시간 0.7초
 	if (attackBeginTime + std::chrono::milliseconds{ 700 } <= std::chrono::steady_clock::now())

@@ -27,7 +27,7 @@ void GoblinObject::release()
 {
 }
 
-void GoblinObject::onHit(const GameObjectBase& other)
+void GoblinObject::onHit(const GameObjectBase& other, int damage)
 {
-	MonsterObject::onHit(other);
+	MonsterObject::onHit(other, damage);
 }

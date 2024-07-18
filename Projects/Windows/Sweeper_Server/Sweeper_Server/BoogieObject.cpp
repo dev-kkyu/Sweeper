@@ -27,7 +27,7 @@ void BoogieObject::release()
 {
 }
 
-void BoogieObject::onHit(const GameObjectBase& other)
+void BoogieObject::onHit(const GameObjectBase& other, int damage)
 {
-	MonsterObject::onHit(other);
+	MonsterObject::onHit(other, damage);
 }

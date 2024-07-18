@@ -13,7 +13,7 @@ public:
 	virtual void initialize() override;
 	virtual bool update(float elapsedTime) override;
 	virtual void release() override;
-	virtual void onHit(const GameObjectBase& other) override;
+	virtual void onHit(const GameObjectBase& other, int damage) override;
 
 };
 

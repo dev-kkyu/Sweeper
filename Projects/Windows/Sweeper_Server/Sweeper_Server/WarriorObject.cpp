@@ -32,7 +32,7 @@ void WarriorATTACKState::update(float elapsedTime)
 			auto monPos = m.second->getPosition();
 			float dist2 = (myPos.x - monPos.x) * (myPos.x - monPos.x) + (myPos.z - monPos.z) * (myPos.z - monPos.z);
 			if (dist2 <= 1.5f) {	// 충돌
-				m.second->onHit(player);
+				m.second->onHit(player, 100);
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 			}
 		}
@@ -74,7 +74,7 @@ void WarriorSKILLState::update(float elapsedTime)
 			auto monPos = m.second->getPosition();
 			float dist2 = (myPos.x - monPos.x) * (myPos.x - monPos.x) + (myPos.z - monPos.z) * (myPos.z - monPos.z);
 			if (dist2 <= 1.5f) {	// 충돌
-				m.second->onHit(player);
+				m.second->onHit(player, 100);
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 			}
 		}
@@ -106,7 +106,7 @@ void WarriorObject::release()
 {
 }
 
-void WarriorObject::onHit(const GameObjectBase& other)
+void WarriorObject::onHit(const GameObjectBase& other, int damage)
 {
 }
 
