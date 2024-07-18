@@ -46,6 +46,9 @@
     <Filter Include="GameObjectBase\MonsterObject\BoogieObject">
       <UniqueIdentifier>{48395de1-9f36-4732-a21a-757765cf2d4f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObjectBase\BossObject">
+      <UniqueIdentifier>{f4a7e871-a403-4f26-aa2e-8347f0afe63a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -102,6 +105,9 @@
     <ClCompile Include="BoogieObject.cpp">
       <Filter>GameObjectBase\MonsterObject\BoogieObject</Filter>
     </ClCompile>
+    <ClCompile Include="BossObject.cpp">
+      <Filter>GameObjectBase\BossObject</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Session.h">
@@ -157,6 +163,9 @@
     </ClInclude>
     <ClInclude Include="BoogieObject.h">
       <Filter>GameObjectBase\MonsterObject\BoogieObject</Filter>
+    </ClInclude>
+    <ClInclude Include="BossObject.h">
+      <Filter>GameObjectBase\BossObject</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
