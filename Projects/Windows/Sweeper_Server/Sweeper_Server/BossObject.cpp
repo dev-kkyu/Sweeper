@@ -3,6 +3,7 @@
 BossObject::BossObject(Room* parentRoom, int m_id)
 	: GameObjectBase{ parentRoom, m_id }
 {
+	hp = 100000;
 }
 
 BossObject::~BossObject()

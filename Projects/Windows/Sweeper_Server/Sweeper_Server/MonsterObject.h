@@ -17,8 +17,6 @@ protected:
 
 	int targetPlayer;
 
-	int hp;
-
 public:
 	MonsterObject(Room* parentRoom, int m_id);
 	virtual ~MonsterObject();
