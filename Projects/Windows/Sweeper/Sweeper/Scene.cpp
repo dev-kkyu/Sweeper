@@ -70,7 +70,6 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 	bossObject.setPosition({ 12.25f, 0.f, 115.f });
 	bossObject.setLook({ 0.f, 0.f, -1.f });
 	bossObject.setScale(glm::vec3{ 2.25f });
-	//bossObject.setAnimateSpeed(0.7f);
 
 	// 플레이어 선택 및 생성
 	{
@@ -637,6 +636,49 @@ void Scene::processPacket(unsigned char* packet)
 			<< state_str[static_cast<int>(p->state)] << "로 변경" << std::endl;
 		break;
 	}
+	case SC_MOVE_BOSS: {
+		auto p = reinterpret_cast<SC_MOVE_BOSS_PACKET*>(packet);
+		bossObject.setPosition(glm::vec3{ p->pos_x, 0.f, p->pos_z });
+		bossObject.setLook(glm::vec3{ p->dir_x, 0.f, p->dir_z });
+		break;
+	}
+	case SC_BOSS_STATE: {
+		auto p = reinterpret_cast<SC_BOSS_STATE_PACKET*>(packet);
+		switch (p->state) {
+		case BOSS_STATE::SLEEP:
+			bossObject.setAnimationClip(BOSS_CLIP_SLEEP);
+			break;
+		case BOSS_STATE::WAKEUP:
+			bossObject.setAnimationClip(BOSS_CLIP_WAKE_UP);
+			break;
+		case BOSS_STATE::IDLE:
+			bossObject.setAnimationClip(BOSS_CLIP_IDLE);
+			break;
+		case BOSS_STATE::MOVE:
+			bossObject.setAnimationClip(BOSS_CLIP_MOVE);
+			break;
+		case BOSS_STATE::LEFT_PUNCH:
+			bossObject.setAnimationClip(BOSS_CLIP_LEFT_PUNCH);
+			break;
+		case BOSS_STATE::RIGHT_PUNCH:
+			bossObject.setAnimationClip(BOSS_CLIP_RIGHT_PUNCH);
+			break;
+		case BOSS_STATE::PUNCH_DOWN:
+			bossObject.setAnimationClip(BOSS_CLIP_PUNCH_DOWN);
+			bossObject.setAnimateSpeed(0.7f);
+			break;
+		case BOSS_STATE::DIE:
+			bossObject.setAnimationClip(BOSS_CLIP_DIE);
+			break;
+		default:
+			std::cerr << "ERROR : INVALID BOSS STATE!" << std::endl;
+			break;
+		}
+		break;
+	}
+	default:
+		std::cerr << "ERROR : INVALID PACKET ON SCENE!" << std::endl;
+		break;
 	}
 }
 
