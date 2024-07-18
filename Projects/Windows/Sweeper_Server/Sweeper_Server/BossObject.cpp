@@ -218,6 +218,16 @@ void BossObject::initialize()
 
 bool BossObject::update(float elapsedTime)
 {
+	if (nextState) {
+		currentState->exit();
+		currentState = std::move(nextState);
+		currentState->enter();
+	}
+	currentState->update(elapsedTime);
+
+	if (dynamic_cast<BossMOVE*>(currentState.get())) {
+		return true;
+	}
 	return false;
 }
 
@@ -227,4 +237,44 @@ void BossObject::release()
 
 void BossObject::onHit(const GameObjectBase& other, int damage)
 {
+}
+
+void BossObject::changeSLEEPState()
+{
+	nextState = std::make_unique<BossSLEEP>(*this);
+}
+
+void BossObject::changeWAKEUPState()
+{
+	nextState = std::make_unique<BossWAKEUP>(*this);
+}
+
+void BossObject::changeIDLEState()
+{
+	nextState = std::make_unique<BossIDLE>(*this);
+}
+
+void BossObject::changeMOVEState()
+{
+	nextState = std::make_unique<BossMOVE>(*this);
+}
+
+void BossObject::changeLEFTPUNCHState()
+{
+	nextState = std::make_unique<BossLEFTPUNCH>(*this);
+}
+
+void BossObject::changeRIGHTPUNCHState()
+{
+	nextState = std::make_unique<BossRIGHTPUNCH>(*this);
+}
+
+void BossObject::changePUNCHDOWNState()
+{
+	nextState = std::make_unique<BossPUNCHDOWN>(*this);
+}
+
+void BossObject::changeDIEState()
+{
+	nextState = std::make_unique<BossDIE>(*this);
 }

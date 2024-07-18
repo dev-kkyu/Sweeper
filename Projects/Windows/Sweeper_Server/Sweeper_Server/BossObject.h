@@ -114,6 +114,9 @@ class BossObject : public GameObjectBase
 	friend class BossState;
 
 private:
+	// 상태 관리
+	std::unique_ptr<BossState> currentState;
+	std::unique_ptr<BossState> nextState;
 
 public:
 	BossObject(Room* parentRoom, int m_id);
@@ -123,6 +126,16 @@ public:
 	virtual bool update(float elapsedTime) override;
 	virtual void release() override;
 	virtual void onHit(const GameObjectBase& other, int damage) override;
+
+private:
+	virtual void changeSLEEPState() final;
+	virtual void changeWAKEUPState() final;
+	virtual void changeIDLEState() final;
+	virtual void changeMOVEState() final;
+	virtual void changeLEFTPUNCHState() final;
+	virtual void changeRIGHTPUNCHState() final;
+	virtual void changePUNCHDOWNState() final;
+	virtual void changeDIEState() final;
 
 };
 
