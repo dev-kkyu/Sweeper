@@ -117,16 +117,21 @@ void BossIDLE::update(float elapsedTime)
 	for (int i = 0; i < 4; ++i) {
 		std::shared_ptr<Session> session = boss.parentRoom->sessions[i].load();
 		if (Room::isValidSession(session)) {
-			auto myPos = boss.getPosition();
-			auto playerPos = session->player->getPosition();
+			BoundingBox boundingBox;
+			boundingBox.setBound(1.f, 0.1f, 125.f, 107.f, 3.f, 21.f);	// 보스 방의 사각형
+			// 보스 방에 있는 타겟만 검색한다
+			if (boundingBox.isCollide(session->player->getBoundingBox())) {
+				auto myPos = boss.getPosition();
+				auto playerPos = session->player->getPosition();
 
-			float dist2 = glm::pow(myPos.x - playerPos.x, 2.f) + glm::pow(myPos.z - playerPos.z, 2.f);
-			float targetDist2 = glm::pow(6.5f, 2.f);
+				float dist2 = glm::pow(myPos.x - playerPos.x, 2.f) + glm::pow(myPos.z - playerPos.z, 2.f);
+				float targetDist2 = glm::pow(6.5f, 2.f);
 
-			if (dist2 <= targetDist2) {		// 플레이어가 일정 거리 안이면
-				boss.targetPlayer = i;
-				boss.changeMOVEState();		// 타겟이 정해지고, MOVE 상태로 바뀐다
-				break;
+				if (dist2 <= targetDist2) {		// 플레이어가 일정 거리 안이면
+					boss.targetPlayer = i;
+					boss.changeMOVEState();		// 타겟이 정해지고, MOVE 상태로 바뀐다
+					break;
+				}
 			}
 		}
 	}
@@ -155,40 +160,52 @@ void BossMOVE::update(float elapsedTime)
 	if (boss.targetPlayer >= 0) {
 		std::shared_ptr<Session> session1 = boss.parentRoom->sessions[boss.targetPlayer].load();
 		if (Room::isValidSession(session1)) {
-			auto myPos1 = boss.getPosition();
-			auto playerPos1 = session1->player->getPosition();
-			auto dir = playerPos1 - myPos1;
-			auto dist = glm::length(dir);
-			if (dist >= glm::epsilon<float>()) {			// 정상적인 거리일 때
-				bool isMoveAble = true;
-				if (dist > 5.f) {	// 거리가 조금 멀 때 새로운 타겟이 존재하면 타겟을 변경한다
-					for (int i = 0; i < 4; ++i) {
-						if (i == boss.targetPlayer)
-							continue;
-						std::shared_ptr<Session> session2 = boss.parentRoom->sessions[i].load();
-						if (Room::isValidSession(session2)) {
-							auto myPos2 = boss.getPosition();
-							auto playerPos2 = session2->player->getPosition();
+			BoundingBox boundingBox;
+			boundingBox.setBound(1.f, 0.1f, 125.f, 107.f, 3.f, 21.f);	// 보스 방의 사각형
+			// 플레이어가 보스 방의 사각형 내에 있을때만 따라간다
+			if (boundingBox.isCollide(session1->player->getBoundingBox())) {
+				auto myPos1 = boss.getPosition();
+				auto playerPos1 = session1->player->getPosition();
+				auto dir = playerPos1 - myPos1;
+				auto dist = glm::length(dir);
+				if (dist >= glm::epsilon<float>()) {			// 정상적인 거리일 때
+					bool isMoveAble = true;
+					if (dist > 5.f) {	// 거리가 조금 멀 때 새로운 타겟이 존재하면 타겟을 변경한다
+						for (int i = 0; i < 4; ++i) {
+							if (i == boss.targetPlayer)
+								continue;
+							std::shared_ptr<Session> session2 = boss.parentRoom->sessions[i].load();
+							if (Room::isValidSession(session2)) {
+								// 보스 방에 있는 타겟만 검색한다
+								if (boundingBox.isCollide(session2->player->getBoundingBox())) {
+									auto myPos2 = boss.getPosition();
+									auto playerPos2 = session2->player->getPosition();
 
-							float dist2 = glm::pow(myPos2.x - playerPos2.x, 2.f) + glm::pow(myPos2.z - playerPos2.z, 2.f);
-							float targetDist2 = glm::pow(4.f, 2.f);
-							if (dist2 <= targetDist2) {		// 새 타겟이 일정 거리 안이면
-								boss.targetPlayer = i;		// 타겟을 변경해 준다
-								isMoveAble = false;
-								break;
+									float dist2 = glm::pow(myPos2.x - playerPos2.x, 2.f) + glm::pow(myPos2.z - playerPos2.z, 2.f);
+									float targetDist2 = glm::pow(4.f, 2.f);
+									if (dist2 <= targetDist2) {		// 새 타겟이 일정 거리 안이면
+										boss.targetPlayer = i;		// 타겟을 변경해 준다
+										isMoveAble = false;
+										break;
+									}
+								}
 							}
 						}
 					}
-				}
-				else if (boss.isCollide(*session1->player)) {	// 충돌이면 상태 변경
-					boss.changeLEFTorRIGHTState();
-					isMoveAble = false;
-				}
+					else if (boss.isCollide(*session1->player)) {	// 충돌이면 상태 변경
+						boss.changeLEFTorRIGHTState();
+						isMoveAble = false;
+					}
 
-				if (isMoveAble) {
-					boss.setLook(dir);
-					boss.moveForward(2.f * elapsedTime);		// 타겟을 향해 움직인다
+					if (isMoveAble) {
+						boss.setLook(dir);
+						boss.moveForward(2.f * elapsedTime);		// 타겟을 향해 움직인다
+					}
 				}
+			}
+			else {
+				boss.targetPlayer = -1;
+				boss.changeIDLEState();
 			}
 		}
 		else {
