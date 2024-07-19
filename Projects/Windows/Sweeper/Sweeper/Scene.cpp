@@ -673,11 +673,11 @@ void Scene::processPacket(unsigned char* packet)
 			break;
 		case BOSS_STATE::RIGHT_PUNCH:
 			bossObject.setAnimationClip(BOSS_CLIP_RIGHT_PUNCH);
-			bossObject.setAnimateSpeed(0.7f);
+			bossObject.setAnimateSpeed(0.6f);
 			break;
 		case BOSS_STATE::PUNCH_DOWN:
 			bossObject.setAnimationClip(BOSS_CLIP_PUNCH_DOWN);
-			bossObject.setAnimateSpeed(0.7f);
+			bossObject.setAnimateSpeed(0.55f);
 			break;
 		case BOSS_STATE::DIE:
 			bossObject.setAnimationClip(BOSS_CLIP_DIE);

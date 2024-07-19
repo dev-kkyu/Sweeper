@@ -195,7 +195,7 @@ void BossMOVE::update(float elapsedTime)
 						}
 					}
 					else if (boss.isCollide(*session1->player)) {	// 충돌이면 상태 변경
-						boss.changeLEFTorRIGHTState();
+						boss.changeAttackPattern();
 						isMoveAble = false;
 					}
 
@@ -249,7 +249,7 @@ void BossLEFTPUNCH::update(float elapsedTime)
 			std::shared_ptr<Session> session = boss.parentRoom->sessions[boss.targetPlayer].load();
 			if (Room::isValidSession(session)) {
 				if (boss.isCollide(*session->player)) {
-					boss.changeLEFTorRIGHTState();
+					boss.changeAttackPattern();
 				}
 				else {
 					boss.changeMOVEState();
@@ -289,12 +289,12 @@ void BossRIGHTPUNCH::update(float elapsedTime)
 {
 	stateAccumTime += elapsedTime;
 
-	if (stateAccumTime >= 2.8f) {
+	if (stateAccumTime >= 3.4f) {
 		if (boss.targetPlayer >= 0) {
 			std::shared_ptr<Session> session = boss.parentRoom->sessions[boss.targetPlayer].load();
 			if (Room::isValidSession(session)) {
 				if (boss.isCollide(*session->player)) {
-					boss.changeLEFTorRIGHTState();
+					boss.changeAttackPattern();
 				}
 				else {
 					boss.changeMOVEState();
@@ -321,6 +321,8 @@ BossPUNCHDOWN::BossPUNCHDOWN(BossObject& boss)
 	: BossState{ boss }
 {
 	state = BOSS_STATE::PUNCH_DOWN;
+
+	stateAccumTime = 0.f;
 }
 
 void BossPUNCHDOWN::enter()
@@ -330,6 +332,28 @@ void BossPUNCHDOWN::enter()
 
 void BossPUNCHDOWN::update(float elapsedTime)
 {
+	stateAccumTime += elapsedTime;
+
+	if (stateAccumTime >= 3.05f) {
+		if (boss.targetPlayer >= 0) {
+			std::shared_ptr<Session> session = boss.parentRoom->sessions[boss.targetPlayer].load();
+			if (Room::isValidSession(session)) {
+				if (boss.isCollide(*session->player)) {
+					boss.changeAttackPattern();
+				}
+				else {
+					boss.changeMOVEState();
+				}
+			}
+			else {
+				boss.changeIDLEState();
+			}
+		}
+		else {
+			boss.changeIDLEState();
+		}
+	}
+
 	BossState::update(elapsedTime);
 }
 
@@ -372,7 +396,7 @@ BossObject::BossObject(Room* parentRoom)
 
 	targetPlayer = -1;
 
-	stateFlag = false;
+	attackStateFlag = 0;
 }
 
 BossObject::~BossObject()
@@ -453,12 +477,26 @@ void BossObject::changeDIEState()
 	nextState = std::make_unique<BossDIE>(*this);
 }
 
-void BossObject::changeLEFTorRIGHTState()
+void BossObject::changeAttackPattern()
 {
-	if (stateFlag)
-		changeRIGHTPUNCHState();
-	else
+	switch (attackStateFlag)
+	{
+	case 0:
 		changeLEFTPUNCHState();
+		break;
+	case 1:
+		changeRIGHTPUNCHState();
+		break;
+	case 2:
+		changePUNCHDOWNState();
+		break;
+	}
 
-	stateFlag = not stateFlag;
+	if (hp <= 500) {
+		attackStateFlag = (attackStateFlag + 1) % 3;
+	}
+	else {
+		attackStateFlag = (attackStateFlag + 1) % 2;
+	}
+
 }
