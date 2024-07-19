@@ -69,6 +69,8 @@ public:
 
 class BossLEFTPUNCH : public BossState
 {
+	float stateAccumTime;
+
 public:
 	BossLEFTPUNCH(BossObject& boss);
 	virtual ~BossLEFTPUNCH() = default;
@@ -80,6 +82,8 @@ public:
 
 class BossRIGHTPUNCH : public BossState
 {
+	float stateAccumTime;
+
 public:
 	BossRIGHTPUNCH(BossObject& boss);
 	virtual ~BossRIGHTPUNCH() = default;
@@ -130,6 +134,8 @@ private:
 
 	int targetPlayer;
 
+	bool stateFlag;
+
 public:
 	BossObject(Room* parentRoom);
 	virtual ~BossObject();
@@ -150,6 +156,8 @@ private:
 	virtual void changeRIGHTPUNCHState() final;
 	virtual void changePUNCHDOWNState() final;
 	virtual void changeDIEState() final;
+
+	virtual void changeLEFTorRIGHTState() final;
 
 };
 

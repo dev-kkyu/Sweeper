@@ -160,7 +160,7 @@ void BossMOVE::update(float elapsedTime)
 			auto dir = playerPos1 - myPos1;
 			auto dist = glm::length(dir);
 			if (dist >= glm::epsilon<float>()) {			// 정상적인 거리일 때
-				bool isNewTarget = false;
+				bool isMoveAble = true;
 				if (dist > 5.f) {	// 거리가 조금 멀 때 새로운 타겟이 존재하면 타겟을 변경한다
 					for (int i = 0; i < 4; ++i) {
 						if (i == boss.targetPlayer)
@@ -174,13 +174,18 @@ void BossMOVE::update(float elapsedTime)
 							float targetDist2 = glm::pow(4.f, 2.f);
 							if (dist2 <= targetDist2) {		// 새 타겟이 일정 거리 안이면
 								boss.targetPlayer = i;		// 타겟을 변경해 준다
-								isNewTarget = true;
+								isMoveAble = false;
 								break;
 							}
 						}
 					}
 				}
-				if (not isNewTarget) {
+				else if (boss.isCollide(*session1->player)) {	// 충돌이면 상태 변경
+					boss.changeLEFTorRIGHTState();
+					isMoveAble = false;
+				}
+
+				if (isMoveAble) {
 					boss.setLook(dir);
 					boss.moveForward(2.f * elapsedTime);		// 타겟을 향해 움직인다
 				}
@@ -207,6 +212,8 @@ BossLEFTPUNCH::BossLEFTPUNCH(BossObject& boss)
 	: BossState{ boss }
 {
 	state = BOSS_STATE::LEFT_PUNCH;
+
+	stateAccumTime = 0.f;
 }
 
 void BossLEFTPUNCH::enter()
@@ -216,6 +223,28 @@ void BossLEFTPUNCH::enter()
 
 void BossLEFTPUNCH::update(float elapsedTime)
 {
+	stateAccumTime += elapsedTime;
+
+	if (stateAccumTime >= 2.8f) {
+		if (boss.targetPlayer >= 0) {
+			std::shared_ptr<Session> session = boss.parentRoom->sessions[boss.targetPlayer].load();
+			if (Room::isValidSession(session)) {
+				if (boss.isCollide(*session->player)) {
+					boss.changeLEFTorRIGHTState();
+				}
+				else {
+					boss.changeMOVEState();
+				}
+			}
+			else {
+				boss.changeIDLEState();
+			}
+		}
+		else {
+			boss.changeIDLEState();
+		}
+	}
+
 	BossState::update(elapsedTime);
 }
 
@@ -228,6 +257,8 @@ BossRIGHTPUNCH::BossRIGHTPUNCH(BossObject& boss)
 	: BossState{ boss }
 {
 	state = BOSS_STATE::RIGHT_PUNCH;
+
+	stateAccumTime = 0.f;
 }
 
 void BossRIGHTPUNCH::enter()
@@ -237,6 +268,28 @@ void BossRIGHTPUNCH::enter()
 
 void BossRIGHTPUNCH::update(float elapsedTime)
 {
+	stateAccumTime += elapsedTime;
+
+	if (stateAccumTime >= 2.8f) {
+		if (boss.targetPlayer >= 0) {
+			std::shared_ptr<Session> session = boss.parentRoom->sessions[boss.targetPlayer].load();
+			if (Room::isValidSession(session)) {
+				if (boss.isCollide(*session->player)) {
+					boss.changeLEFTorRIGHTState();
+				}
+				else {
+					boss.changeMOVEState();
+				}
+			}
+			else {
+				boss.changeIDLEState();
+			}
+		}
+		else {
+			boss.changeIDLEState();
+		}
+	}
+
 	BossState::update(elapsedTime);
 }
 
@@ -293,11 +346,14 @@ BossObject::BossObject(Room* parentRoom)
 	setPosition({ 12.25f, 0.f, 115.f });	// 클라와 동기화 해야 함
 	setLook(glm::vec3{ 0.f, 0.f, -1.f });
 
+	collisionRadius = 1.75f;
 	hp = 100000;
 
 	currentState = std::make_unique<BossSLEEP>(*this);
 
 	targetPlayer = -1;
+
+	stateFlag = false;
 }
 
 BossObject::~BossObject()
@@ -374,4 +430,14 @@ void BossObject::changePUNCHDOWNState()
 void BossObject::changeDIEState()
 {
 	nextState = std::make_unique<BossDIE>(*this);
+}
+
+void BossObject::changeLEFTorRIGHTState()
+{
+	if (stateFlag)
+		changeRIGHTPUNCHState();
+	else
+		changeLEFTPUNCHState();
+
+	stateFlag = not stateFlag;
 }
