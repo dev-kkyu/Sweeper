@@ -28,6 +28,8 @@ void WarriorATTACKState::update(float elapsedTime)
 		// 충돌검사
 		auto myPos = player.getPosition();
 		myPos += player.getLook();	// 칼 범위를 플레이어 앞쪽으로 세팅해준다.
+
+		// 몬스터와 충돌 검사
 		for (auto& m : player.parentRoom->monsters) {
 			if (0 != attackedObject.count(m.second.get()))		// 이미 이전에 공격을 했으면 넘어간다
 				continue;
@@ -39,6 +41,17 @@ void WarriorATTACKState::update(float elapsedTime)
 				m.second->onHit(player, 100);
 				attackedObject.insert(m.second.get());			// 한번만 공격이 들어가도록 한다
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
+			}
+		}
+		// 보스와 충돌 검사
+		if (0 == attackedObject.count(player.parentRoom->boss.get())) {	// 이전에 공격이 없었어야 한다
+			auto monPos = player.parentRoom->boss->getPosition();
+
+			float dist2 = (myPos.x - monPos.x) * (myPos.x - monPos.x) + (myPos.z - monPos.z) * (myPos.z - monPos.z);
+			float targetDist2 = glm::pow(player.parentRoom->boss->getCollisionRadius(), 2.f);
+			if (dist2 <= targetDist2) {	// 충돌
+				player.parentRoom->boss->onHit(player, 100);
+				attackedObject.insert(player.parentRoom->boss.get());			// 한번만 공격이 들어가도록 한다
 			}
 		}
 	}
@@ -75,6 +88,8 @@ void WarriorSKILLState::update(float elapsedTime)
 		// 충돌검사
 		auto myPos = player.getPosition();
 		myPos += player.getLook();	// 칼 범위를 플레이어 앞쪽으로 세팅해준다.
+
+		// 몬스터와 충돌 검사
 		for (auto& m : player.parentRoom->monsters) {
 			if (0 != attackedObject.count(m.second.get()))		// 이미 이전에 공격을 했으면 넘어간다
 				continue;
@@ -86,6 +101,17 @@ void WarriorSKILLState::update(float elapsedTime)
 				m.second->onHit(player, 100);
 				attackedObject.insert(m.second.get());			// 한번만 공격이 들어가도록 한다
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
+			}
+		}
+		// 보스와 충돌 검사
+		if (0 == attackedObject.count(player.parentRoom->boss.get())) {	// 이전에 공격이 없었어야 한다
+			auto monPos = player.parentRoom->boss->getPosition();
+
+			float dist2 = (myPos.x - monPos.x) * (myPos.x - monPos.x) + (myPos.z - monPos.z) * (myPos.z - monPos.z);
+			float targetDist2 = glm::pow(player.parentRoom->boss->getCollisionRadius(), 2.f);
+			if (dist2 <= targetDist2) {	// 충돌
+				player.parentRoom->boss->onHit(player, 100);
+				attackedObject.insert(player.parentRoom->boss.get());			// 한번만 공격이 들어가도록 한다
 			}
 		}
 	}

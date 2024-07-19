@@ -152,6 +152,14 @@ bool ArchorObject::update(float elapsedTime)
 						removeArrowList.push_back(arr.first);
 					}
 				}
+				{	// 화살과 보스의 충돌 검사
+					BoundingBox arrBox;
+					arrBox.setBound(1.f, 0.1f, arr.second.pos.z + 0.5f, arr.second.pos.z - 0.5f, arr.second.pos.x - 0.5f, arr.second.pos.x + 0.5f);
+					if (arrBox.isCollide(parentRoom->boss->getBoundingBox())) {
+						parentRoom->boss->onHit(*this, 100);
+						removeArrowList.push_back(arr.first);
+					}
+				}
 				// 모든 플레이어에게 화살의 새 위치 업데이트
 				SC_MOVE_ARROW_PACKET p;
 				p.size = sizeof(p);
@@ -189,6 +197,7 @@ bool ArchorObject::update(float elapsedTime)
 				// 이동
 				aEffect.pos += aEffect.dir * 12.f * elapsedTime;		// 클라와 같은 값
 				// 충돌검사
+				// 몬스터와 충돌 검사
 				for (auto& m : parentRoom->monsters) {
 					if (0 != aEffect.attackedObject.count(m.second.get()))		// 이미 이전에 공격을 했으면 넘어간다
 						continue;
@@ -198,6 +207,15 @@ bool ArchorObject::update(float elapsedTime)
 						m.second->onHit(*this, 100);					// 충돌이면 알려주기
 						aEffect.attackedObject.insert(m.second.get());			// 한번만 공격이 들어가도록 한다
 						std::cout << m.first << ": 몬스터 공격받음" << std::endl;
+					}
+				}
+				// 보스와 충돌 검사
+				if (0 == aEffect.attackedObject.count(parentRoom->boss.get())) {	// 이전에 공격이 없었어야 한다
+					BoundingBox boundingBox;
+					boundingBox.setBound(1.f, 0.1f, aEffect.pos.z + 0.5f, aEffect.pos.z - 0.5f, aEffect.pos.x - 0.5f, aEffect.pos.x + 0.5f);
+					if (boundingBox.isCollide(parentRoom->boss->getBoundingBox())) {
+						parentRoom->boss->onHit(*this, 100);					// 충돌이면 알려주기
+						aEffect.attackedObject.insert(parentRoom->boss.get());			// 한번만 공격이 들어가도록 한다
 					}
 				}
 			}

@@ -4,6 +4,8 @@
 #include "Session.h"
 #include "PlayerObject.h"
 
+#include <iostream>
+
 BossState::BossState(BossObject& boss)
 	: boss{ boss }
 {
@@ -364,7 +366,7 @@ BossObject::BossObject(Room* parentRoom)
 	setLook(glm::vec3{ 0.f, 0.f, -1.f });
 
 	collisionRadius = 1.75f;
-	hp = 100000;
+	hp = 1000;
 
 	currentState = std::make_unique<BossSLEEP>(*this);
 
@@ -402,6 +404,8 @@ void BossObject::release()
 
 void BossObject::onHit(const GameObjectBase& other, int damage)
 {
+	hp -= damage;
+	std::cout << "보스가 [" << damage << "]의 피해를 입어 현재 체력 [" << hp << "]" << std::endl;
 }
 
 BOSS_STATE BossObject::getBossState() const

@@ -29,6 +29,8 @@ void MageATTACKState::update(float elapsedTime)
 		auto myPos = player.getPosition();
 		myPos += player.getLook() * 3.f;	// 마법 공격 중앙
 		myPos.y = 0.f;
+
+		// 몬스터와 충돌 검사
 		for (auto& m : player.parentRoom->monsters) {
 			if (0 != attackedObject.count(m.second.get()))		// 이미 이전에 공격을 했으면 넘어간다
 				continue;
@@ -41,6 +43,18 @@ void MageATTACKState::update(float elapsedTime)
 				m.second->onHit(player, 100);
 				attackedObject.insert(m.second.get());			// 한번만 공격이 들어가도록 한다
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
+			}
+		}
+		// 보스와 충돌 검사
+		if (0 == attackedObject.count(player.parentRoom->boss.get())) {	// 이전에 공격이 없었어야 한다
+			auto monPos = player.parentRoom->boss->getPosition();
+			monPos.y = 0.f;
+
+			float dist = glm::length(myPos - monPos);
+			float targetDist = 1.f + player.parentRoom->boss->getCollisionRadius();	// 마법 공격의 반지름 : 1.f
+			if (dist <= targetDist) {	// 충돌
+				player.parentRoom->boss->onHit(player, 100);
+				attackedObject.insert(player.parentRoom->boss.get());			// 한번만 공격이 들어가도록 한다
 			}
 		}
 	}
@@ -78,6 +92,8 @@ void MageSKILLState::update(float elapsedTime)
 		auto myPos = player.getPosition();
 		myPos += player.getLook() * 3.f;	// 마법 공격 중앙
 		myPos.y = 0.f;
+
+		// 몬스터와 충돌 검사
 		for (auto& m : player.parentRoom->monsters) {
 			if (0 != attackedObject.count(m.second.get()))		// 이미 이전에 공격을 했으면 넘어간다
 				continue;
@@ -90,6 +106,18 @@ void MageSKILLState::update(float elapsedTime)
 				m.second->onHit(player, 100);
 				attackedObject.insert(m.second.get());			// 한번만 공격이 들어가도록 한다
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
+			}
+		}
+		// 보스와 충돌 검사
+		if (0 == attackedObject.count(player.parentRoom->boss.get())) {	// 이전에 공격이 없었어야 한다
+			auto monPos = player.parentRoom->boss->getPosition();
+			monPos.y = 0.f;
+
+			float dist = glm::length(myPos - monPos);
+			float targetDist = 1.5f + player.parentRoom->boss->getCollisionRadius();	// 마법 스킬 공격의 반지름 : 1.5f
+			if (dist <= targetDist) {	// 충돌
+				player.parentRoom->boss->onHit(player, 100);
+				attackedObject.insert(player.parentRoom->boss.get());			// 한번만 공격이 들어가도록 한다
 			}
 		}
 	}
