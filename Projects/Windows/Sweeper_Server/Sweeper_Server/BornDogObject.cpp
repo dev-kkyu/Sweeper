@@ -8,6 +8,8 @@ BornDogObject::BornDogObject(Room* parentRoom, int m_id)
 	hitDelayTime_ms = 1200;
 
 	collisionRadius = 1.375f;
+
+	maxHP = HP = MAX_HP_MONSTER_BORNDOG;
 }
 
 BornDogObject::~BornDogObject()

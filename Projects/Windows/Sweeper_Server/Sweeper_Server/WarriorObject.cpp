@@ -127,6 +127,7 @@ void WarriorSKILLState::exit()
 WarriorObject::WarriorObject(Room* parentRoom, int p_id)
 	: PlayerObject{ parentRoom, p_id }
 {
+	maxHP = HP = MAX_HP_PLAYER_WARRIOR;
 }
 
 void WarriorObject::initialize()

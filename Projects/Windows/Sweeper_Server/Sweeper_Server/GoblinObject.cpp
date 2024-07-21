@@ -8,6 +8,8 @@ GoblinObject::GoblinObject(Room* parentRoom, int m_id)
 	hitDelayTime_ms = 1550;
 
 	collisionRadius = 0.4f;
+
+	maxHP = HP = MAX_HP_MONSTER_GOBLIN;
 }
 
 GoblinObject::~GoblinObject()

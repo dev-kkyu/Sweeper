@@ -133,6 +133,7 @@ void MageSKILLState::exit()
 MageObject::MageObject(Room* parentRoom, int p_id)
 	: PlayerObject{ parentRoom, p_id }
 {
+	maxHP = HP = MAX_HP_PLAYER_MAGE;
 }
 
 void MageObject::initialize()

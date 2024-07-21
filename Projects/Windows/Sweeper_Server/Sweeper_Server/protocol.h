@@ -11,22 +11,35 @@ constexpr char SC_ADD_PLAYER = 4;
 constexpr char SC_MOVE_PLAYER = 5;
 constexpr char SC_PLAYER_LOOK = 6;
 constexpr char SC_PLAYER_STATE = 7;
-constexpr char SC_ADD_ARROW = 8;
-constexpr char SC_MOVE_ARROW = 9;
-constexpr char SC_REMOVE_ARROW = 10;
-constexpr char SC_CLIENT_KEY_EVENT = 11;
-constexpr char SC_ADD_MONSTER = 12;
-constexpr char SC_MOVE_MONSTER = 13;
-constexpr char SC_MONSTER_LOOK = 14;
-constexpr char SC_REMOVE_MONSTER = 15;
-constexpr char SC_MONSTER_STATE = 16;
-constexpr char SC_MOVE_BOSS = 17;
-constexpr char SC_BOSS_STATE = 18;
+constexpr char SC_PLAYER_HP = 8;
+constexpr char SC_ADD_ARROW = 9;
+constexpr char SC_MOVE_ARROW = 10;
+constexpr char SC_REMOVE_ARROW = 11;
+constexpr char SC_CLIENT_KEY_EVENT = 12;
+constexpr char SC_ADD_MONSTER = 13;
+constexpr char SC_MOVE_MONSTER = 14;
+constexpr char SC_MONSTER_LOOK = 15;
+constexpr char SC_REMOVE_MONSTER = 16;
+constexpr char SC_MONSTER_STATE = 17;
+constexpr char SC_MONSTER_HP = 18;
+constexpr char SC_MOVE_BOSS = 19;
+constexpr char SC_BOSS_STATE = 20;
+constexpr char SC_BOSS_HP = 21;
 
 constexpr char CS_LOGIN = 1;
 constexpr char CS_KEY_EVENT = 2;
 
 constexpr float PLAYER_SPEED = 5.f;
+
+constexpr short MAX_HP_PLAYER_WARRIOR = 1000;
+constexpr short MAX_HP_PLAYER_ARCHER = 1000;
+constexpr short MAX_HP_PLAYER_MAGE = 1000;
+constexpr short MAX_HP_PLAYER_HEALER = 1000;
+constexpr short MAX_HP_MONSTER_MUSHROOM = 100;
+constexpr short MAX_HP_MONSTER_BORNDOG = 100;
+constexpr short MAX_HP_MONSTER_GOBLIN = 100;
+constexpr short MAX_HP_MONSTER_BOOGIE = 100;
+constexpr short MAX_HP_BOSS = 10000;
 
 #define KEY_UP			0x01
 #define KEY_DOWN		0x02
@@ -116,6 +129,7 @@ struct SC_ADD_PLAYER_PACKET
 	char type;
 	char player_id;
 	PLAYER_TYPE player_type;
+	short hp;			// 플레이어의 현재 HP
 	float pos_x;		// 현재 플레이어 위치
 	float pos_z;
 	float dir_x;		// 현재 보고있는 방향
@@ -149,6 +163,14 @@ struct SC_PLAYER_STATE_PACKET
 	char type;
 	char player_id;
 	PLAYER_STATE state;
+};
+
+struct SC_PLAYER_HP_PACKET
+{
+	unsigned char size;
+	char type;
+	char player_id;
+	short hp;
 };
 
 struct SC_ADD_ARROW_PACKET
@@ -193,6 +215,7 @@ struct SC_ADD_MONSTER_PACKET
 	char type;
 	char monster_id;
 	MONSTER_TYPE monster_type;
+	short hp;
 	float pos_x;		// 몬스터 위치
 	float pos_z;
 	float dir_x;		// 현재 보고있는 방향
@@ -234,6 +257,14 @@ struct SC_MONSTER_STATE_PACKET
 	MONSTER_STATE state;
 };
 
+struct SC_MONSTER_HP_PACKET
+{
+	unsigned char size;
+	char type;
+	char monster_id;
+	short hp;
+};
+
 struct SC_MOVE_BOSS_PACKET
 {
 	unsigned char size;
@@ -249,6 +280,13 @@ struct SC_BOSS_STATE_PACKET
 	unsigned char size;
 	char type;
 	BOSS_STATE state;
+};
+
+struct SC_BOSS_HP_PACKET
+{
+	unsigned char size;
+	char type;
+	short hp;
 };
 
 struct CS_LOGIN_PACKET

@@ -116,6 +116,16 @@ void GLTFSkinModelObject::drawBoundingBox(VkCommandBuffer commandBuffer, VkPipel
 	getBoundingBox().draw(commandBuffer, pipelineLayout);
 }
 
+void GLTFSkinModelObject::setHP(short HP)
+{
+	this->HP = HP;
+}
+
+void GLTFSkinModelObject::setMaxHP(short maxHP)
+{
+	this->maxHP = maxHP;
+}
+
 std::shared_ptr<Node> GLTFSkinModelObject::findNode(const std::shared_ptr<Node>& parent, uint32_t index) const
 {
 	std::shared_ptr<Node> nodeFound = nullptr;

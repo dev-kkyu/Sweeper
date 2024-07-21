@@ -390,7 +390,8 @@ BossObject::BossObject(Room* parentRoom)
 	setLook(glm::vec3{ 0.f, 0.f, -1.f });
 
 	collisionRadius = 1.75f;
-	hp = 1000;
+
+	maxHP = HP = MAX_HP_BOSS;
 
 	currentState = std::make_unique<BossSLEEP>(*this);
 
@@ -428,8 +429,8 @@ void BossObject::release()
 
 void BossObject::onHit(const GameObjectBase& other, int damage)
 {
-	hp -= damage;
-	std::cout << "보스가 [" << damage << "]의 피해를 입어 현재 체력 [" << hp << "]" << std::endl;
+	HP -= damage;
+	std::cout << "보스가 [" << damage << "]의 피해를 입어 현재 체력 [" << HP << "]" << std::endl;
 }
 
 BOSS_STATE BossObject::getBossState() const
@@ -492,7 +493,7 @@ void BossObject::changeAttackPattern()
 		break;
 	}
 
-	if (hp <= 500) {
+	if (HP <= 500) {
 		attackStateFlag = (attackStateFlag + 1) % 3;
 	}
 	else {

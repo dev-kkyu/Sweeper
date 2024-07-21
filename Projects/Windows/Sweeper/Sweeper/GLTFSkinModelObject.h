@@ -25,6 +25,9 @@ protected:
 	// 충돌 반지름 (기본 0.5f)
 	float collisionRadius = 0.5f;
 
+	short HP = 100;
+	short maxHP = 100;
+
 public:
 	GLTFSkinModelObject();
 	virtual ~GLTFSkinModelObject();
@@ -46,6 +49,9 @@ public:
 	virtual float getCollisionRadius() const final;
 	BoundingBox getBoundingBox() const;
 	void drawBoundingBox(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const;
+
+	void setHP(short HP);
+	void setMaxHP(short maxHP);
 
 private:
 	std::shared_ptr<Node>	findNode(const std::shared_ptr<Node>& parent, uint32_t index) const;

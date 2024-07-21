@@ -6,7 +6,6 @@
 GameObjectBase::GameObjectBase(Room* parentRoom, int o_id)
 	: parentRoom{ parentRoom }, my_id{ o_id }
 {
-	hp = 0;
 }
 
 GameObjectBase::~GameObjectBase()

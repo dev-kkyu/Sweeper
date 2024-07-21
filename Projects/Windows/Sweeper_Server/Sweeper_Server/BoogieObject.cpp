@@ -8,6 +8,8 @@ BoogieObject::BoogieObject(Room* parentRoom, int m_id)
 	hitDelayTime_ms = 1100;
 
 	collisionRadius = 0.4f;
+
+	maxHP = HP = MAX_HP_MONSTER_BOOGIE;
 }
 
 BoogieObject::~BoogieObject()

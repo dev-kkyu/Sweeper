@@ -20,7 +20,8 @@ protected:
 	// 충돌 반지름 (기본 0.5f)
 	float collisionRadius = 0.5f;
 	// 모든 오브젝트(플레이어, 몬스터)는 체력을 가진다
-	int hp;
+	short HP = 100;
+	short maxHP = 100;
 
 public:
 	GameObjectBase(Room* parentRoom, int o_id);

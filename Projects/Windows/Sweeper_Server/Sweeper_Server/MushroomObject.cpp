@@ -8,6 +8,8 @@ MushroomObject::MushroomObject(Room* parentRoom, int m_id)
 	hitDelayTime_ms = 1300;
 
 	collisionRadius = 0.4f;
+
+	maxHP = HP = MAX_HP_MONSTER_MUSHROOM;
 }
 
 MushroomObject::~MushroomObject()

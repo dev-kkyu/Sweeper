@@ -112,6 +112,7 @@ void HealerSKILLState::exit()
 HealerObject::HealerObject(Room* parentRoom, int p_id)
 	: PlayerObject{ parentRoom, p_id }
 {
+	maxHP = HP = MAX_HP_PLAYER_HEALER;
 }
 
 void HealerObject::initialize()
