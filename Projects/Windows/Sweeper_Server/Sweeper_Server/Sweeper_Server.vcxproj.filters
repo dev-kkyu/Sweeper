@@ -25,9 +25,6 @@
     <Filter Include="GameObjectBase\PlayerObject\WarriorObject">
       <UniqueIdentifier>{f67dabbb-4ae2-4f89-ad35-228239897d08}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameObjectBase\PlayerObject\ArchorObject">
-      <UniqueIdentifier>{37b9a53b-27b7-4dfa-85a9-57643fa28377}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GameObjectBase\PlayerObject\MageObject">
       <UniqueIdentifier>{0afe12df-6db2-40f2-9774-40bf9231461b}</UniqueIdentifier>
     </Filter>
@@ -48,6 +45,9 @@
     </Filter>
     <Filter Include="GameObjectBase\BossObject">
       <UniqueIdentifier>{f4a7e871-a403-4f26-aa2e-8347f0afe63a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\PlayerObject\ArcherObject">
+      <UniqueIdentifier>{37b9a53b-27b7-4dfa-85a9-57643fa28377}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -84,8 +84,8 @@
     <ClCompile Include="WarriorObject.cpp">
       <Filter>GameObjectBase\PlayerObject\WarriorObject</Filter>
     </ClCompile>
-    <ClCompile Include="ArchorObject.cpp">
-      <Filter>GameObjectBase\PlayerObject\ArchorObject</Filter>
+    <ClCompile Include="ArcherObject.cpp">
+      <Filter>GameObjectBase\PlayerObject\ArcherObject</Filter>
     </ClCompile>
     <ClCompile Include="MageObject.cpp">
       <Filter>GameObjectBase\PlayerObject\MageObject</Filter>
@@ -143,8 +143,8 @@
     <ClInclude Include="WarriorObject.h">
       <Filter>GameObjectBase\PlayerObject\WarriorObject</Filter>
     </ClInclude>
-    <ClInclude Include="ArchorObject.h">
-      <Filter>GameObjectBase\PlayerObject\ArchorObject</Filter>
+    <ClInclude Include="ArcherObject.h">
+      <Filter>GameObjectBase\PlayerObject\ArcherObject</Filter>
     </ClInclude>
     <ClInclude Include="MageObject.h">
       <Filter>GameObjectBase\PlayerObject\MageObject</Filter>

@@ -1,4 +1,4 @@
-#include "ArchorObject.h"
+#include "ArcherObject.h"
 
 #include "Room.h"
 #include "Session.h"
@@ -6,13 +6,13 @@
 #include <iostream>
 #include <list>
 
-ArchorATTACKState::ArchorATTACKState(PlayerObject& player)
+ArcherATTACKState::ArcherATTACKState(PlayerObject& player)
 	: StateMachine{ player }
 {
 	state = PLAYER_STATE::ATTACK;
 }
 
-void ArchorATTACKState::enter()
+void ArcherATTACKState::enter()
 {
 	stateBeginTime = std::chrono::steady_clock::now();
 
@@ -20,8 +20,8 @@ void ArchorATTACKState::enter()
 		auto pos = player.getPosition();
 		auto dir = player.getLook();
 
-		int newID = dynamic_cast<ArchorObject*>(&player)->arrowID++;
-		dynamic_cast<ArchorObject*>(&player)->arrowObjects.try_emplace(newID, pos, dir);
+		int newID = dynamic_cast<ArcherObject*>(&player)->arrowID++;
+		dynamic_cast<ArcherObject*>(&player)->arrowObjects.try_emplace(newID, pos, dir);
 
 		SC_ADD_ARROW_PACKET p;
 		p.size = sizeof(p);
@@ -41,7 +41,7 @@ void ArchorATTACKState::enter()
 	StateMachine::enter();
 }
 
-void ArchorATTACKState::update(float elapsedTime)
+void ArcherATTACKState::update(float elapsedTime)
 {
 	auto now_time = std::chrono::steady_clock::now();
 	if (now_time > stateBeginTime + std::chrono::milliseconds{ 560 }) {
@@ -52,27 +52,27 @@ void ArchorATTACKState::update(float elapsedTime)
 	StateMachine::update(elapsedTime);
 }
 
-void ArchorATTACKState::exit()
+void ArcherATTACKState::exit()
 {
 	StateMachine::exit();
 }
 
-ArchorSKILLState::ArchorSKILLState(PlayerObject& player)
+ArcherSKILLState::ArcherSKILLState(PlayerObject& player)
 	: StateMachine{ player }
 {
 	state = PLAYER_STATE::SKILL;
 }
 
-void ArchorSKILLState::enter()
+void ArcherSKILLState::enter()
 {
 	stateBeginTime = std::chrono::steady_clock::now();
 
-	dynamic_cast<ArchorObject*>(&player)->archorEffects.push_back(ArchorObject::ArchorEffect{ player.getPosition(), player.getLook(), -0.375f });
+	dynamic_cast<ArcherObject*>(&player)->archerEffects.push_back(ArcherObject::ArcherEffect{ player.getPosition(), player.getLook(), -0.375f });
 
 	StateMachine::enter();
 }
 
-void ArchorSKILLState::update(float elapsedTime)
+void ArcherSKILLState::update(float elapsedTime)
 {
 	auto now_time = std::chrono::steady_clock::now();
 	if (now_time > stateBeginTime + std::chrono::milliseconds{ 560 }) {
@@ -83,32 +83,32 @@ void ArchorSKILLState::update(float elapsedTime)
 	StateMachine::update(elapsedTime);
 }
 
-void ArchorSKILLState::exit()
+void ArcherSKILLState::exit()
 {
 	StateMachine::exit();
 }
 
-ArchorObject::Arrow::Arrow()
+ArcherObject::Arrow::Arrow()
 {
 	std::cerr << "호출되면 안됨!" << std::endl;
 	exit(-1);
 }
 
-ArchorObject::Arrow::Arrow(glm::vec3 pos, glm::vec3 dir)
+ArcherObject::Arrow::Arrow(glm::vec3 pos, glm::vec3 dir)
 	: pos{ pos }, dir{ dir }
 {
 	spawnTime = std::chrono::steady_clock::now();
 }
 
 // static 변수 (화살은 클라 입장에서 하나의 자료구조로 간주된다)
-int ArchorObject::arrowID;
+int ArcherObject::arrowID;
 
-ArchorObject::ArchorObject(Room* parentRoom, int p_id)
+ArcherObject::ArcherObject(Room* parentRoom, int p_id)
 	: PlayerObject{ parentRoom, p_id }
 {
 }
 
-ArchorObject::~ArchorObject()
+ArcherObject::~ArcherObject()
 {
 	// 궁수가 소멸될 때는 화살도 같이 소멸된다
 	for (auto& arr : arrowObjects) {
@@ -124,11 +124,11 @@ ArchorObject::~ArchorObject()
 	}
 }
 
-void ArchorObject::initialize()
+void ArcherObject::initialize()
 {
 }
 
-bool ArchorObject::update(float elapsedTime)
+bool ArcherObject::update(float elapsedTime)
 {
 	// 화살 관련 업데이트
 	{
@@ -191,7 +191,7 @@ bool ArchorObject::update(float elapsedTime)
 	// 스킬 관련 업데이트
 	{
 		// 업데이트
-		for (auto& aEffect : archorEffects) {
+		for (auto& aEffect : archerEffects) {
 			aEffect.accumTime += elapsedTime;
 			if (aEffect.accumTime > 0.f) {
 				// 이동
@@ -221,33 +221,33 @@ bool ArchorObject::update(float elapsedTime)
 			}
 		}
 		// 제거
-		std::list<std::vector<ArchorObject::ArchorEffect>::iterator> deleteEffects;
-		for (auto itr = archorEffects.begin(); itr != archorEffects.end(); ++itr) {
+		std::list<std::vector<ArcherObject::ArcherEffect>::iterator> deleteEffects;
+		for (auto itr = archerEffects.begin(); itr != archerEffects.end(); ++itr) {
 			if (itr->accumTime >= 0.625f)		// 시간 경과시
 				deleteEffects.emplace_back(itr);
 		}
 		for (const auto& itr : deleteEffects) {
-			archorEffects.erase(itr);
+			archerEffects.erase(itr);
 		}
 	}
 
 	return PlayerObject::update(elapsedTime);
 }
 
-void ArchorObject::release()
+void ArcherObject::release()
 {
 }
 
-void ArchorObject::onHit(const GameObjectBase& other, int damage)
+void ArcherObject::onHit(const GameObjectBase& other, int damage)
 {
 }
 
-void ArchorObject::changeATTACKState()
+void ArcherObject::changeATTACKState()
 {
-	nextState = std::make_unique<ArchorATTACKState>(*this);
+	nextState = std::make_unique<ArcherATTACKState>(*this);
 }
 
-void ArchorObject::changeSKILLState()
+void ArcherObject::changeSKILLState()
 {
-	nextState = std::make_unique<ArchorSKILLState>(*this);
+	nextState = std::make_unique<ArcherSKILLState>(*this);
 }

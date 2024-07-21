@@ -40,9 +40,6 @@
     <Filter Include="GameObjectBase\GLTFSkinModelObject\PlayerObject\WarriorObject">
       <UniqueIdentifier>{70f98b72-839b-41aa-950b-8eb73329cf6b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameObjectBase\GLTFSkinModelObject\PlayerObject\ArchorObject">
-      <UniqueIdentifier>{0e7f9c92-510d-4cd1-b5ed-016c342fa202}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GameObjectBase\GLTFSkinModelObject\PlayerObject\MageObject">
       <UniqueIdentifier>{1da9819d-791f-45af-8c97-a896d65118d9}</UniqueIdentifier>
     </Filter>
@@ -54,6 +51,9 @@
     </Filter>
     <Filter Include="GameObjectBase\GLTFSkinModelObject\BossObject">
       <UniqueIdentifier>{55f64b66-7db0-4081-8d22-a83fed17d865}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectBase\GLTFSkinModelObject\PlayerObject\ArcherObject">
+      <UniqueIdentifier>{0e7f9c92-510d-4cd1-b5ed-016c342fa202}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -108,8 +108,8 @@
     <ClCompile Include="WarriorObject.cpp">
       <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject\WarriorObject</Filter>
     </ClCompile>
-    <ClCompile Include="ArchorObject.cpp">
-      <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject\ArchorObject</Filter>
+    <ClCompile Include="ArcherObject.cpp">
+      <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject\ArcherObject</Filter>
     </ClCompile>
     <ClCompile Include="MageObject.cpp">
       <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject\MageObject</Filter>
@@ -173,8 +173,8 @@
     <ClInclude Include="WarriorObject.h">
       <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject\WarriorObject</Filter>
     </ClInclude>
-    <ClInclude Include="ArchorObject.h">
-      <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject\ArchorObject</Filter>
+    <ClInclude Include="ArcherObject.h">
+      <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject\ArcherObject</Filter>
     </ClInclude>
     <ClInclude Include="MageObject.h">
       <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject\MageObject</Filter>
@@ -235,10 +235,10 @@
     <None Include="shaders\arroweffect.vert">
       <Filter>소스 파일\Shader</Filter>
     </None>
-    <None Include="shaders\archorskill.vert">
+    <None Include="shaders\archerskill.vert">
       <Filter>소스 파일\Shader</Filter>
     </None>
-    <None Include="shaders\archorskill.frag">
+    <None Include="shaders\archerskill.frag">
       <Filter>소스 파일\Shader</Filter>
     </None>
     <None Include="shaders\healerskill.frag">

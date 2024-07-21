@@ -131,7 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ArchorObject.cpp" />
+    <ClCompile Include="ArcherObject.cpp" />
     <ClCompile Include="BoogieObject.cpp" />
     <ClCompile Include="BornDogObject.cpp" />
     <ClCompile Include="BossObject.cpp" />
@@ -152,7 +152,7 @@
     <ClCompile Include="WarriorObject.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ArchorObject.h" />
+    <ClInclude Include="ArcherObject.h" />
     <ClInclude Include="BoogieObject.h" />
     <ClInclude Include="BornDogObject.h" />
     <ClInclude Include="BossObject.h" />

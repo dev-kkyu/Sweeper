@@ -2,45 +2,45 @@
 
 #include "PlayerObject.h"
 
-class ArchorATTACKState : public StateMachine
+class ArcherATTACKState : public StateMachine
 {
 public:
-	ArchorATTACKState(PlayerObject& player);
-	virtual ~ArchorATTACKState() = default;
+	ArcherATTACKState(PlayerObject& player);
+	virtual ~ArcherATTACKState() = default;
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
 	virtual void exit() override;
 };
 
-class ArchorSKILLState : public StateMachine
+class ArcherSKILLState : public StateMachine
 {
 public:
-	ArchorSKILLState(PlayerObject& player);
-	virtual ~ArchorSKILLState() = default;
+	ArcherSKILLState(PlayerObject& player);
+	virtual ~ArcherSKILLState() = default;
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
 	virtual void exit() override;
 };
 
-class ArchorObject : public PlayerObject
+class ArcherObject : public PlayerObject
 {
-	friend class ArchorSKILLState;
+	friend class ArcherSKILLState;
 
 private:
-	struct ArchorEffect {
+	struct ArcherEffect {
 		glm::vec3 pos;
 		glm::vec3 dir;
 		float accumTime = 0.f;
 	};
 
 	vkf::Effect& effect;
-	std::vector<ArchorEffect> archorEffects;
+	std::vector<ArcherEffect> archerEffects;
 
 public:
-	ArchorObject(GLTFModelObject& mapObject, vkf::Effect& effect);
-	virtual ~ArchorObject() = default;
+	ArcherObject(GLTFModelObject& mapObject, vkf::Effect& effect);
+	virtual ~ArcherObject() = default;
 
 	virtual void initialize() override;
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;

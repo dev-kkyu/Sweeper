@@ -82,8 +82,8 @@ class PlayerObject : public GameObjectBase
 	friend class DASHState;
 	friend class WarriorATTACKState;
 	friend class WarriorSKILLState;
-	friend class ArchorATTACKState;
-	friend class ArchorSKILLState;
+	friend class ArcherATTACKState;
+	friend class ArcherSKILLState;
 	friend class MageATTACKState;
 	friend class MageSKILLState;
 	friend class HealerATTACKState;

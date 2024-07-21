@@ -5,36 +5,36 @@
 #include <unordered_map>
 #include <unordered_set>
 
-class ArchorATTACKState : public StateMachine
+class ArcherATTACKState : public StateMachine
 {
 private:
 	std::chrono::steady_clock::time_point stateBeginTime;
 public:
-	ArchorATTACKState(PlayerObject& player);
-	virtual ~ArchorATTACKState() = default;
+	ArcherATTACKState(PlayerObject& player);
+	virtual ~ArcherATTACKState() = default;
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime) override;
 	virtual void exit() override;
 };
 
-class ArchorSKILLState : public StateMachine
+class ArcherSKILLState : public StateMachine
 {
 private:
 	std::chrono::steady_clock::time_point stateBeginTime;
 public:
-	ArchorSKILLState(PlayerObject& player);
-	virtual ~ArchorSKILLState() = default;
+	ArcherSKILLState(PlayerObject& player);
+	virtual ~ArcherSKILLState() = default;
 
 	virtual void enter() override;
 	virtual void update(float elapsedTime) override;
 	virtual void exit() override;
 };
 
-class ArchorObject : public PlayerObject
+class ArcherObject : public PlayerObject
 {
-	friend class ArchorATTACKState;
-	friend class ArchorSKILLState;
+	friend class ArcherATTACKState;
+	friend class ArcherSKILLState;
 
 private:
 	static int arrowID;
@@ -48,17 +48,17 @@ private:
 	};
 	std::unordered_map<int, Arrow> arrowObjects;
 
-	struct ArchorEffect {
+	struct ArcherEffect {
 		glm::vec3 pos;
 		glm::vec3 dir;
 		float accumTime = 0.f;
 		std::unordered_set<GameObjectBase*> attackedObject;
 	};
-	std::vector<ArchorEffect> archorEffects;
+	std::vector<ArcherEffect> archerEffects;
 
 public:
-	ArchorObject(Room* parentRoom, int p_id);
-	virtual ~ArchorObject();
+	ArcherObject(Room* parentRoom, int p_id);
+	virtual ~ArcherObject();
 
 	virtual void initialize() override;
 	virtual bool update(float elapsedTime) override;

@@ -51,7 +51,7 @@ private:
 	VkDescriptorPool sceneSamplerDescriptorPool;
 	struct {
 		vkf::Effect warrior;
-		vkf::Effect archor;
+		vkf::Effect archer;
 		vkf::Effect healer;
 		struct {
 			vkf::Effect attack;

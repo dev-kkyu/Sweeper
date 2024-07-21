@@ -5,7 +5,7 @@
 #include <GLFW/glfw3.h>
 
 #include "WarriorObject.h"
-#include "ArchorObject.h"
+#include "ArcherObject.h"
 #include "MageObject.h"
 #include "HealerObject.h"
 #include "MonsterObject.h"
@@ -30,7 +30,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 
 	// 캐릭터 Effect 생성
 	effect.warrior.texture.loadFromFile(fDevice, "models/Textures/smoke.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
-	effect.archor.texture.loadFromFile(fDevice, "models/Textures/tornado.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
+	effect.archer.texture.loadFromFile(fDevice, "models/Textures/tornado.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 	effect.healer.texture.loadFromFile(fDevice, "models/Textures/healcircle.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 	effect.mage.attack.texture.loadFromFile(fDevice, "models/Textures/magic.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 	effect.mage.skill.texture.loadFromFile(fDevice, "models/Textures/magiccircle.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
@@ -79,7 +79,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 			pMyPlayer = std::make_shared<WarriorObject>(mapObject, effect.warrior);
 			break;
 		case PLAYER_TYPE::ARCHER:
-			pMyPlayer = std::make_shared<ArchorObject>(mapObject, effect.archor);
+			pMyPlayer = std::make_shared<ArcherObject>(mapObject, effect.archer);
 			break;
 		case PLAYER_TYPE::MAGE:
 			pMyPlayer = std::make_shared<MageObject>(mapObject, effect.mage.attack, effect.mage.skill);
@@ -122,7 +122,7 @@ Scene::~Scene()
 	uniformBufferObject.offscreen.destroy();
 
 	effect.warrior.texture.destroy();		// 전사 이펙트 텍스처
-	effect.archor.texture.destroy();		// 궁수 이펙트 텍스처
+	effect.archer.texture.destroy();		// 궁수 이펙트 텍스처
 	effect.healer.texture.destroy();		// 힐러 이펙트 텍스처
 	effect.mage.attack.texture.destroy();	// 마법사 이펙트 텍스처
 	effect.mage.skill.texture.destroy();	// 마법사 이펙트 텍스처
@@ -136,7 +136,7 @@ Scene::~Scene()
 	vkDestroyPipeline(fDevice.logicalDevice, effect.mage.attack.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.mage.skill.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.healer.pipeline, nullptr);
-	vkDestroyPipeline(fDevice.logicalDevice, effect.archor.pipeline, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, effect.archer.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.warrior.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.cloudPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.boundingBoxPipeline, nullptr);
@@ -474,7 +474,7 @@ void Scene::processPacket(unsigned char* packet)
 			pPlayers[p->player_id] = std::make_shared<WarriorObject>(mapObject, effect.warrior);
 			break;
 		case PLAYER_TYPE::ARCHER:
-			pPlayers[p->player_id] = std::make_shared<ArchorObject>(mapObject, effect.archor);
+			pPlayers[p->player_id] = std::make_shared<ArcherObject>(mapObject, effect.archer);
 			break;
 		case PLAYER_TYPE::MAGE:
 			pPlayers[p->player_id] = std::make_shared<MageObject>(mapObject, effect.mage.attack, effect.mage.skill);
@@ -931,11 +931,11 @@ void Scene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkf::Shader archorShader{ fDevice, "shaders/archorskill.vert.spv", "shaders/archorskill.frag.spv" };
-	pipelineInfo.stageCount = static_cast<uint32_t>(archorShader.shaderStages.size());
-	pipelineInfo.pStages = archorShader.shaderStages.data();
+	vkf::Shader archerShader{ fDevice, "shaders/archerskill.vert.spv", "shaders/archerskill.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(archerShader.shaderStages.size());
+	pipelineInfo.pStages = archerShader.shaderStages.data();
 
-	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &effect.archor.pipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &effect.archer.pipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
