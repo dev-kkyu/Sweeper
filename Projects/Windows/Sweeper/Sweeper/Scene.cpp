@@ -13,15 +13,6 @@
 
 #include "NetworkManager.h"
 
-#define BOSS_CLIP_SLEEP			0
-#define BOSS_CLIP_WAKE_UP		6
-#define BOSS_CLIP_IDLE			5
-#define BOSS_CLIP_MOVE			8
-#define BOSS_CLIP_LEFT_PUNCH	1
-#define BOSS_CLIP_RIGHT_PUNCH	7
-#define BOSS_CLIP_PUNCH_DOWN	2
-#define BOSS_CLIP_DIE			3
-
 Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, int& width, int& height)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }
 	, camera{ width, height }
@@ -68,7 +59,6 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 
 	// 보스 모델 생성
 	bossObject.initModel(bossModel, descriptorSetLayout.ssbo);
-	bossObject.setAnimationClip(BOSS_CLIP_SLEEP);
 	bossObject.setPosition({ 12.25f, 0.f, 115.f });		// 서버와 동기화 해야함
 	bossObject.setLook({ 0.f, 0.f, -1.f });
 	bossObject.setScale(glm::vec3{ 2.25f });
@@ -652,43 +642,7 @@ void Scene::processPacket(unsigned char* packet)
 	}
 	case SC_BOSS_STATE: {
 		auto p = reinterpret_cast<SC_BOSS_STATE_PACKET*>(packet);
-		switch (p->state) {
-		case BOSS_STATE::SLEEP:
-			bossObject.setAnimationClip(BOSS_CLIP_SLEEP);
-			bossObject.setAnimateSpeed(1.f);
-			break;
-		case BOSS_STATE::WAKEUP:
-			bossObject.setAnimationClip(BOSS_CLIP_WAKE_UP);
-			bossObject.setAnimateSpeed(0.7f);
-			break;
-		case BOSS_STATE::IDLE:
-			bossObject.setAnimationClip(BOSS_CLIP_IDLE);
-			bossObject.setAnimateSpeed(0.7f);
-			break;
-		case BOSS_STATE::MOVE:
-			bossObject.setAnimationClip(BOSS_CLIP_MOVE);
-			bossObject.setAnimateSpeed(0.7f);
-			break;
-		case BOSS_STATE::LEFT_PUNCH:
-			bossObject.setAnimationClip(BOSS_CLIP_LEFT_PUNCH);
-			bossObject.setAnimateSpeed(0.7f);
-			break;
-		case BOSS_STATE::RIGHT_PUNCH:
-			bossObject.setAnimationClip(BOSS_CLIP_RIGHT_PUNCH);
-			bossObject.setAnimateSpeed(0.6f);
-			break;
-		case BOSS_STATE::PUNCH_DOWN:
-			bossObject.setAnimationClip(BOSS_CLIP_PUNCH_DOWN);
-			bossObject.setAnimateSpeed(0.55f);
-			break;
-		case BOSS_STATE::DIE:
-			bossObject.setAnimationClip(BOSS_CLIP_DIE);
-			bossObject.setAnimateSpeed(0.7f);
-			break;
-		default:
-			std::cerr << "ERROR : INVALID BOSS STATE!" << std::endl;
-			break;
-		}
+		bossObject.setBossState(p->state);
 		break;
 	}
 	default:
