@@ -10,7 +10,6 @@ MonsterObject::MonsterObject(Room* parentRoom, int m_id)
 	: GameObjectBase{ parentRoom, m_id }
 {
 	state = MONSTER_STATE::IDLE;
-	hp = 300;
 
 	collisionRadius = 10.f;		// 자식이 항상 값을 정해줘야 함
 
@@ -31,7 +30,7 @@ void MonsterObject::initialize()
 
 bool MonsterObject::update(float elapsedTime)
 {
-	if (hp <= 0) {		// 죽었다면..
+	if (HP <= 0) {		// 죽었다면..
 		parentRoom->reserved_monster_ids.emplace_back(my_id);		// 컨테이너에서는 삭제를 예약하여 더이상의 접근을 막는다.
 		state = MONSTER_STATE::DIE;
 		sendMonsterStatePacket();						// DIE 애니메이션을 재생하도록 알려줌
@@ -208,7 +207,7 @@ void MonsterObject::release()
 
 void MonsterObject::onHit(const GameObjectBase& other, int damage)
 {
-	hp -= damage;
+	HP -= damage;
 	lastHitStateTime = std::chrono::steady_clock::now();
 	state = MONSTER_STATE::HIT;
 	sendMonsterStatePacket();
