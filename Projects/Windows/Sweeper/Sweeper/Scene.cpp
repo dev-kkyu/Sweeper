@@ -8,6 +8,8 @@
 #include "ArchorObject.h"
 #include "MageObject.h"
 #include "HealerObject.h"
+#include "MonsterObject.h"
+#include "ArrowObject.h"
 
 #include "NetworkManager.h"
 

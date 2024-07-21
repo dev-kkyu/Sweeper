@@ -3,15 +3,16 @@
 #include <unordered_map>
 
 //#include "OBJModelObject.h"
-#include "MonsterObject.h"
-#include "ArrowObject.h"
-//#include "GLTFModelObject.h"		// included ArrowObject;
-//#include "GLTFSkinModelObject.h"	// included MonsterObject
+#include "BossObject.h"
+#include "GLTFModelObject.h"		// for mapObject
+//#include "GLTFSkinModelObject.h"	// included BossObject
 #include "Camera.h"
 
 #include "NetworkManager.h"
 
 class PlayerObject;
+class MonsterObject;
+class ArrowObject;
 class Scene
 {
 private:
@@ -79,14 +80,14 @@ private:
 
 	// gltf 일반 화살들
 	VulkanGLTFModel arrowModel;
-	std::unordered_map<int, std::shared_ptr<ArrowObject>> pArrowObjects;
+	std::unordered_map<int, std::shared_ptr<ArrowObject>> pArrowObjects;		// 기본 생성자를 안쓰려면 ptr로 하는 것이 편하다
 
 	// gltf skin 몬스터 모델들
 	std::array<VulkanGLTFSkinModel, 4> monsterModel;	// 몬스터 종류 4가지
 	std::unordered_map<int, std::shared_ptr<MonsterObject>> pMonsterObjects;	// 다형성을 위한 포인터 사용
 
 	VulkanGLTFSkinModel bossModel;
-	GLTFSkinModelObject bossObject;
+	BossObject bossObject;
 
 	// gltf skin 캐릭터 에셋
 	std::array<VulkanGLTFSkinModel, 4> playerModel;		// 캐릭터 종류는 총 4개이다.

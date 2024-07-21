@@ -52,6 +52,9 @@
     <Filter Include="GameObjectBase\GLTFModelObject\ArrowObject">
       <UniqueIdentifier>{1c75c3fa-1f75-4309-a69f-ce5fabd654de}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObjectBase\GLTFSkinModelObject\BossObject">
+      <UniqueIdentifier>{55f64b66-7db0-4081-8d22-a83fed17d865}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -117,6 +120,9 @@
     <ClCompile Include="ArrowObject.cpp">
       <Filter>GameObjectBase\GLTFModelObject\ArrowObject</Filter>
     </ClCompile>
+    <ClCompile Include="BossObject.cpp">
+      <Filter>GameObjectBase\GLTFSkinModelObject\BossObject</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObjectBase.h">
@@ -178,6 +184,9 @@
     </ClInclude>
     <ClInclude Include="ArrowObject.h">
       <Filter>GameObjectBase\GLTFModelObject\ArrowObject</Filter>
+    </ClInclude>
+    <ClInclude Include="BossObject.h">
+      <Filter>GameObjectBase\GLTFSkinModelObject\BossObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
