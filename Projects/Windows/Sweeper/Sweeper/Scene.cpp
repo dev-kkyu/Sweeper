@@ -252,8 +252,14 @@ void Scene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 				player->drawUI(commandBuffer, pipelineLayout);
 		}
 
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.bossHpBarPipeline);
-		bossObject.drawUI(commandBuffer, pipelineLayout);
+		if (pMyPlayer) {
+			BoundingBox bossArea;
+			bossArea.setBound(1.f, 0.1f, 125.f, 107.f, 3.f, 21.f);
+			if (bossArea.isCollide(pMyPlayer->getBoundingBox())) {
+				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.bossHpBarPipeline);
+				bossObject.drawUI(commandBuffer, pipelineLayout);
+			}
+		}
 	}
 
 	// 배경 사각형 그리기

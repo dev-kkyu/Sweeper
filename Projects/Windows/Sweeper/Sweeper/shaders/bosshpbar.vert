@@ -30,7 +30,7 @@ void main()
 	// 빨간 사각형일 경우 현재 체력에 따라 오른쪽 위치를 조절
 	quadPos.x = clamp(quadPos.x, quadPos.x, (1 - flag) * quadPos.x + flag * (offset * 2.f - 1.f));
 	quadPos.x *= 0.75f;
-	quadPos.y *= 0.03f;
+	quadPos.y *= 0.02f;
 	quadPos.y += 0.85f;
 
 	outColor = color[flag];
