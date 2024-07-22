@@ -105,6 +105,7 @@ bool Session::processPacket(unsigned char* packet)
 			p.type = SC_ADD_PLAYER;
 			p.player_type = player_type;
 			p.player_id = this->player_id;
+			p.hp = player->getHP();
 			auto pos = player->getPosition();
 			auto dir = player->getLook();
 			p.pos_x = pos.x;
@@ -132,6 +133,7 @@ bool Session::processPacket(unsigned char* packet)
 				if (Room::isValidSession(session)) {	// 존재하는 플레이어를 전송
 					p.player_id = i;
 					p.player_type = session->player_type;
+					p.hp = session->player->getHP();
 					auto pos = session->player->getPosition();
 					auto dir = session->player->getLook();
 					p.pos_x = pos.x;
@@ -153,6 +155,7 @@ bool Session::processPacket(unsigned char* packet)
 			for (auto& m : parentRoom->monsters) {
 				p.monster_id = m.first;
 				p.monster_type = m.second->getMonsterType();
+				p.hp = m.second->getHP();
 				auto pos = m.second->getPosition();
 				auto dir = m.second->getLook();
 				p.pos_x = pos.x;

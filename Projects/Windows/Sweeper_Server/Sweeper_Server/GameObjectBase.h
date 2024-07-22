@@ -49,4 +49,6 @@ public:
 	virtual bool isCollide(const GameObjectBase& other) const final;
 	virtual BoundingBox getBoundingBox() const final;
 
+	virtual short getHP() const final;
+
 };

@@ -108,3 +108,8 @@ BoundingBox GameObjectBase::getBoundingBox() const
 	return boundingBox;
 }
 
+short GameObjectBase::getHP() const
+{
+	return HP;
+}
+
