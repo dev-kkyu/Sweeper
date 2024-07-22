@@ -104,6 +104,9 @@ protected:
 	float jumpSpeed;		// 점프 시작 속도 (m/s)	-> 루트(2 * g * h) -> h == 최대높이
 	float velocity;			// 현재 수직 속도
 
+	int attackDamage = 100;
+	int skillDamage = 100;
+
 public:
 	PlayerObject(Room* parentRoom, int p_id);
 	virtual ~PlayerObject() = default;

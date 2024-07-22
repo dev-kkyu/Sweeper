@@ -35,10 +35,10 @@ constexpr short MAX_HP_PLAYER_WARRIOR = 1000;
 constexpr short MAX_HP_PLAYER_ARCHER = 1000;
 constexpr short MAX_HP_PLAYER_MAGE = 1000;
 constexpr short MAX_HP_PLAYER_HEALER = 1000;
-constexpr short MAX_HP_MONSTER_MUSHROOM = 100;
-constexpr short MAX_HP_MONSTER_BORNDOG = 100;
-constexpr short MAX_HP_MONSTER_GOBLIN = 100;
-constexpr short MAX_HP_MONSTER_BOOGIE = 100;
+constexpr short MAX_HP_MONSTER_MUSHROOM = 300;
+constexpr short MAX_HP_MONSTER_BORNDOG = 300;
+constexpr short MAX_HP_MONSTER_GOBLIN = 300;
+constexpr short MAX_HP_MONSTER_BOOGIE = 300;
 constexpr short MAX_HP_BOSS = 10000;
 
 #define KEY_UP			0x01

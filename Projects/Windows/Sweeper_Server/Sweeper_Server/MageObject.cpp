@@ -40,7 +40,7 @@ void MageATTACKState::update(float elapsedTime)
 			float dist = glm::length(myPos - monPos);
 			float targetDist = 1.f + m.second->getCollisionRadius();	// 마법 공격의 반지름 : 1.f
 			if (dist <= targetDist) {	// 충돌
-				m.second->onHit(player, 100);
+				m.second->onHit(player, player.attackDamage);
 				attackedObject.insert(m.second.get());			// 한번만 공격이 들어가도록 한다
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 			}
@@ -53,7 +53,7 @@ void MageATTACKState::update(float elapsedTime)
 			float dist = glm::length(myPos - monPos);
 			float targetDist = 1.f + player.parentRoom->boss->getCollisionRadius();	// 마법 공격의 반지름 : 1.f
 			if (dist <= targetDist) {	// 충돌
-				player.parentRoom->boss->onHit(player, 100);
+				player.parentRoom->boss->onHit(player, player.attackDamage);
 				attackedObject.insert(player.parentRoom->boss.get());			// 한번만 공격이 들어가도록 한다
 			}
 		}
@@ -103,7 +103,7 @@ void MageSKILLState::update(float elapsedTime)
 			float dist = glm::length(myPos - monPos);
 			float targetDist = 1.5f + m.second->getCollisionRadius();	// 마법 스킬 공격의 반지름 : 1.5f
 			if (dist <= targetDist) {	// 충돌
-				m.second->onHit(player, 100);
+				m.second->onHit(player, player.skillDamage);
 				attackedObject.insert(m.second.get());			// 한번만 공격이 들어가도록 한다
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 			}
@@ -116,7 +116,7 @@ void MageSKILLState::update(float elapsedTime)
 			float dist = glm::length(myPos - monPos);
 			float targetDist = 1.5f + player.parentRoom->boss->getCollisionRadius();	// 마법 스킬 공격의 반지름 : 1.5f
 			if (dist <= targetDist) {	// 충돌
-				player.parentRoom->boss->onHit(player, 100);
+				player.parentRoom->boss->onHit(player, player.skillDamage);
 				attackedObject.insert(player.parentRoom->boss.get());			// 한번만 공격이 들어가도록 한다
 			}
 		}
@@ -134,6 +134,9 @@ MageObject::MageObject(Room* parentRoom, int p_id)
 	: PlayerObject{ parentRoom, p_id }
 {
 	maxHP = HP = MAX_HP_PLAYER_MAGE;
+
+	attackDamage = 100;
+	skillDamage = 100;
 }
 
 void MageObject::initialize()

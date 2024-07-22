@@ -107,6 +107,9 @@ ArcherObject::ArcherObject(Room* parentRoom, int p_id)
 	: PlayerObject{ parentRoom, p_id }
 {
 	maxHP = HP = MAX_HP_PLAYER_ARCHER;
+
+	attackDamage = 100;
+	skillDamage = 100;
 }
 
 ArcherObject::~ArcherObject()
@@ -149,7 +152,7 @@ bool ArcherObject::update(float elapsedTime)
 					BoundingBox arrBox;
 					arrBox.setBound(1.f, 0.1f, arr.second.pos.z + 0.5f, arr.second.pos.z - 0.5f, arr.second.pos.x - 0.5f, arr.second.pos.x + 0.5f);
 					if (arrBox.isCollide(m.second->getBoundingBox())) {
-						m.second->onHit(*this, 100);
+						m.second->onHit(*this, attackDamage);
 						removeArrowList.push_back(arr.first);
 					}
 				}
@@ -157,7 +160,7 @@ bool ArcherObject::update(float elapsedTime)
 					BoundingBox arrBox;
 					arrBox.setBound(1.f, 0.1f, arr.second.pos.z + 0.5f, arr.second.pos.z - 0.5f, arr.second.pos.x - 0.5f, arr.second.pos.x + 0.5f);
 					if (arrBox.isCollide(parentRoom->boss->getBoundingBox())) {
-						parentRoom->boss->onHit(*this, 100);
+						parentRoom->boss->onHit(*this, attackDamage);
 						removeArrowList.push_back(arr.first);
 					}
 				}
@@ -205,7 +208,7 @@ bool ArcherObject::update(float elapsedTime)
 					BoundingBox boundingBox;
 					boundingBox.setBound(1.f, 0.1f, aEffect.pos.z + 0.5f, aEffect.pos.z - 0.5f, aEffect.pos.x - 0.5f, aEffect.pos.x + 0.5f);
 					if (boundingBox.isCollide(m.second->getBoundingBox())) {
-						m.second->onHit(*this, 100);					// 충돌이면 알려주기
+						m.second->onHit(*this, skillDamage);					// 충돌이면 알려주기
 						aEffect.attackedObject.insert(m.second.get());			// 한번만 공격이 들어가도록 한다
 						std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 					}
@@ -215,7 +218,7 @@ bool ArcherObject::update(float elapsedTime)
 					BoundingBox boundingBox;
 					boundingBox.setBound(1.f, 0.1f, aEffect.pos.z + 0.5f, aEffect.pos.z - 0.5f, aEffect.pos.x - 0.5f, aEffect.pos.x + 0.5f);
 					if (boundingBox.isCollide(parentRoom->boss->getBoundingBox())) {
-						parentRoom->boss->onHit(*this, 100);					// 충돌이면 알려주기
+						parentRoom->boss->onHit(*this, skillDamage);					// 충돌이면 알려주기
 						aEffect.attackedObject.insert(parentRoom->boss.get());			// 한번만 공격이 들어가도록 한다
 					}
 				}

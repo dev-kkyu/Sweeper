@@ -38,7 +38,7 @@ void WarriorATTACKState::update(float elapsedTime)
 			float dist = glm::sqrt(glm::pow(myPos.x - monPos.x, 2.f) + glm::pow(myPos.z - monPos.z, 2.f));
 			float targetDist = 1.f + m.second->getCollisionRadius();		// 공격 범위 : 플레이어 앞쪽 1.f부터 반지름 1.f의 원
 			if (dist <= targetDist) {	// 충돌
-				m.second->onHit(player, 100);
+				m.second->onHit(player, player.attackDamage);
 				attackedObject.insert(m.second.get());			// 한번만 공격이 들어가도록 한다
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 			}
@@ -50,7 +50,7 @@ void WarriorATTACKState::update(float elapsedTime)
 			float dist = glm::sqrt(glm::pow(myPos.x - monPos.x, 2.f) + glm::pow(myPos.z - monPos.z, 2.f));
 			float targetDist = 1.f + player.parentRoom->boss->getCollisionRadius();		// 공격 범위 : 플레이어 앞쪽 1.f부터 반지름 1.f의 원
 			if (dist <= targetDist) {	// 충돌
-				player.parentRoom->boss->onHit(player, 100);
+				player.parentRoom->boss->onHit(player, player.attackDamage);
 				attackedObject.insert(player.parentRoom->boss.get());			// 한번만 공격이 들어가도록 한다
 			}
 		}
@@ -98,7 +98,7 @@ void WarriorSKILLState::update(float elapsedTime)
 			float dist = glm::sqrt(glm::pow(myPos.x - monPos.x, 2.f) + glm::pow(myPos.z - monPos.z, 2.f));
 			float targetDist = 1.25f + m.second->getCollisionRadius();		// 공격 범위 : 플레이어 앞쪽 1.25f부터 반지름 1.25f의 원
 			if (dist <= targetDist) {	// 충돌
-				m.second->onHit(player, 100);
+				m.second->onHit(player, player.skillDamage);
 				attackedObject.insert(m.second.get());			// 한번만 공격이 들어가도록 한다
 				std::cout << m.first << ": 몬스터 공격받음" << std::endl;
 			}
@@ -110,7 +110,7 @@ void WarriorSKILLState::update(float elapsedTime)
 			float dist = glm::sqrt(glm::pow(myPos.x - monPos.x, 2.f) + glm::pow(myPos.z - monPos.z, 2.f));
 			float targetDist = 1.25f + player.parentRoom->boss->getCollisionRadius();		// 공격 범위 : 플레이어 앞쪽 1.25f부터 반지름 1.25f의 원
 			if (dist <= targetDist) {	// 충돌
-				player.parentRoom->boss->onHit(player, 100);
+				player.parentRoom->boss->onHit(player, player.skillDamage);
 				attackedObject.insert(player.parentRoom->boss.get());			// 한번만 공격이 들어가도록 한다
 			}
 		}
@@ -128,6 +128,9 @@ WarriorObject::WarriorObject(Room* parentRoom, int p_id)
 	: PlayerObject{ parentRoom, p_id }
 {
 	maxHP = HP = MAX_HP_PLAYER_WARRIOR;
+
+	attackDamage = 100;
+	skillDamage = 100;
 }
 
 void WarriorObject::initialize()
