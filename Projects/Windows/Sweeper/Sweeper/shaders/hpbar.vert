@@ -18,15 +18,6 @@ const vec3 quad[6] = {
 	vec3(1.f, 1.f, 0.f)
 };
 
-const vec2 uv[6] = {
-	vec2(1.f, 0.f),
-	vec2(0.f, 0.f),
-	vec2(0.f, 1.f),
-	vec2(0.f, 1.f),
-	vec2(1.f, 1.f),
-	vec2(1.f, 0.f)
-};
-
 const vec3 color[2] = {
 	vec3(0.5f, 0.5f, 0.5f),
 	vec3(1.f, 0.f, 0.f)
