@@ -108,6 +108,11 @@ void HealerObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pi
 	}
 }
 
+void HealerObject::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
+{
+	GLTFSkinModelObject::drawUI(commandBuffer, pipelineLayout);
+}
+
 void HealerObject::changeATTACKState()
 {
 	currentState->exit();

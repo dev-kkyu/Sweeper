@@ -44,6 +44,8 @@ private:
 		};
 		// 바운딩 박스 파이프라인
 		VkPipeline boundingBoxPipeline;
+		// 체력 바 UI 파이프라인
+		VkPipeline hpBarPipeline;
 		// 쿼드 백그라운드 파이프라인
 		VkPipeline cloudPipeline;
 	} pipeline;

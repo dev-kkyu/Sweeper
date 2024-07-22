@@ -30,3 +30,8 @@ void MonsterObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelin
 void MonsterObject::release()
 {
 }
+
+void MonsterObject::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
+{
+	GLTFSkinModelObject::drawUI(commandBuffer, pipelineLayout);
+}

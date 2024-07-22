@@ -139,6 +139,7 @@ Scene::~Scene()
 	vkDestroyPipeline(fDevice.logicalDevice, effect.archer.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.warrior.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.cloudPipeline, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.hpBarPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.boundingBoxPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.model, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.skinModel, nullptr);
@@ -238,6 +239,20 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOf
 
 void Scene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
+	{	// 체력 바 그려주기
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.hpBarPipeline);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
+
+		bossObject.drawUI(commandBuffer, pipelineLayout);
+		for (auto& m : pMonsterObjects) {
+			m.second->drawUI(commandBuffer, pipelineLayout);
+		}
+		for (auto& player : pPlayers) {
+			if (player)
+				player->drawUI(commandBuffer, pipelineLayout);
+		}
+	}
+
 	// 배경 사각형 그리기
 	glm::mat4 matrix{ 1.f };
 	if (pMyPlayer) {
@@ -928,12 +943,25 @@ void Scene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
+	// 다시 삼각형 리스트로 변경
+	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+	// 체력 바 파이프라인 생성
+	vkf::Shader hpBarShader{ fDevice, "shaders/hpbar.vert.spv", "shaders/hpbar.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(hpBarShader.shaderStages.size());
+	pipelineInfo.pStages = hpBarShader.shaderStages.data();
+
+	depthStencil.depthTestEnable = VK_TRUE;
+	depthStencil.depthWriteEnable = VK_FALSE;
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.hpBarPipeline) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
 	// 배경 구름 파이프라인 생성
 	vkf::Shader cloudShader{ fDevice, "shaders/cloud.vert.spv", "shaders/cloud.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(cloudShader.shaderStages.size());
 	pipelineInfo.pStages = cloudShader.shaderStages.data();
-
-	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
 	depthStencil.depthTestEnable = VK_FALSE;
 	depthStencil.depthWriteEnable = VK_FALSE;

@@ -247,5 +247,11 @@
     <None Include="shaders\healerskill.vert">
       <Filter>소스 파일\Shader</Filter>
     </None>
+    <None Include="shaders\hpbar.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\hpbar.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

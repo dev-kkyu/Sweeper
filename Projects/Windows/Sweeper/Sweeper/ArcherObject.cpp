@@ -119,6 +119,11 @@ void ArcherObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pi
 	}
 }
 
+void ArcherObject::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
+{
+	GLTFSkinModelObject::drawUI(commandBuffer, pipelineLayout);
+}
+
 void ArcherObject::changeATTACKState()
 {
 	currentState->exit();

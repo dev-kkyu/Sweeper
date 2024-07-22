@@ -139,6 +139,11 @@ void MageObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipe
 	}
 }
 
+void MageObject::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
+{
+	GLTFSkinModelObject::drawUI(commandBuffer, pipelineLayout);
+}
+
 void MageObject::changeATTACKState()
 {
 	currentState->exit();

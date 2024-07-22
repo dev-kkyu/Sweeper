@@ -38,6 +38,11 @@ void BossObject::release()
 {
 }
 
+void BossObject::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
+{
+	GLTFSkinModelObject::drawUI(commandBuffer, pipelineLayout);
+}
+
 void BossObject::setBossState(BOSS_STATE state)
 {
 	switch (state) {

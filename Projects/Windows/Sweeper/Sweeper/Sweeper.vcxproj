@@ -193,6 +193,8 @@
     <None Include="shaders\fragment.frag" />
     <None Include="shaders\healerskill.frag" />
     <None Include="shaders\healerskill.vert" />
+    <None Include="shaders\hpbar.frag" />
+    <None Include="shaders\hpbar.vert" />
     <None Include="shaders\mageattack.frag" />
     <None Include="shaders\mageattack.vert" />
     <None Include="shaders\mageskill.frag" />

@@ -117,6 +117,11 @@ void WarriorObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout p
 	}
 }
 
+void WarriorObject::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
+{
+	GLTFSkinModelObject::drawUI(commandBuffer, pipelineLayout);
+}
+
 void WarriorObject::changeATTACKState()
 {
 	currentState->exit();

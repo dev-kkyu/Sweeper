@@ -126,6 +126,16 @@ void GLTFSkinModelObject::setMaxHP(short maxHP)
 	this->maxHP = maxHP;
 }
 
+void GLTFSkinModelObject::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
+{
+	glm::mat4 matrix = glm::scale(glm::mat4(1.f), glm::vec3{ 1.f, 0.1f, 1.f });
+	auto pos = getPosition();
+	matrix = glm::translate(glm::mat4(1.f), glm::vec3(pos.x, pos.y + 2.f, pos.z)) * matrix;
+	matrix[3][3] = float(HP) / float(maxHP);
+	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+	vkCmdDraw(commandBuffer, 12, 1, 0, 0);
+}
+
 std::shared_ptr<Node> GLTFSkinModelObject::findNode(const std::shared_ptr<Node>& parent, uint32_t index) const
 {
 	std::shared_ptr<Node> nodeFound = nullptr;

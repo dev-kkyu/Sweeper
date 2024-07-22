@@ -53,6 +53,8 @@ public:
 	void setHP(short HP);
 	void setMaxHP(short maxHP);
 
+	virtual void drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const = 0;
+
 private:
 	std::shared_ptr<Node>	findNode(const std::shared_ptr<Node>& parent, uint32_t index) const;
 	std::shared_ptr<Node>	nodeFromIndex(uint32_t index) const;
