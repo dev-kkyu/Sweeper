@@ -236,6 +236,7 @@ void GameFramework::processPacket(unsigned char* packet)
 	case SC_MOVE_PLAYER:
 	case SC_PLAYER_LOOK:
 	case SC_PLAYER_STATE:
+	case SC_PLAYER_HP:
 	case SC_ADD_ARROW:
 	case SC_MOVE_ARROW:
 	case SC_REMOVE_ARROW:
@@ -245,8 +246,10 @@ void GameFramework::processPacket(unsigned char* packet)
 	case SC_MONSTER_LOOK:
 	case SC_REMOVE_MONSTER:
 	case SC_MONSTER_STATE:
+	case SC_MONSTER_HP:
 	case SC_MOVE_BOSS:
 	case SC_BOSS_STATE:
+	case SC_BOSS_HP:
 		pScene->processPacket(packet);
 		break;
 	case SC_LOGIN_FAIL:
