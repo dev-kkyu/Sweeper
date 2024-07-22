@@ -17,6 +17,12 @@ protected:
 
 	int targetPlayer;
 
+	std::chrono::steady_clock::time_point lastAttackStateTime;
+	int attackDelayTime_ms;		// attack 상태의 지속시간
+	int attackPointTime_ms;		// 실제 attack공격을 하는 시간
+	bool isAttacked;			// 공격이 실제로 이루어 졌는지
+	int attackDamage = 50;
+
 public:
 	MonsterObject(Room* parentRoom, int m_id);
 	virtual ~MonsterObject();

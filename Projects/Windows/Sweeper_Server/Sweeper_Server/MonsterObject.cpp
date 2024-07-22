@@ -18,6 +18,10 @@ MonsterObject::MonsterObject(Room* parentRoom, int m_id)
 	hitDelayTime_ms = 10000;	// 자식이 항상 값을 정해줘야 함
 
 	targetPlayer = -1;	// 0 ~ 3
+
+	attackDelayTime_ms = 800;
+	attackPointTime_ms = 400;
+	isAttacked = false;
 }
 
 MonsterObject::~MonsterObject()
@@ -103,6 +107,8 @@ bool MonsterObject::update(float elapsedTime)
 					if (isCollide(*session->player)) {
 						// 타겟 플레이어와 충돌이면 attack
 						state = MONSTER_STATE::ATTACK;
+						lastAttackStateTime = std::chrono::steady_clock::now();
+						isAttacked = false;
 						sendMonsterStatePacket();
 					}
 					else {	// 충돌이 아니면 이동
@@ -152,6 +158,8 @@ bool MonsterObject::update(float elapsedTime)
 					float dist2 = glm::pow(myPos.x - playerPos.x, 2.f) + glm::pow(myPos.z - playerPos.z, 2.f);
 					if (dist2 <= 1.5f) {		// 일정 거리 안이라면 바로 ATTACK
 						state = MONSTER_STATE::ATTACK;
+						lastAttackStateTime = std::chrono::steady_clock::now();
+						isAttacked = false;
 					}
 				}
 				else {
@@ -174,12 +182,28 @@ bool MonsterObject::update(float elapsedTime)
 				auto myPos = getPosition();
 				// 나와 플레이어 사이의 거리
 				float dist2 = glm::pow(myPos.x - playerPos.x, 2.f) + glm::pow(myPos.z - playerPos.z, 2.f);
-				if (dist2 > glm::pow(0.5f + collisionRadius, 2.f)) {							// 일정 거리 밖으로 플레이어가 움직이면
-					state = MONSTER_STATE::MOVE;			// 다시 움직인다
-					sendMonsterStatePacket();
+
+				auto nowTime = std::chrono::steady_clock::now();
+				// attack state 시간이 끝났으면
+				if (lastAttackStateTime + std::chrono::milliseconds(attackDelayTime_ms) <= nowTime) {
+					if (dist2 <= glm::pow(0.5f + collisionRadius, 2.f)) {		// 아직 일정 거리 안이라면
+						state = MONSTER_STATE::MOVE;			// 다시 움직인다
+						sendMonsterStatePacket();
+					}
+					else {
+						targetPlayer = -1;
+						state = MONSTER_STATE::IDLE;			// 멀어졌다면 IDLE
+						sendMonsterStatePacket();
+					}
 				}
-				else {
-					// Todo: 플레이어에게 데미지를 주는 로직 추가
+				// 공격할 타이밍이면
+				else if (lastAttackStateTime + std::chrono::milliseconds(attackPointTime_ms) <= nowTime) {
+					if (not isAttacked) {
+						isAttacked = true;
+						if (dist2 <= glm::pow(0.5f + collisionRadius, 2.f)) {	// 아직 일정 거리 안이라면
+							session->player->onHit(*this, attackDamage);
+						}
+					}
 				}
 			}
 			else {
