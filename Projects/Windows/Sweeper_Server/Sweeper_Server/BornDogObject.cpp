@@ -10,6 +10,10 @@ BornDogObject::BornDogObject(Room* parentRoom, int m_id)
 	collisionRadius = 1.375f;
 
 	maxHP = HP = MAX_HP_MONSTER_BORNDOG;
+
+	attackDamage = 50;
+	attackDelayTime_ms = 1200;
+	attackPointTime_ms = 250;
 }
 
 BornDogObject::~BornDogObject()

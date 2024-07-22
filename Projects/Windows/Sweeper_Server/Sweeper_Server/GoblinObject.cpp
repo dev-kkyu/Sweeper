@@ -7,9 +7,13 @@ GoblinObject::GoblinObject(Room* parentRoom, int m_id)
 
 	hitDelayTime_ms = 1550;
 
-	collisionRadius = 0.4f;
+	collisionRadius = 0.6f;
 
 	maxHP = HP = MAX_HP_MONSTER_GOBLIN;
+
+	attackDamage = 50;
+	attackDelayTime_ms = 1150;
+	attackPointTime_ms = 300;
 }
 
 GoblinObject::~GoblinObject()
