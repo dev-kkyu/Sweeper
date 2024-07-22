@@ -148,6 +148,7 @@ void WarriorObject::release()
 
 void WarriorObject::onHit(const GameObjectBase& other, int damage)
 {
+	PlayerObject::onHit(other, damage);
 }
 
 void WarriorObject::changeATTACKState()

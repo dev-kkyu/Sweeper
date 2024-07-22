@@ -154,6 +154,7 @@ void MageObject::release()
 
 void MageObject::onHit(const GameObjectBase& other, int damage)
 {
+	PlayerObject::onHit(other, damage);
 }
 
 void MageObject::changeATTACKState()

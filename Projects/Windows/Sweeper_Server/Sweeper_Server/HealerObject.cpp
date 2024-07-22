@@ -133,6 +133,7 @@ void HealerObject::release()
 
 void HealerObject::onHit(const GameObjectBase& other, int damage)
 {
+	PlayerObject::onHit(other, damage);
 }
 
 void HealerObject::changeATTACKState()

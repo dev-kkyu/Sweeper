@@ -283,6 +283,21 @@ void PlayerObject::release()
 
 void PlayerObject::onHit(const GameObjectBase& other, int damage)
 {
+	HP -= damage;
+
+	{	// 브로드캐스트
+		SC_PLAYER_HP_PACKET p;
+		p.size = sizeof(p);
+		p.type = SC_PLAYER_HP;
+		p.player_id = my_id;
+		p.hp = HP;
+		for (auto& a : parentRoom->sessions) {	// 모든 플레이어에게 변경된 몬스터의 Look과 HP를 보내준다.
+			std::shared_ptr<Session> session = a.load();
+			if (Room::isValidSession(session)) {
+				session->sendPacket(&p);
+			}
+		}
+	}
 }
 
 unsigned int PlayerObject::getKeyState() const

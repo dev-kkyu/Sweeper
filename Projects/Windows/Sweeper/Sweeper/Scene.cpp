@@ -255,7 +255,7 @@ void Scene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 		if (pMyPlayer) {
 			BoundingBox bossArea;
 			bossArea.setBound(1.f, 0.1f, 125.f, 107.f, 3.f, 21.f);
-			if (bossArea.isCollide(pMyPlayer->getBoundingBox())) {
+			if (bossArea.isCollide(pMyPlayer->getBoundingBox())) {		// 보스 영역 안에 있을때만 그려준다
 				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.bossHpBarPipeline);
 				bossObject.drawUI(commandBuffer, pipelineLayout);
 			}

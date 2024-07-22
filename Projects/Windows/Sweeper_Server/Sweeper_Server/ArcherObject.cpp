@@ -244,6 +244,7 @@ void ArcherObject::release()
 
 void ArcherObject::onHit(const GameObjectBase& other, int damage)
 {
+	PlayerObject::onHit(other, damage);
 }
 
 void ArcherObject::changeATTACKState()
