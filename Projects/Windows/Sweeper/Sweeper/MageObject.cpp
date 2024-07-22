@@ -106,7 +106,7 @@ void MageObject::release()
 {
 }
 
-void MageObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
+void MageObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
 {
 	if (mageAttackEffects.size() > 0) {
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, attackEffect.pipeline);

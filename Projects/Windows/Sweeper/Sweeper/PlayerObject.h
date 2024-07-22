@@ -107,7 +107,7 @@ public:
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void release() override;
 
-	virtual void drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) = 0;
+	virtual void drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const = 0;
 	virtual void drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const override = 0;
 
 	void processKeyInput(unsigned int key, bool is_pressed);

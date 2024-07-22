@@ -49,7 +49,7 @@ public:
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void release() override;
 
-	virtual void drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
+	virtual void drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const override;
 	virtual void drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const override;
 
 	virtual void changeATTACKState() override;

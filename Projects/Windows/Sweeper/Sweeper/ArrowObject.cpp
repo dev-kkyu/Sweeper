@@ -31,7 +31,7 @@ void ArrowObject::release()
 {
 }
 
-void ArrowObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) const
+void ArrowObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
 {
 	auto nowTime = std::chrono::steady_clock::now();
 	if (spawnTime + std::chrono::milliseconds(375) <= nowTime) {

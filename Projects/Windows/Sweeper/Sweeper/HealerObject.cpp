@@ -90,7 +90,7 @@ void HealerObject::release()
 {
 }
 
-void HealerObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
+void HealerObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
 {
 	if (healerEffects.size() > 0) {
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, effect.pipeline);

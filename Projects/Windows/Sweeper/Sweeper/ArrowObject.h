@@ -20,7 +20,7 @@ public:
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void release() override;
 
-	void drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) const;
+	void drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const;
 
 };
 

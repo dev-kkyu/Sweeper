@@ -92,7 +92,7 @@ void WarriorObject::release()
 {
 }
 
-void WarriorObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
+void WarriorObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
 {
 	if (warriorEffects.size() > 0) {
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, effect.pipeline);

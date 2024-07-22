@@ -280,12 +280,12 @@ void Scene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 
 	for (auto& player : pPlayers) {
 		if (player)
-			player->drawEffect(commandBuffer, pipelineLayout, currentFrame);
+			player->drawEffect(commandBuffer, pipelineLayout);
 	}
 
 	// 화살의 이펙트도 같이 그려준다
 	for (const auto& arr : pArrowObjects) {
-		arr.second->drawEffect(commandBuffer, pipelineLayout, currentFrame);
+		arr.second->drawEffect(commandBuffer, pipelineLayout);
 	}
 }
 
