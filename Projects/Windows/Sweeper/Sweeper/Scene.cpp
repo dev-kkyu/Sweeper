@@ -139,6 +139,7 @@ Scene::~Scene()
 	vkDestroyPipeline(fDevice.logicalDevice, effect.archer.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.warrior.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.cloudPipeline, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.bossHpBarPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.hpBarPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.boundingBoxPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.model, nullptr);
@@ -243,7 +244,6 @@ void Scene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.hpBarPipeline);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
 
-		bossObject.drawUI(commandBuffer, pipelineLayout);
 		for (auto& m : pMonsterObjects) {
 			m.second->drawUI(commandBuffer, pipelineLayout);
 		}
@@ -251,6 +251,9 @@ void Scene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 			if (player)
 				player->drawUI(commandBuffer, pipelineLayout);
 		}
+
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.bossHpBarPipeline);
+		bossObject.drawUI(commandBuffer, pipelineLayout);
 	}
 
 	// 배경 사각형 그리기
@@ -957,6 +960,14 @@ void Scene::createGraphicsPipeline()
 	depthStencil.depthWriteEnable = VK_FALSE;
 
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.hpBarPipeline) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+	vkf::Shader bossHpBarShader{ fDevice, "shaders/bosshpbar.vert.spv", "shaders/hpbar.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(bossHpBarShader.shaderStages.size());
+	pipelineInfo.pStages = bossHpBarShader.shaderStages.data();
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.bossHpBarPipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 

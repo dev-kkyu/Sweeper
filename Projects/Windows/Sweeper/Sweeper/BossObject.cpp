@@ -45,7 +45,10 @@ void BossObject::release()
 
 void BossObject::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
 {
-	GLTFSkinModelObject::drawUI(commandBuffer, pipelineLayout);
+	glm::mat4 matrix{ 1.f };
+	matrix[3][3] = float(HP) / float(maxHP);
+	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+	vkCmdDraw(commandBuffer, 12, 1, 0, 0);
 }
 
 void BossObject::setBossState(BOSS_STATE state)
