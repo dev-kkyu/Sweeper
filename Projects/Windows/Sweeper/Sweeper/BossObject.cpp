@@ -27,6 +27,11 @@ void BossObject::initialize()
 void BossObject::update(float elapsedTime, uint32_t currentFrame)
 {
 	GLTFSkinModelObject::update(elapsedTime, currentFrame);
+
+	// 이동 보정
+	if (BOSS_CLIP_MOVE == activeAnimation) {
+		moveForward(2.f * elapsedTime);		// Todo : 서버와 공유 변수 필요 (이동 속도)
+	}
 }
 
 void BossObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
