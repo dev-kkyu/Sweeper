@@ -431,6 +431,18 @@ void BossObject::onHit(const GameObjectBase& other, int damage)
 {
 	HP -= damage;
 	std::cout << "보스가 [" << damage << "]의 피해를 입어 현재 체력 [" << HP << "]" << std::endl;
+
+	SC_BOSS_HP_PACKET p;
+	p.size = sizeof(p);
+	p.type = SC_BOSS_HP;
+	p.hp = HP;
+
+	for (auto& a : parentRoom->sessions) {	// 모든 플레이어에게 boss의 hp를 보내준다
+		std::shared_ptr<Session> session = a.load();
+		if (Room::isValidSession(session)) {
+			session->sendPacket(&p);
+		}
+	}
 }
 
 BOSS_STATE BossObject::getBossState() const

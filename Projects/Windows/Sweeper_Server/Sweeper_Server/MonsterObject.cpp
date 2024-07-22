@@ -216,17 +216,24 @@ void MonsterObject::onHit(const GameObjectBase& other, int damage)
 	newDir.y = 0.f;
 	setLook(newDir);		// 플레이어 방향으로, look을 바꿔준다
 
-	SC_MONSTER_LOOK_PACKET p;
-	p.size = sizeof(p);
-	p.type = SC_MONSTER_LOOK;
-	p.monster_id = my_id;
-	p.dir_x = newDir.x;
-	p.dir_z = newDir.z;
+	SC_MONSTER_LOOK_PACKET p1;
+	p1.size = sizeof(p1);
+	p1.type = SC_MONSTER_LOOK;
+	p1.monster_id = my_id;
+	p1.dir_x = newDir.x;
+	p1.dir_z = newDir.z;
 
-	for (auto& a : parentRoom->sessions) {	// 모든 플레이어에게 변경된 몬스터의  Look을 보내준다.
+	SC_MONSTER_HP_PACKET p2;
+	p2.size = sizeof(p2);
+	p2.type = SC_MONSTER_HP;
+	p2.monster_id = my_id;
+	p2.hp = HP;
+
+	for (auto& a : parentRoom->sessions) {	// 모든 플레이어에게 변경된 몬스터의 Look과 HP를 보내준다.
 		std::shared_ptr<Session> session = a.load();
 		if (Room::isValidSession(session)) {
-			session->sendPacket(&p);
+			session->sendPacket(&p1);
+			session->sendPacket(&p2);
 		}
 	}
 }
