@@ -187,7 +187,9 @@ bool MonsterObject::update(float elapsedTime)
 				// attack state 시간이 끝났으면
 				if (lastAttackStateTime + std::chrono::milliseconds(attackDelayTime_ms) <= nowTime) {
 					if (dist2 <= glm::pow(0.5f + collisionRadius, 2.f)) {		// 아직 일정 거리 안이라면
-						state = MONSTER_STATE::MOVE;			// 다시 움직인다
+						state = MONSTER_STATE::ATTACK;							// 다시 attack 시작
+						lastAttackStateTime = nowTime;
+						isAttacked = false;
 						sendMonsterStatePacket();
 					}
 					else {
