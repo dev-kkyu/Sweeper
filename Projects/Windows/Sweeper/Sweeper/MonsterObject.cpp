@@ -33,5 +33,15 @@ void MonsterObject::release()
 
 void MonsterObject::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
 {
-	GLTFSkinModelObject::drawUI(commandBuffer, pipelineLayout);
+	glm::mat4 matrix = glm::scale(glm::mat4(1.f), glm::vec3{ 0.5f, 0.05f, 1.f });
+	auto pos = getPosition();
+	matrix = glm::translate(glm::mat4(1.f), glm::vec3(pos.x, pos.y + headHeight, pos.z)) * matrix;
+	matrix[3][3] = float(HP) / float(maxHP);
+	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+	vkCmdDraw(commandBuffer, 12, 1, 0, 0);
+}
+
+void MonsterObject::setHeadHeight(float height)
+{
+	headHeight = height;
 }

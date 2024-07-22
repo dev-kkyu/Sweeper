@@ -607,9 +607,11 @@ void Scene::processPacket(unsigned char* packet)
 			break;
 		case MONSTER_TYPE::GOBLIN:
 			pMonsterObjects[p->monster_id]->setScale(glm::vec3(1.3f));
+			pMonsterObjects[p->monster_id]->setHeadHeight(1.5f);
 			pMonsterObjects[p->monster_id]->setMaxHP(MAX_HP_MONSTER_GOBLIN);
 			break;
 		case MONSTER_TYPE::BOOGIE:
+			pMonsterObjects[p->monster_id]->setHeadHeight(1.5f);
 			pMonsterObjects[p->monster_id]->setMaxHP(MAX_HP_MONSTER_BOOGIE);
 			break;
 		default:

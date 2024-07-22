@@ -10,6 +10,8 @@
 
 class MonsterObject : public GLTFSkinModelObject
 {
+protected:
+	float headHeight = 1.f;
 
 public:
 	MonsterObject();
@@ -21,6 +23,8 @@ public:
 	virtual void release() override;
 
 	virtual void drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const override;
+
+	void setHeadHeight(float height);
 
 };
 
