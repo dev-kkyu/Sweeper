@@ -58,6 +58,7 @@ void ArcherSKILLState::exit()
 ArcherObject::ArcherObject(GLTFModelObject& mapObject, vkf::Effect& effect)
 	: PlayerObject{ mapObject }, effect{ effect }
 {
+	maxHP = HP = MAX_HP_PLAYER_ARCHER;
 }
 
 void ArcherObject::initialize()

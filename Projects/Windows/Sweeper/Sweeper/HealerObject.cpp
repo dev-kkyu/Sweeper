@@ -56,6 +56,7 @@ void HealerSKILLState::exit()
 HealerObject::HealerObject(GLTFModelObject& mapObject, vkf::Effect& effect)
 	: PlayerObject{ mapObject }, effect{ effect }
 {
+	maxHP = HP = MAX_HP_PLAYER_HEALER;
 }
 
 void HealerObject::initialize()

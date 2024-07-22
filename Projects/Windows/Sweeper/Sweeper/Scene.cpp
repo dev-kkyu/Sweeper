@@ -486,6 +486,7 @@ void Scene::processPacket(unsigned char* packet)
 			throw std::runtime_error("ADD PLAYER ERROR : INVALID TYPE!\n");
 			break;
 		}
+		pPlayers[p->player_id]->setHP(p->hp);
 		pPlayers[p->player_id]->initModel(playerModel[static_cast<int>(p->player_type)], descriptorSetLayout.ssbo);
 		pPlayers[p->player_id]->setScale(glm::vec3(1.3f));
 		pPlayers[p->player_id]->setPosition(glm::vec3(p->pos_x, 0.f, p->pos_z));
@@ -535,6 +536,12 @@ void Scene::processPacket(unsigned char* packet)
 			std::cout << "PLAYER[" << int(p->player_id) << "]의 상태가 " << state << "로 변경" << std::endl;
 		break;
 	}
+	case SC_PLAYER_HP: {
+		auto p = reinterpret_cast<SC_PLAYER_HP_PACKET*>(packet);
+		if (pPlayers[p->player_id])
+			pPlayers[p->player_id]->setHP(p->hp);
+		break;
+	}
 	case SC_ADD_ARROW: {
 		auto p = reinterpret_cast<SC_ADD_ARROW_PACKET*>(packet);
 		if (pArrowObjects.find(p->arrow_id) == pArrowObjects.end()) {
@@ -578,18 +585,23 @@ void Scene::processPacket(unsigned char* packet)
 		switch (p->monster_type)
 		{
 		case MONSTER_TYPE::MUSHROOM:
+			pMonsterObjects[p->monster_id]->setMaxHP(MAX_HP_MONSTER_MUSHROOM);
 			break;
 		case MONSTER_TYPE::BORNDOG:
+			pMonsterObjects[p->monster_id]->setMaxHP(MAX_HP_MONSTER_BORNDOG);
 			break;
 		case MONSTER_TYPE::GOBLIN:
 			pMonsterObjects[p->monster_id]->setScale(glm::vec3(1.3f));
+			pMonsterObjects[p->monster_id]->setMaxHP(MAX_HP_MONSTER_GOBLIN);
 			break;
 		case MONSTER_TYPE::BOOGIE:
+			pMonsterObjects[p->monster_id]->setMaxHP(MAX_HP_MONSTER_BOOGIE);
 			break;
 		default:
 			std::cout << "ERROR: INVALID MONSTER TYPE!" << std::endl;
 			break;
 		}
+		pMonsterObjects[p->monster_id]->setHP(p->hp);
 		pMonsterObjects[p->monster_id]->initModel(monsterModel[static_cast<int>(p->monster_type)], descriptorSetLayout.ssbo);
 		pMonsterObjects[p->monster_id]->setPosition({ p->pos_x, 0.f, p->pos_z });
 		pMonsterObjects[p->monster_id]->setLook({ p->dir_x, 0.f, p->dir_z });
@@ -634,6 +646,12 @@ void Scene::processPacket(unsigned char* packet)
 			<< state_str[static_cast<int>(p->state)] << "로 변경" << std::endl;
 		break;
 	}
+	case SC_MONSTER_HP: {
+		auto p = reinterpret_cast<SC_MONSTER_HP_PACKET*>(packet);
+		if (0 != pMonsterObjects.count(p->monster_id))
+			pMonsterObjects[p->monster_id]->setHP(p->hp);
+		break;
+	}
 	case SC_MOVE_BOSS: {
 		auto p = reinterpret_cast<SC_MOVE_BOSS_PACKET*>(packet);
 		bossObject.setPosition(glm::vec3{ p->pos_x, 0.f, p->pos_z });
@@ -643,6 +661,11 @@ void Scene::processPacket(unsigned char* packet)
 	case SC_BOSS_STATE: {
 		auto p = reinterpret_cast<SC_BOSS_STATE_PACKET*>(packet);
 		bossObject.setBossState(p->state);
+		break;
+	}
+	case SC_BOSS_HP: {
+		auto p = reinterpret_cast<SC_BOSS_HP_PACKET*>(packet);
+		bossObject.setHP(p->hp);
 		break;
 	}
 	default:

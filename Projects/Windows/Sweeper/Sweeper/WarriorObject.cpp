@@ -58,6 +58,7 @@ void WarriorSKILLState::exit()
 WarriorObject::WarriorObject(GLTFModelObject& mapObject, vkf::Effect& effect)
 	: PlayerObject{ mapObject }, effect{ effect }
 {
+	maxHP = HP = MAX_HP_PLAYER_WARRIOR;
 }
 
 void WarriorObject::initialize()

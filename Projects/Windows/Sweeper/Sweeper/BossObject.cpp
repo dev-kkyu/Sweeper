@@ -16,6 +16,8 @@
 BossObject::BossObject()
 {
 	activeAnimation = BOSS_CLIP_SLEEP;
+
+	maxHP = HP = MAX_HP_BOSS;
 }
 
 void BossObject::initialize()
