@@ -12,8 +12,8 @@ BoogieObject::BoogieObject(Room* parentRoom, int m_id)
 	maxHP = HP = MAX_HP_MONSTER_BOOGIE;
 
 	attackDamage = 50;
-	attackDelayTime_ms = 1250;
-	attackPointTime_ms = 250;
+	attackDelayTime_ms = 1150;
+	attackPointTime_ms = 310;
 }
 
 BoogieObject::~BoogieObject()
