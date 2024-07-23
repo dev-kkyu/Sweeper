@@ -13,7 +13,8 @@
 #define BOSS_CLIP_PUNCH_DOWN	2
 #define BOSS_CLIP_DIE			3
 
-BossObject::BossObject()
+BossObject::BossObject(vkf::Effect& effect)
+	: effect{ effect }
 {
 	activeAnimation = BOSS_CLIP_SLEEP;
 
@@ -32,6 +33,9 @@ void BossObject::update(float elapsedTime, uint32_t currentFrame)
 	if (BOSS_CLIP_MOVE == activeAnimation) {
 		moveForward(2.f * elapsedTime);		// Todo : 서버와 공유 변수 필요 (이동 속도)
 	}
+
+	// 이펙트 누적시간 업데이트
+	bossEffect.accumTime += elapsedTime;
 }
 
 void BossObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
@@ -41,6 +45,20 @@ void BossObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLa
 
 void BossObject::release()
 {
+}
+
+void BossObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
+{
+	if (bossEffect.accumTime >= 0.f and bossEffect.accumTime < 2.5f) {
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, effect.pipeline);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &effect.texture.samplerDescriptorSet, 0, nullptr);
+
+		glm::mat4 matrix = glm::translate(glm::mat4(1.f), bossEffect.pos);
+		matrix[3][3] = bossEffect.accumTime;
+		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+
+		vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+	}
 }
 
 void BossObject::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
@@ -81,6 +99,8 @@ void BossObject::setBossState(BOSS_STATE state)
 	case BOSS_STATE::PUNCH_DOWN:
 		setAnimationClip(BOSS_CLIP_PUNCH_DOWN);
 		setAnimateSpeed(0.55f);
+		// 보스 스킬 이펙트 발동
+		bossEffect = BossEffect{ getPosition(), 0.f };
 		break;
 	case BOSS_STATE::DIE:
 		setAnimationClip(BOSS_CLIP_DIE);

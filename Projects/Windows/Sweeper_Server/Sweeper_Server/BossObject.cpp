@@ -505,7 +505,7 @@ void BossObject::changeAttackPattern()
 		break;
 	}
 
-	if (HP <= 500) {
+	if (HP <= 5000) {
 		attackStateFlag = (attackStateFlag + 1) % 3;
 	}
 	else {

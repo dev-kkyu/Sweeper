@@ -19,7 +19,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 {
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
-	createSamplerDescriptorPool(7);		// 배경 구름, 이펙트6개
+	createSamplerDescriptorPool(8);		// 배경 구름, 이펙트7개
 
 	uniformBufferObject.scene.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 	uniformBufferObject.offscreen.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
@@ -35,6 +35,7 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 	effect.mage.attack.texture.loadFromFile(fDevice, "models/Textures/magic.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 	effect.mage.skill.texture.loadFromFile(fDevice, "models/Textures/magiccircle.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 	effect.arrow.texture.loadFromFile(fDevice, "models/Textures/arroweffect.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
+	effect.boss.texture.loadFromFile(fDevice, "models/Textures/bossmagic.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 
 	// gltf 모델 로드
 	mapModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/map.glb");
@@ -58,10 +59,11 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 	mapObject.setModel(mapModel);
 
 	// 보스 모델 생성
-	bossObject.initModel(bossModel, descriptorSetLayout.ssbo);
-	bossObject.setPosition({ 12.25f, 0.f, 115.f });		// 서버와 동기화 해야함
-	bossObject.setLook({ 0.f, 0.f, -1.f });
-	bossObject.setScale(glm::vec3{ 2.25f });
+	pBossObject = std::make_unique<BossObject>(effect.boss);
+	pBossObject->initModel(bossModel, descriptorSetLayout.ssbo);
+	pBossObject->setPosition({ 12.25f, 0.f, 115.f });		// 서버와 동기화 해야함
+	pBossObject->setLook({ 0.f, 0.f, -1.f });
+	pBossObject->setScale(glm::vec3{ 2.25f });
 
 	// 플레이어 선택 및 생성
 	{
@@ -127,11 +129,13 @@ Scene::~Scene()
 	effect.mage.attack.texture.destroy();	// 마법사 이펙트 텍스처
 	effect.mage.skill.texture.destroy();	// 마법사 이펙트 텍스처
 	effect.arrow.texture.destroy();			// 화살 이펙트 텍스처
+	effect.boss.texture.destroy();			// 보스 이펙트 텍스처
 
 	cloudTexture.destroy();					// 구름 텍스처
 
 	vkDestroyDescriptorPool(fDevice.logicalDevice, sceneSamplerDescriptorPool, nullptr);
 
+	vkDestroyPipeline(fDevice.logicalDevice, effect.boss.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.arrow.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.mage.attack.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.mage.skill.pipeline, nullptr);
@@ -190,7 +194,7 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	// 맵은 업데이트 X
 
 	// 오브젝트 업데이트
-	bossObject.update(elapsedTime, currentFrame);
+	pBossObject->update(elapsedTime, currentFrame);
 
 	for (auto& m : pMonsterObjects) {
 		m.second->update(elapsedTime, currentFrame);
@@ -226,7 +230,7 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOf
 	// skinModel Object들
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.sceneOnOff[idx].skinModel);
 
-	bossObject.draw(commandBuffer, pipelineLayout, currentFrame);
+	pBossObject->draw(commandBuffer, pipelineLayout, currentFrame);
 
 	for (auto& m : pMonsterObjects) {
 		m.second->draw(commandBuffer, pipelineLayout, currentFrame);
@@ -257,7 +261,7 @@ void Scene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 			bossArea.setBound(1.f, 0.1f, 125.f, 107.f, 3.f, 21.f);
 			if (bossArea.isCollide(pMyPlayer->getBoundingBox())) {		// 보스 영역 안에 있을때만 그려준다
 				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.bossHpBarPipeline);
-				bossObject.drawUI(commandBuffer, pipelineLayout);
+				pBossObject->drawUI(commandBuffer, pipelineLayout);
 			}
 		}
 	}
@@ -287,6 +291,8 @@ void Scene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	for (const auto& arr : pArrowObjects) {
 		arr.second->drawEffect(commandBuffer, pipelineLayout);
 	}
+
+	pBossObject->drawEffect(commandBuffer, pipelineLayout);
 }
 
 void Scene::drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -680,18 +686,18 @@ void Scene::processPacket(unsigned char* packet)
 	}
 	case SC_MOVE_BOSS: {
 		auto p = reinterpret_cast<SC_MOVE_BOSS_PACKET*>(packet);
-		bossObject.setPosition(glm::vec3{ p->pos_x, 0.f, p->pos_z });
-		bossObject.setLook(glm::vec3{ p->dir_x, 0.f, p->dir_z });
+		pBossObject->setPosition(glm::vec3{ p->pos_x, 0.f, p->pos_z });
+		pBossObject->setLook(glm::vec3{ p->dir_x, 0.f, p->dir_z });
 		break;
 	}
 	case SC_BOSS_STATE: {
 		auto p = reinterpret_cast<SC_BOSS_STATE_PACKET*>(packet);
-		bossObject.setBossState(p->state);
+		pBossObject->setBossState(p->state);
 		break;
 	}
 	case SC_BOSS_HP: {
 		auto p = reinterpret_cast<SC_BOSS_HP_PACKET*>(packet);
-		bossObject.setHP(p->hp);
+		pBossObject->setHP(p->hp);
 		break;
 	}
 	default:
@@ -1038,6 +1044,14 @@ void Scene::createGraphicsPipeline()
 	pipelineInfo.pStages = arrowShader.shaderStages.data();
 
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &effect.arrow.pipeline) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+	vkf::Shader bossShader{ fDevice, "shaders/bossskill.vert.spv", "shaders/bossskill.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(bossShader.shaderStages.size());
+	pipelineInfo.pStages = bossShader.shaderStages.data();
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &effect.boss.pipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 }

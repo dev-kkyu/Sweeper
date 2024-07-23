@@ -187,6 +187,8 @@
     <None Include="shaders\arroweffect.frag" />
     <None Include="shaders\arroweffect.vert" />
     <None Include="shaders\bosshpbar.vert" />
+    <None Include="shaders\bossskill.frag" />
+    <None Include="shaders\bossskill.vert" />
     <None Include="shaders\boundingbox.frag" />
     <None Include="shaders\boundingbox.vert" />
     <None Include="shaders\cloud.frag" />

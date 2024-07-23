@@ -61,6 +61,7 @@ private:
 			vkf::Effect skill;
 		} mage;
 		vkf::Effect arrow;
+		vkf::Effect boss;
 	} effect;
 	vkf::Texture cloudTexture;
 	float sceneElapsedTime = 0.f;	// 현재는 구름 애니메이션에 사용
@@ -90,7 +91,7 @@ private:
 	std::unordered_map<int, std::shared_ptr<MonsterObject>> pMonsterObjects;	// 다형성을 위한 포인터 사용
 
 	VulkanGLTFSkinModel bossModel;
-	BossObject bossObject;
+	std::unique_ptr<BossObject> pBossObject;
 
 	// gltf skin 캐릭터 에셋
 	std::array<VulkanGLTFSkinModel, 4> playerModel;		// 캐릭터 종류는 총 4개이다.
