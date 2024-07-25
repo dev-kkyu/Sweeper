@@ -13,7 +13,7 @@
 class PlayerObject;
 class MonsterObject;
 class ArrowObject;
-class Scene
+class GameScene
 {
 private:
 	vkf::Device& fDevice;
@@ -106,8 +106,10 @@ private:
 	bool middleButtonPressed = false;
 
 public:
-	Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, int& width, int& height);
-	~Scene();
+	GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, int& width, int& height);
+	~GameScene();
+
+	void start(PLAYER_TYPE player_type);
 
 	void update(float elapsedTime, uint32_t currentFrame);
 	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen);

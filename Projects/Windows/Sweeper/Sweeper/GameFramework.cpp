@@ -82,7 +82,8 @@ void GameFramework::initVulkan(GLFWwindow* window)
 	createCommandBuffers();
 	createSyncObjects();
 
-	pScene = std::make_unique<Scene>(fDevice, msaaSamples, renderPass,
+	// 씬매니저 생성
+	pSceneManager = std::make_unique<SceneManager>(fDevice, msaaSamples, renderPass,
 		offscreenPass.samplerDescriptorSetLayout, offscreenPass.samplerDescriptorSet,
 		framebufferWidth, framebufferHeight);
 	gameTimer.SetWindow(window);
@@ -95,7 +96,7 @@ void GameFramework::cleanup()
 	vkDeviceWaitIdle(fDevice.logicalDevice);
 
 	// 씬 소멸
-	pScene.reset(nullptr);
+	pSceneManager.reset(nullptr);
 
 	// 오프스크린 정보 Destroy
 	vkDestroyDescriptorPool(fDevice.logicalDevice, offscreenPass.samplerDescriptorPool, nullptr);
@@ -145,7 +146,7 @@ void GameFramework::drawFrame()
 	}
 
 	float elapsedTime = gameTimer.Tick(0);
-	pScene->update(elapsedTime, currentFrame);
+	pSceneManager->update(elapsedTime, currentFrame);
 
 	vkResetFences(fDevice.logicalDevice, 1, &inFlightFences[currentFrame]);
 
@@ -200,29 +201,29 @@ void GameFramework::drawFrame()
 
 void GameFramework::processKeyboard(int key, int action, int mods)
 {
-	if (pScene)
-		pScene->processKeyboard(key, action, mods);
+	if (pSceneManager)
+		pSceneManager->processKeyboard(key, action, mods);
 
 	if (key == GLFW_KEY_B and action == GLFW_PRESS)
-		isDrawBoundingBox = not isDrawBoundingBox;
+		pSceneManager->changeIsDrawBoundingBox();
 }
 
 void GameFramework::processMouseButton(int button, int action, int mods, float xpos, float ypos)
 {
-	if (pScene)
-		pScene->processMouseButton(button, action, mods, xpos, ypos);
+	if (pSceneManager)
+		pSceneManager->processMouseButton(button, action, mods, xpos, ypos);
 }
 
 void GameFramework::processMouseScroll(double xoffset, double yoffset)
 {
-	if (pScene)
-		pScene->processMouseScroll(xoffset, yoffset);
+	if (pSceneManager)
+		pSceneManager->processMouseScroll(xoffset, yoffset);
 }
 
 void GameFramework::processMouseCursor(float xpos, float ypos)
 {
-	if (pScene)
-		pScene->processMouseCursor(xpos, ypos);
+	if (pSceneManager)
+		pSceneManager->processMouseCursor(xpos, ypos);
 }
 
 void GameFramework::processPacket(unsigned char* packet)
@@ -250,7 +251,7 @@ void GameFramework::processPacket(unsigned char* packet)
 	case SC_MOVE_BOSS:
 	case SC_BOSS_STATE:
 	case SC_BOSS_HP:
-		pScene->processPacket(packet);
+		pSceneManager->processPacket(packet);
 		break;
 	case SC_LOGIN_FAIL:
 		std::cout << "Login Failed : 방이 가득 찼습니다." << std::endl;
@@ -259,11 +260,6 @@ void GameFramework::processPacket(unsigned char* packet)
 		std::cout << "Type Error: " << static_cast<int>(packet[1]) << " Type is invalid\n";
 		break;
 	}
-}
-
-PLAYER_TYPE GameFramework::getPlayerType() const
-{
-	return pScene->getPlayerType();
 }
 
 void GameFramework::cleanupSwapChain()
@@ -964,7 +960,7 @@ void GameFramework::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 		// 그림자 매핑 아티팩트를 방지하는 데 필요합니다.
 		vkCmdSetDepthBias(commandBuffer, depthBiasConstant, 0.0f, depthBiasSlope);
 
-		pScene->draw(commandBuffer, currentFrame, true);
+		pSceneManager->drawOffscreen(commandBuffer, currentFrame);
 
 		vkCmdEndRenderPass(commandBuffer);
 	}
@@ -1002,14 +998,7 @@ void GameFramework::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 		scissor.extent = swapChainExtent;
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-		pScene->draw(commandBuffer, currentFrame, false);
-
-		if (isDrawBoundingBox)
-			pScene->drawBoundingBox(commandBuffer, currentFrame);
-
-		pScene->drawEffect(commandBuffer, currentFrame);
-
-		pScene->drawUI(commandBuffer, currentFrame);
+		pSceneManager->drawScene(commandBuffer, currentFrame);
 
 		vkCmdEndRenderPass(commandBuffer);
 	}

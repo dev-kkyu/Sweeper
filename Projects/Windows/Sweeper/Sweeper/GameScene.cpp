@@ -1,4 +1,4 @@
-#include "Scene.h"
+#include "GameScene.h"
 #include <iostream>
 #include <stdexcept>
 
@@ -13,7 +13,7 @@
 
 #include "NetworkManager.h"
 
-Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, int& width, int& height)
+GameScene::GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, int& width, int& height)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }
 	, camera{ width, height }
 {
@@ -58,49 +58,9 @@ Scene::Scene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::Rend
 	// 맵 생성
 	mapObject.setModel(mapModel);
 
-	// 보스 모델 생성
-	pBossObject = std::make_unique<BossObject>(effect.boss);
-	pBossObject->initModel(bossModel, descriptorSetLayout.ssbo);
-	pBossObject->setPosition({ 12.25f, 0.f, 115.f });		// 서버와 동기화 해야함
-	pBossObject->setLook({ 0.f, 0.f, -1.f });
-	pBossObject->setScale(glm::vec3{ 2.25f });
-
-	// 플레이어 선택 및 생성
-	{
-		int sel_type{};
-		std::cout << "플레이어 선택 (0~3): ";
-		std::cin >> sel_type;
-		if (std::cin.fail() or sel_type < 0 or sel_type > 3) {
-			std::cout << "잘못된 입력" << std::endl;
-			exit(-1);
-		}
-		player_type = static_cast<PLAYER_TYPE>(sel_type);
-		switch (player_type)
-		{
-		case PLAYER_TYPE::WARRIOR:
-			pMyPlayer = std::make_shared<WarriorObject>(mapObject, effect.warrior);
-			break;
-		case PLAYER_TYPE::ARCHER:
-			pMyPlayer = std::make_shared<ArcherObject>(mapObject, effect.archer);
-			break;
-		case PLAYER_TYPE::MAGE:
-			pMyPlayer = std::make_shared<MageObject>(mapObject, effect.mage.attack, effect.mage.skill);
-			break;
-		case PLAYER_TYPE::HEALER:
-			pMyPlayer = std::make_shared<HealerObject>(mapObject, effect.healer);
-			break;
-		default:
-			throw std::runtime_error("ADD PLAYER ERROR : INVALID TYPE!\n");
-			break;
-		}
-		pMyPlayer->initModel(playerModel[static_cast<int>(player_type)], descriptorSetLayout.ssbo);
-		pMyPlayer->setScale(glm::vec3(1.3f));
-		camera.setPlayer(pMyPlayer);
-	}
-
 }
 
-Scene::~Scene()
+GameScene::~GameScene()
 {
 	// 플레이어 객체들은 shared_ptr이므로, 따로 삭제 X
 	for (auto& model : playerModel) {		// 플레이어 모델들
@@ -156,7 +116,46 @@ Scene::~Scene()
 	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.ubo, nullptr);
 }
 
-void Scene::update(float elapsedTime, uint32_t currentFrame)
+void GameScene::start(PLAYER_TYPE player_type)
+{
+	// 오브젝트 초기화
+	pArrowObjects.clear();
+	pMonsterObjects.clear();
+	for (auto& player : pPlayers)
+		player = nullptr;
+
+	// 보스 오브젝트 초기화 및 생성
+	pBossObject = std::make_unique<BossObject>(effect.boss);
+	pBossObject->initModel(bossModel, descriptorSetLayout.ssbo);
+	pBossObject->setPosition({ 12.25f, 0.f, 115.f });		// 서버와 동기화 해야함
+	pBossObject->setLook({ 0.f, 0.f, -1.f });
+	pBossObject->setScale(glm::vec3{ 2.25f });
+
+	// 내 플레이어 초기화 및 생성
+	switch (this->player_type = player_type)
+	{
+	case PLAYER_TYPE::WARRIOR:
+		pMyPlayer = std::make_shared<WarriorObject>(mapObject, effect.warrior);
+		break;
+	case PLAYER_TYPE::ARCHER:
+		pMyPlayer = std::make_shared<ArcherObject>(mapObject, effect.archer);
+		break;
+	case PLAYER_TYPE::MAGE:
+		pMyPlayer = std::make_shared<MageObject>(mapObject, effect.mage.attack, effect.mage.skill);
+		break;
+	case PLAYER_TYPE::HEALER:
+		pMyPlayer = std::make_shared<HealerObject>(mapObject, effect.healer);
+		break;
+	default:
+		throw std::runtime_error("ADD PLAYER ERROR : INVALID TYPE!\n");
+		break;
+	}
+	pMyPlayer->initModel(playerModel[static_cast<int>(player_type)], descriptorSetLayout.ssbo);
+	pMyPlayer->setScale(glm::vec3(1.3f));
+	camera.setPlayer(pMyPlayer);
+}
+
+void GameScene::update(float elapsedTime, uint32_t currentFrame)
 {
 	sceneElapsedTime += elapsedTime;
 
@@ -207,7 +206,7 @@ void Scene::update(float elapsedTime, uint32_t currentFrame)
 	}
 }
 
-void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen)
+void GameScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen)
 {
 	// if문을 쓰지 않기 위한 코드..
 	int idx = !!static_cast<int>(isOffscreen);
@@ -242,7 +241,7 @@ void Scene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOf
 	}
 }
 
-void Scene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+void GameScene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
 	{	// 체력 바 그려주기
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.hpBarPipeline);
@@ -278,7 +277,7 @@ void Scene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 }
 
-void Scene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+void GameScene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
 
@@ -295,7 +294,7 @@ void Scene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	pBossObject->drawEffect(commandBuffer, pipelineLayout);
 }
 
-void Scene::drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+void GameScene::drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.boundingBoxPipeline);
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
@@ -309,7 +308,7 @@ void Scene::drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame
 	}
 }
 
-void Scene::processKeyboard(int key, int action, int mods)
+void GameScene::processKeyboard(int key, int action, int mods)
 {
 	// 키 입력을 서버로 전송한다.
 
@@ -387,7 +386,7 @@ void Scene::processKeyboard(int key, int action, int mods)
 	}
 }
 
-void Scene::processMouseButton(int button, int action, int mods, float xpos, float ypos)
+void GameScene::processMouseButton(int button, int action, int mods, float xpos, float ypos)
 {
 	switch (action)
 	{
@@ -455,7 +454,7 @@ void Scene::processMouseButton(int button, int action, int mods, float xpos, flo
 	}
 }
 
-void Scene::processMouseScroll(double xoffset, double yoffset)
+void GameScene::processMouseScroll(double xoffset, double yoffset)
 {
 	float distance = camera.getDistance();
 	if (yoffset > 0.f) {
@@ -467,14 +466,14 @@ void Scene::processMouseScroll(double xoffset, double yoffset)
 	}
 }
 
-void Scene::processMouseCursor(float xpos, float ypos)
+void GameScene::processMouseCursor(float xpos, float ypos)
 {
 	if (middleButtonPressed) {
 		camera.processMouseCursor(xpos, ypos);
 	}
 }
 
-void Scene::processPacket(unsigned char* packet)
+void GameScene::processPacket(unsigned char* packet)
 {
 	switch (packet[1])
 	{
@@ -706,12 +705,12 @@ void Scene::processPacket(unsigned char* packet)
 	}
 }
 
-PLAYER_TYPE Scene::getPlayerType() const
+PLAYER_TYPE GameScene::getPlayerType() const
 {
 	return player_type;
 }
 
-void Scene::createDescriptorSetLayout()
+void GameScene::createDescriptorSetLayout()
 {
 	VkDescriptorSetLayoutBinding uboLayoutBinding{};
 	uboLayoutBinding.binding = 0;
@@ -754,7 +753,7 @@ void Scene::createDescriptorSetLayout()
 	}
 }
 
-void Scene::createGraphicsPipeline()
+void GameScene::createGraphicsPipeline()
 {
 	vkf::Shader modelShader{ fDevice, "shaders/model.vert.spv", "shaders/fragment.frag.spv" };
 
@@ -1056,7 +1055,7 @@ void Scene::createGraphicsPipeline()
 	}
 }
 
-void Scene::createSamplerDescriptorPool(uint32_t setCount)
+void GameScene::createSamplerDescriptorPool(uint32_t setCount)
 {
 	// 씬의 텍스처(구름 등) 샘플러에 사용할 descriptor pool 할당
 	std::array<VkDescriptorPoolSize, 1> poolSizes{};

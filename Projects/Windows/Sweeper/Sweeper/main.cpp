@@ -51,7 +51,6 @@ static void vulkanMain()
 	// 네트워크 연결
 	NetworkManager::getInstance().connectServer(ipAddr);
 	NetworkManager::getInstance().setPacketReceivedCallback(packetCallback);	// Recv된 데이터 처리할 함수 설정
-	NetworkManager::getInstance().start(g_GameFramework.getPlayerType());		// 로그인 및 Recv 시작
 
 	// 메인루프
 	while (!glfwWindowShouldClose(window)) {

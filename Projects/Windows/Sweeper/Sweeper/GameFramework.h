@@ -6,7 +6,7 @@
 #include <optional>
 
 #include "VulkanFramework.h"
-#include "Scene.h"
+#include "SceneManager.h"
 #include "Timer.h"
 
 
@@ -51,8 +51,6 @@ public:
 	// 匙飘况农 菩哦 贸府
 	void processPacket(unsigned char* packet);
 
-	PLAYER_TYPE getPlayerType() const;
-
 private:
 	Timer gameTimer;
 
@@ -60,8 +58,7 @@ private:
 	int& framebufferWidth;
 	int& framebufferHeight;
 
-	std::unique_ptr<Scene> pScene;
-	bool isDrawBoundingBox = false;
+	std::unique_ptr<SceneManager> pSceneManager;
 
 	vkf::Device fDevice;
 
