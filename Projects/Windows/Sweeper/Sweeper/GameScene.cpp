@@ -735,6 +735,11 @@ VkPipelineLayout GameScene::getPipelineLayout() const
 	return pipelineLayout;
 }
 
+VkPipeline GameScene::getModelPipeline() const
+{
+	return pipeline.scene.model;
+}
+
 VkPipeline GameScene::getSkinModelPipeline() const
 {
 	return pipeline.scene.skinModel;

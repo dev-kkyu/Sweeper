@@ -133,6 +133,7 @@ public:
 	VkDescriptorSetLayout getSamplerDescriptorSetLayout() const;
 	VkDescriptorSetLayout getSSBODescriptorSetLayout() const;
 	VkPipelineLayout getPipelineLayout() const;
+	VkPipeline getModelPipeline() const;
 	VkPipeline getSkinModelPipeline() const;
 
 private:

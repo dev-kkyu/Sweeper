@@ -154,7 +154,8 @@ void SceneManager::initScene()
 	pStartScene = std::make_unique<StartScene>(fDevice, msaaSamples, renderPass,
 		pGameScene->getSamplerDescriptorSetLayout(), pGameScene->getPipelineLayout());
 	// GameScene 积己 饶 积己 啊瓷
-	pLobbyScene = std::make_unique<LobbyScene>(fDevice, pGameScene->getPlayerModel(), pGameScene->getUBODescriptorSetLayout(),
-		pGameScene->getSSBODescriptorSetLayout(), shadowSet, pGameScene->getPipelineLayout(), pGameScene->getSkinModelPipeline());
+	pLobbyScene = std::make_unique<LobbyScene>(fDevice, msaaSamples, renderPass, pGameScene->getPlayerModel(),
+		pGameScene->getUBODescriptorSetLayout(), pGameScene->getSSBODescriptorSetLayout(), pGameScene->getSamplerDescriptorSetLayout(),
+		shadowSet, pGameScene->getPipelineLayout(), pGameScene->getModelPipeline(), pGameScene->getSkinModelPipeline());
 
 }

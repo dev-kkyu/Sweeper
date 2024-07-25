@@ -2,9 +2,11 @@
 
 #include <GLFW/glfw3.h>
 
-LobbyScene::LobbyScene(vkf::Device& fDevice, std::array<VulkanGLTFSkinModel, 4>& playerModel, VkDescriptorSetLayout uboDescriptorSetLayout,
-	VkDescriptorSetLayout ssboDescriptorSetLayout, VkDescriptorSet shadowSet, VkPipelineLayout pipelineLayout, VkPipeline skinModelPipeline)
-	: shadowSet{ shadowSet }, pipelineLayout{ pipelineLayout }, skinModelPipeline{ skinModelPipeline }
+LobbyScene::LobbyScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, std::array<VulkanGLTFSkinModel, 4>& playerModel,
+	VkDescriptorSetLayout uboDescriptorSetLayout, VkDescriptorSetLayout ssboDescriptorSetLayout, VkDescriptorSetLayout samplerDescriptorSetLayout,
+	VkDescriptorSet shadowSet, VkPipelineLayout pipelineLayout, VkPipeline modelPipeline, VkPipeline skinModelPipeline)
+	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSet{ shadowSet },
+	pipelineLayout{ pipelineLayout }, modelPipeline{ modelPipeline }, skinModelPipeline{ skinModelPipeline }
 {
 	uniformBufferObject.createUniformBufferObjects(fDevice, uboDescriptorSetLayout);
 
