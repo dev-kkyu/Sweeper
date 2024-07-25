@@ -108,8 +108,8 @@ ArcherObject::ArcherObject(Room* parentRoom, int p_id)
 {
 	maxHP = HP = MAX_HP_PLAYER_ARCHER;
 
-	attackDamage = 100;
-	skillDamage = 100;
+	attackDamage = 50;
+	skillDamage = 40;
 }
 
 ArcherObject::~ArcherObject()

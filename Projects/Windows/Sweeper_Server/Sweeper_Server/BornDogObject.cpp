@@ -11,7 +11,7 @@ BornDogObject::BornDogObject(Room* parentRoom, int m_id)
 
 	maxHP = HP = MAX_HP_MONSTER_BORNDOG;
 
-	attackDamage = 50;
+	attackDamage = 75;
 	attackDelayTime_ms = 1200;
 	attackPointTime_ms = 250;
 }

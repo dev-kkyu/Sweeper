@@ -31,13 +31,13 @@ constexpr char CS_KEY_EVENT = 2;
 
 constexpr float PLAYER_SPEED = 5.f;
 
-constexpr short MAX_HP_PLAYER_WARRIOR = 1000;
-constexpr short MAX_HP_PLAYER_ARCHER = 1000;
-constexpr short MAX_HP_PLAYER_MAGE = 1000;
+constexpr short MAX_HP_PLAYER_WARRIOR = 1200;
+constexpr short MAX_HP_PLAYER_ARCHER = 800;
+constexpr short MAX_HP_PLAYER_MAGE = 800;
 constexpr short MAX_HP_PLAYER_HEALER = 1000;
 constexpr short MAX_HP_MONSTER_MUSHROOM = 300;
-constexpr short MAX_HP_MONSTER_BORNDOG = 300;
-constexpr short MAX_HP_MONSTER_GOBLIN = 300;
+constexpr short MAX_HP_MONSTER_BORNDOG = 400;
+constexpr short MAX_HP_MONSTER_GOBLIN = 500;
 constexpr short MAX_HP_MONSTER_BOOGIE = 300;
 constexpr short MAX_HP_BOSS = 10000;
 

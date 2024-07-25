@@ -11,7 +11,7 @@ GoblinObject::GoblinObject(Room* parentRoom, int m_id)
 
 	maxHP = HP = MAX_HP_MONSTER_GOBLIN;
 
-	attackDamage = 50;
+	attackDamage = 100;
 	attackDelayTime_ms = 1150;
 	attackPointTime_ms = 300;
 }

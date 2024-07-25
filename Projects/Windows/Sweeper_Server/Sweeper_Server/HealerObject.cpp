@@ -115,7 +115,7 @@ HealerObject::HealerObject(Room* parentRoom, int p_id)
 	maxHP = HP = MAX_HP_PLAYER_HEALER;
 
 	attackDamage = 100;
-	skillDamage = 100;
+	skillDamage = 25;		// ÃÊ´ç Èú·®
 }
 
 void HealerObject::initialize()

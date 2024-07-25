@@ -130,7 +130,7 @@ WarriorObject::WarriorObject(Room* parentRoom, int p_id)
 	maxHP = HP = MAX_HP_PLAYER_WARRIOR;
 
 	attackDamage = 100;
-	skillDamage = 100;
+	skillDamage = 150;
 }
 
 void WarriorObject::initialize()

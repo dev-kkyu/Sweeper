@@ -135,8 +135,8 @@ MageObject::MageObject(Room* parentRoom, int p_id)
 {
 	maxHP = HP = MAX_HP_PLAYER_MAGE;
 
-	attackDamage = 100;
-	skillDamage = 100;
+	attackDamage = 60;
+	skillDamage = 50;
 }
 
 void MageObject::initialize()
