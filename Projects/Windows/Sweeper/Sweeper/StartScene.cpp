@@ -11,7 +11,7 @@ StartScene::StartScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples,
 	createGraphicsPipeline();
 	createSamplerDescriptorPool();
 
-	texture.loadFromFile(fDevice, "models/Textures/start.png", samplerDescriptorPool, samplerDescriptorSetLayout);
+	texture.loadFromFile(fDevice, "models/Textures/startscene.png", samplerDescriptorPool, samplerDescriptorSetLayout);
 
 	isEnd = false;
 }

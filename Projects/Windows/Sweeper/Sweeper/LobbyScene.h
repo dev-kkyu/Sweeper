@@ -24,6 +24,13 @@ private:
 	vkf::BufferObject uniformBufferObject;
 	vkf::BufferObject offscreenUniformBufferObject;
 
+	VkPipeline buttonPipeline;
+
+	VkDescriptorPool samplerDescriptorPool;
+
+	vkf::Texture button[4];		// 전사, 궁수, 법사, 사제
+	vkf::Texture startButton;	// 게임 시작
+
 	VulkanGLTFModel podiumModel;
 	GLTFModelObject podiumObject;
 
@@ -44,6 +51,10 @@ public:
 	PLAYER_TYPE getPlayerType() const;
 
 	bool getIsEnd() const;
+
+private:
+	void createGraphicsPipeline();
+	void createSamplerDescriptorPool(uint32_t setCount);
 
 };
 

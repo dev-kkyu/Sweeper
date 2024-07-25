@@ -289,5 +289,11 @@
     <None Include="shaders\startscene.vert">
       <Filter>소스 파일\Shader</Filter>
     </None>
+    <None Include="shaders\lobbybutton.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\lobbybutton.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>
