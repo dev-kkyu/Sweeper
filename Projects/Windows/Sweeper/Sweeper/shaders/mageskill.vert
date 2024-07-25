@@ -41,7 +41,7 @@ void main()
 	outUV = vec2((uv[gl_VertexIndex].x + iu) / 8.f, (uv[gl_VertexIndex].y + iv) / 4.f);
 
 	vec3 quadPos = quad[gl_VertexIndex];		// 그려질 위치
-	quadPos *= 2.f;								// 확대
+	quadPos *= 2.75f;								// 확대
 	quadPos.y += 0.1f;							// 바닥에서 살짝 띄워주기
 
     vec3 finalPos = push.model[3].xyz + quadPos;	// 정해진 위치(월드 좌표)로 옮기기

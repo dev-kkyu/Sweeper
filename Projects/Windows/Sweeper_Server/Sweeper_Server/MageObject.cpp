@@ -90,7 +90,7 @@ void MageSKILLState::update(float elapsedTime)
 	else if (now_time > stateBeginTime + std::chrono::milliseconds{ 300 }) {
 		// 충돌검사
 		auto myPos = player.getPosition();
-		myPos += player.getLook() * 3.f;	// 마법 공격 중앙
+		myPos += player.getLook() * 4.f;	// 마법 공격 중앙
 		myPos.y = 0.f;
 
 		// 몬스터와 충돌 검사
@@ -101,7 +101,7 @@ void MageSKILLState::update(float elapsedTime)
 			monPos.y = 0.f;
 
 			float dist = glm::length(myPos - monPos);
-			float targetDist = 1.5f + m.second->getCollisionRadius();	// 마법 스킬 공격의 반지름 : 1.5f
+			float targetDist = 2.f + m.second->getCollisionRadius();	// 마법 스킬 공격의 반지름 : 2.f
 			if (dist <= targetDist) {	// 충돌
 				m.second->onHit(player, player.skillDamage);
 				attackedObject.insert(m.second.get());			// 한번만 공격이 들어가도록 한다
@@ -114,7 +114,7 @@ void MageSKILLState::update(float elapsedTime)
 			monPos.y = 0.f;
 
 			float dist = glm::length(myPos - monPos);
-			float targetDist = 1.5f + player.parentRoom->boss->getCollisionRadius();	// 마법 스킬 공격의 반지름 : 1.5f
+			float targetDist = 2.f + player.parentRoom->boss->getCollisionRadius();	// 마법 스킬 공격의 반지름 : 2.f
 			if (dist <= targetDist) {	// 충돌
 				player.parentRoom->boss->onHit(player, player.skillDamage);
 				attackedObject.insert(player.parentRoom->boss.get());			// 한번만 공격이 들어가도록 한다

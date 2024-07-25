@@ -44,7 +44,7 @@ void MageSKILLState::enter()
 	player.setAnimationClip(PLAYER_CLIP_SKILL_MAGE);
 	player.setAnimateSpeed(1.f);
 
-	dynamic_cast<MageObject*>(&player)->mageSkillEffects.push_back(MageObject::MageEffect{ player.getPosition() + player.getLook() * 3.f, -0.3f });
+	dynamic_cast<MageObject*>(&player)->mageSkillEffects.push_back(MageObject::MageEffect{ player.getPosition() + player.getLook() * 4.f, -0.3f });
 }
 
 void MageSKILLState::update(float elapsedTime, uint32_t currentFrame)
