@@ -132,6 +132,9 @@
     <ClCompile Include="LobbyScene.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="StartScene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObjectBase.h">
@@ -201,6 +204,9 @@
       <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="LobbyScene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="StartScene.h">
       <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
@@ -275,6 +281,12 @@
       <Filter>소스 파일\Shader</Filter>
     </None>
     <None Include="shaders\bossskill.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\startscene.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\startscene.vert">
       <Filter>소스 파일\Shader</Filter>
     </None>
   </ItemGroup>

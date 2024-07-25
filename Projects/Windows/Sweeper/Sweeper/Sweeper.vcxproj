@@ -154,6 +154,7 @@
     <ClCompile Include="PlayerObject.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="StartScene.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="VulkanFramework.cpp" />
     <ClCompile Include="VulkanGLTFModel.cpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="PlayerObject.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="StartScene.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="VulkanFramework.h" />
     <ClInclude Include="VulkanGLTFModel.h" />
@@ -208,6 +210,8 @@
     <None Include="shaders\mageskill.vert" />
     <None Include="shaders\model.vert" />
     <None Include="shaders\skinnedmodel.vert" />
+    <None Include="shaders\startscene.frag" />
+    <None Include="shaders\startscene.vert" />
     <None Include="shaders\warriorskill.frag" />
     <None Include="shaders\warriorskill.vert" />
   </ItemGroup>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "StartScene.h"
 #include "LobbyScene.h"
 #include "GameScene.h"
 
@@ -23,6 +24,7 @@ private:
 
 	bool isDrawBoundingBox;
 
+	std::unique_ptr<StartScene> pStartScene;
 	std::unique_ptr<LobbyScene> pLobbyScene;
 	std::unique_ptr<GameScene> pGameScene;
 

@@ -3,7 +3,7 @@
 SceneManager::SceneManager(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, int& winWidth, int& winHeight)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }, winWidth{ winWidth }, winHeight{ winHeight }
 {
-	nowScene = SCENE_TYPE::LOBBY;
+	nowScene = SCENE_TYPE::START;
 
 	isDrawBoundingBox = false;
 
@@ -20,6 +20,10 @@ void SceneManager::update(float elapsedTime, uint32_t currentFrame)
 	switch (nowScene)
 	{
 	case SceneManager::SCENE_TYPE::START:
+		pStartScene->update(elapsedTime, currentFrame);
+		if (pStartScene->getIsEnd()) {
+			nowScene = SCENE_TYPE::LOBBY;
+		}
 		break;
 	case SceneManager::SCENE_TYPE::LOBBY:
 		pLobbyScene->update(elapsedTime, currentFrame);
@@ -46,6 +50,7 @@ void SceneManager::drawScene(VkCommandBuffer commandBuffer, uint32_t currentFram
 	switch (nowScene)
 	{
 	case SceneManager::SCENE_TYPE::START:
+		pStartScene->draw(commandBuffer, currentFrame);
 		break;
 	case SceneManager::SCENE_TYPE::LOBBY:
 		pLobbyScene->draw(commandBuffer, currentFrame);
@@ -68,6 +73,7 @@ void SceneManager::processKeyboard(int key, int action, int mods)
 	switch (nowScene)
 	{
 	case SceneManager::SCENE_TYPE::START:
+		pStartScene->processKeyboard(key, action, mods);
 		break;
 	case SceneManager::SCENE_TYPE::LOBBY:
 		pLobbyScene->processKeyboard(key, action, mods);
@@ -144,6 +150,9 @@ void SceneManager::initScene()
 	pGameScene = std::make_unique<GameScene>(fDevice, msaaSamples, renderPass,
 		shadowSetLayout, shadowSet, winWidth, winHeight);
 
+	// GameScene 积己 饶 积己 啊瓷
+	pStartScene = std::make_unique<StartScene>(fDevice, msaaSamples, renderPass,
+		pGameScene->getSamplerDescriptorSetLayout(), pGameScene->getPipelineLayout());
 	// GameScene 积己 饶 积己 啊瓷
 	pLobbyScene = std::make_unique<LobbyScene>(fDevice, pGameScene->getPlayerModel(), pGameScene->getUBODescriptorSetLayout(),
 		pGameScene->getSSBODescriptorSetLayout(), shadowSet, pGameScene->getPipelineLayout(), pGameScene->getSkinModelPipeline());
