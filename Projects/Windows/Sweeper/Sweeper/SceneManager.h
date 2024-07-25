@@ -46,8 +46,6 @@ public:
 
 	void changeIsDrawBoundingBox();
 
-	//PLAYER_TYPE getPlayerType() const;
-
 private:
 	void initScene();
 

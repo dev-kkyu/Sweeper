@@ -710,6 +710,36 @@ PLAYER_TYPE GameScene::getPlayerType() const
 	return player_type;
 }
 
+std::array<VulkanGLTFSkinModel, 4>& GameScene::getPlayerModel()
+{
+	return playerModel;
+}
+
+VkDescriptorSetLayout GameScene::getUBODescriptorSetLayout() const
+{
+	return descriptorSetLayout.ubo;
+}
+
+VkDescriptorSetLayout GameScene::getSamplerDescriptorSetLayout() const
+{
+	return descriptorSetLayout.sampler;
+}
+
+VkDescriptorSetLayout GameScene::getSSBODescriptorSetLayout() const
+{
+	return descriptorSetLayout.ssbo;
+}
+
+VkPipelineLayout GameScene::getPipelineLayout() const
+{
+	return pipelineLayout;
+}
+
+VkPipeline GameScene::getSkinModelPipeline() const
+{
+	return pipeline.scene.skinModel;
+}
+
 void GameScene::createDescriptorSetLayout()
 {
 	VkDescriptorSetLayoutBinding uboLayoutBinding{};

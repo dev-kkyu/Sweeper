@@ -127,6 +127,14 @@ public:
 
 	PLAYER_TYPE getPlayerType() const;
 
+	// Lobby Scene에서 가져다 쓸 내용들
+	std::array<VulkanGLTFSkinModel, 4>& getPlayerModel();
+	VkDescriptorSetLayout getUBODescriptorSetLayout() const;
+	VkDescriptorSetLayout getSamplerDescriptorSetLayout() const;
+	VkDescriptorSetLayout getSSBODescriptorSetLayout() const;
+	VkPipelineLayout getPipelineLayout() const;
+	VkPipeline getSkinModelPipeline() const;
+
 private:
 	void createDescriptorSetLayout();
 	void createGraphicsPipeline();

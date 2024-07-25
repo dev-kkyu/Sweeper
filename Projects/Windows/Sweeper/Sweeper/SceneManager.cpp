@@ -22,6 +22,7 @@ void SceneManager::update(float elapsedTime, uint32_t currentFrame)
 	case SceneManager::SCENE_TYPE::LOBBY:
 		break;
 	case SceneManager::SCENE_TYPE::ENTER:
+		pLobbyScene->update(elapsedTime, currentFrame);
 		if (pLobbyScene->getIsEnd()) {
 			NetworkManager::getInstance().start(pLobbyScene->getPlayerType());		// 로그인 및 Recv 시작
 			pGameScene->start(pLobbyScene->getPlayerType());
@@ -47,6 +48,7 @@ void SceneManager::drawScene(VkCommandBuffer commandBuffer, uint32_t currentFram
 	case SceneManager::SCENE_TYPE::LOBBY:
 		break;
 	case SceneManager::SCENE_TYPE::ENTER:
+		pLobbyScene->draw(commandBuffer, currentFrame);
 		break;
 	case SceneManager::SCENE_TYPE::INGAME:
 		pGameScene->draw(commandBuffer, currentFrame, false);
@@ -139,9 +141,11 @@ void SceneManager::changeIsDrawBoundingBox()
 
 void SceneManager::initScene()
 {
-	pLobbyScene = std::make_unique<LobbyScene>();
-
 	pGameScene = std::make_unique<GameScene>(fDevice, msaaSamples, renderPass,
 		shadowSetLayout, shadowSet, winWidth, winHeight);
+
+	// GameScene 생성 후 생성 가능
+	pLobbyScene = std::make_unique<LobbyScene>(fDevice, pGameScene->getPlayerModel(), pGameScene->getUBODescriptorSetLayout(),
+		pGameScene->getSSBODescriptorSetLayout(), shadowSet, pGameScene->getPipelineLayout(), pGameScene->getSkinModelPipeline());
 
 }
