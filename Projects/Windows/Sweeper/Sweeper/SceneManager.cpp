@@ -3,7 +3,7 @@
 SceneManager::SceneManager(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, int& winWidth, int& winHeight)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }, winWidth{ winWidth }, winHeight{ winHeight }
 {
-	nowScene = SCENE_TYPE::ENTER;
+	nowScene = SCENE_TYPE::LOBBY;
 
 	isDrawBoundingBox = false;
 
@@ -19,9 +19,9 @@ void SceneManager::update(float elapsedTime, uint32_t currentFrame)
 {
 	switch (nowScene)
 	{
-	case SceneManager::SCENE_TYPE::LOBBY:
+	case SceneManager::SCENE_TYPE::START:
 		break;
-	case SceneManager::SCENE_TYPE::ENTER:
+	case SceneManager::SCENE_TYPE::LOBBY:
 		pLobbyScene->update(elapsedTime, currentFrame);
 		if (pLobbyScene->getIsEnd()) {
 			NetworkManager::getInstance().start(pLobbyScene->getPlayerType());		// 로그인 및 Recv 시작
@@ -45,9 +45,9 @@ void SceneManager::drawScene(VkCommandBuffer commandBuffer, uint32_t currentFram
 {
 	switch (nowScene)
 	{
-	case SceneManager::SCENE_TYPE::LOBBY:
+	case SceneManager::SCENE_TYPE::START:
 		break;
-	case SceneManager::SCENE_TYPE::ENTER:
+	case SceneManager::SCENE_TYPE::LOBBY:
 		pLobbyScene->draw(commandBuffer, currentFrame);
 		break;
 	case SceneManager::SCENE_TYPE::INGAME:
@@ -67,9 +67,9 @@ void SceneManager::processKeyboard(int key, int action, int mods)
 {
 	switch (nowScene)
 	{
-	case SceneManager::SCENE_TYPE::LOBBY:
+	case SceneManager::SCENE_TYPE::START:
 		break;
-	case SceneManager::SCENE_TYPE::ENTER:
+	case SceneManager::SCENE_TYPE::LOBBY:
 		pLobbyScene->processKeyboard(key, action, mods);
 		break;
 	case SceneManager::SCENE_TYPE::INGAME:
@@ -82,9 +82,9 @@ void SceneManager::processMouseButton(int button, int action, int mods, float xp
 {
 	switch (nowScene)
 	{
-	case SceneManager::SCENE_TYPE::LOBBY:
+	case SceneManager::SCENE_TYPE::START:
 		break;
-	case SceneManager::SCENE_TYPE::ENTER:
+	case SceneManager::SCENE_TYPE::LOBBY:
 		break;
 	case SceneManager::SCENE_TYPE::INGAME:
 		pGameScene->processMouseButton(button, action, mods, xpos, ypos);
@@ -96,9 +96,9 @@ void SceneManager::processMouseScroll(double xoffset, double yoffset)
 {
 	switch (nowScene)
 	{
-	case SceneManager::SCENE_TYPE::LOBBY:
+	case SceneManager::SCENE_TYPE::START:
 		break;
-	case SceneManager::SCENE_TYPE::ENTER:
+	case SceneManager::SCENE_TYPE::LOBBY:
 		break;
 	case SceneManager::SCENE_TYPE::INGAME:
 		pGameScene->processMouseScroll(xoffset, yoffset);
@@ -110,9 +110,9 @@ void SceneManager::processMouseCursor(float xpos, float ypos)
 {
 	switch (nowScene)
 	{
-	case SceneManager::SCENE_TYPE::LOBBY:
+	case SceneManager::SCENE_TYPE::START:
 		break;
-	case SceneManager::SCENE_TYPE::ENTER:
+	case SceneManager::SCENE_TYPE::LOBBY:
 		break;
 	case SceneManager::SCENE_TYPE::INGAME:
 		pGameScene->processMouseCursor(xpos, ypos);
@@ -124,9 +124,9 @@ void SceneManager::processPacket(unsigned char* packet)
 {
 	switch (nowScene)
 	{
-	case SceneManager::SCENE_TYPE::LOBBY:
+	case SceneManager::SCENE_TYPE::START:
 		break;
-	case SceneManager::SCENE_TYPE::ENTER:
+	case SceneManager::SCENE_TYPE::LOBBY:
 		break;
 	case SceneManager::SCENE_TYPE::INGAME:
 		pGameScene->processPacket(packet);

@@ -17,7 +17,7 @@ private:
 
 private:
 	enum class SCENE_TYPE {
-		LOBBY = 0, ENTER = 1, INGAME = 2
+		START = 0, LOBBY = 1, INGAME = 2
 	};
 	SCENE_TYPE nowScene;
 
