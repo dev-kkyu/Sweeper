@@ -49,7 +49,7 @@ void BossObject::release()
 
 void BossObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
 {
-	if (bossEffect.accumTime >= 0.f and bossEffect.accumTime < 2.5f) {
+	if (bossEffect.accumTime >= 0.f and bossEffect.accumTime < 1.32f) {
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, effect.pipeline);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &effect.texture.samplerDescriptorSet, 0, nullptr);
 

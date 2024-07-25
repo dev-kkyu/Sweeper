@@ -35,16 +35,18 @@ layout (push_constant) uniform PushConstants {
 void main()
 {
 	float time = push.model[3][3];				// 이곳에 시간 저장
-	float framePerSec = 30.f;					// 초당 사진 개수
 
-	int index = int(time * framePerSec);		// 인덱스는 무한히 올라간다
+	int index = 0;								// 첫번째 사진만 사용한다
 
 	int iu = index % 4;
 	int iv = (index % 16) / 4;
 
 	outUV = vec2((uv[gl_VertexIndex].x + iu) / 4.f, (uv[gl_VertexIndex].y + iv) / 4.f);
 
-	outAlpha = 1.f - abs(time - 1.25f) / 1.25f;	// 투명도를 0 ~ 1 ~ 0 으로 2.5초동안 동작
+	if (time < 1.1f)
+		outAlpha = time / 1.1f;
+	else
+		outAlpha = 1.f - ((time - 1.1f) / 1.1f) * 5.f;	// 1.1초 이후에 5배 빨리 사라진다 (1 ~ 0), 총길이 1.1 + 0.22
 
 	vec3 quadPos = quad[gl_VertexIndex];		// 그려질 위치
 	quadPos *= 4.5f;							// 확대
