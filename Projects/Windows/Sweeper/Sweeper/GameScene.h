@@ -135,6 +135,8 @@ public:
 	VkPipelineLayout getPipelineLayout() const;
 	VkPipeline getModelPipeline() const;
 	VkPipeline getSkinModelPipeline() const;
+	VkPipeline getOffscreenModelPipeline() const;
+	VkPipeline getOffscreenSkinModelPipeline() const;
 
 private:
 	void createDescriptorSetLayout();

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GLTFModelObject.h"
 #include "GLTFSkinModelObject.h"
 #include "NetworkManager.h"
 
@@ -21,6 +22,10 @@ private:
 
 	// 만드는 것
 	vkf::BufferObject uniformBufferObject;
+	vkf::BufferObject offscreenUniformBufferObject;
+
+	VulkanGLTFModel podiumModel;
+	GLTFModelObject podiumObject;
 
 	std::array<GLTFSkinModelObject, 4> playerObjects;
 
@@ -32,6 +37,7 @@ public:
 
 	void update(float elapsedTime, uint32_t currentFrame);
 	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+	void offscreenDraw(VkCommandBuffer commandBuffer, uint32_t currentFrame, VkPipeline offscreenModelPipeline, VkPipeline offscreenSkinModelPipeline);
 
 	void processKeyboard(int key, int action, int mods);
 

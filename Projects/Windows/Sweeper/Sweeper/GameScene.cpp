@@ -745,6 +745,16 @@ VkPipeline GameScene::getSkinModelPipeline() const
 	return pipeline.scene.skinModel;
 }
 
+VkPipeline GameScene::getOffscreenModelPipeline() const
+{
+	return pipeline.offscreen.model;
+}
+
+VkPipeline GameScene::getOffscreenSkinModelPipeline() const
+{
+	return pipeline.offscreen.skinModel;
+}
+
 void GameScene::createDescriptorSetLayout()
 {
 	VkDescriptorSetLayoutBinding uboLayoutBinding{};

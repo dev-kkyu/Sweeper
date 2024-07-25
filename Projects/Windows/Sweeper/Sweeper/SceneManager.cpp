@@ -41,8 +41,17 @@ void SceneManager::update(float elapsedTime, uint32_t currentFrame)
 
 void SceneManager::drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
-	if (SceneManager::SCENE_TYPE::INGAME == nowScene)			// mainScene에서만 offscreen 그린다
+	switch (nowScene)
+	{
+	case SceneManager::SCENE_TYPE::START:
+		break;
+	case SceneManager::SCENE_TYPE::LOBBY:
+		pLobbyScene->offscreenDraw(commandBuffer, currentFrame, pGameScene->getOffscreenModelPipeline(), pGameScene->getOffscreenSkinModelPipeline());
+		break;
+	case SceneManager::SCENE_TYPE::INGAME:
 		pGameScene->draw(commandBuffer, currentFrame, true);
+		break;
+	}
 }
 
 void SceneManager::drawScene(VkCommandBuffer commandBuffer, uint32_t currentFrame)
