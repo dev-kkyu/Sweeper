@@ -10,10 +10,15 @@ private:
 	bool isEnd;
 	PLAYER_TYPE selPlayerType;
 
+	glm::vec3 lightPos;		// 모델 그려줄 때 사용할 조명
+
 	// 받아오는 것
 	vkf::Device& fDevice;
 	VkSampleCountFlagBits& msaaSamples;
 	vkf::RenderPass& renderPass;
+
+	int& winWidth;
+	int& winHeight;
 
 	VkDescriptorSet shadowSet;
 	VkPipelineLayout pipelineLayout;
@@ -37,7 +42,8 @@ private:
 	std::array<GLTFSkinModelObject, 4> playerObjects;
 
 public:
-	LobbyScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, std::array<VulkanGLTFSkinModel, 4>& playerModel,
+	LobbyScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, int& width, int& height,
+		std::array<VulkanGLTFSkinModel, 4>& playerModel,
 		VkDescriptorSetLayout uboDescriptorSetLayout, VkDescriptorSetLayout ssboDescriptorSetLayout, VkDescriptorSetLayout samplerDescriptorSetLayout,
 		VkDescriptorSet shadowSet, VkPipelineLayout pipelineLayout, VkPipeline modelPipeline, VkPipeline skinModelPipeline);
 	~LobbyScene();

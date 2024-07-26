@@ -4,10 +4,11 @@
 
 #include <stdexcept>
 
-LobbyScene::LobbyScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, std::array<VulkanGLTFSkinModel, 4>& playerModel,
+LobbyScene::LobbyScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, int& width, int& height,
+	std::array<VulkanGLTFSkinModel, 4>& playerModel,
 	VkDescriptorSetLayout uboDescriptorSetLayout, VkDescriptorSetLayout ssboDescriptorSetLayout, VkDescriptorSetLayout samplerDescriptorSetLayout,
 	VkDescriptorSet shadowSet, VkPipelineLayout pipelineLayout, VkPipeline modelPipeline, VkPipeline skinModelPipeline)
-	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSet{ shadowSet },
+	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, winWidth{ width }, winHeight{ height }, shadowSet{ shadowSet },
 	pipelineLayout{ pipelineLayout }, modelPipeline{ modelPipeline }, skinModelPipeline{ skinModelPipeline }
 {
 	createGraphicsPipeline();
@@ -25,22 +26,16 @@ LobbyScene::LobbyScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples,
 	podiumModel.loadModel(fDevice, samplerDescriptorSetLayout, "models/Character/Podium.glb");
 	podiumObject.setModel(podiumModel);
 
-	// 고정된 조명과 카메라
+	// 고정된 조명
+	lightPos = glm::vec3(3.f, 5.f, 3.f);
+
+	// offscreen ubo 값 고정
 	vkf::UniformBufferObject ubo{};
-	ubo.lightPos = glm::vec3(3.f, 5.f, 3.f);
-	ubo.view = glm::lookAt(glm::vec3(0.f, 1.375f, 4.125f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
-	ubo.projection = glm::perspective(glm::radians(45.f), 16.f / 9.f, 1.f, 100.f);
-
-	glm::mat4 lightView = glm::lookAt(ubo.lightPos, glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
-	glm::mat4 lightProj = glm::ortho(-10.f, 10.f, -10.f, 10.f, 0.f, 15.f);
-
-	ubo.lightSpace = lightProj * lightView;
-	for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {			// scene
-		uniformBufferObject.updateUniformBuffer(ubo, i);
-	}
-	ubo.view = lightView;
-	ubo.projection = lightProj;
-	for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {			// offscreen
+	ubo.lightPos = lightPos;						// 안씀
+	ubo.view = glm::lookAt(lightPos, glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+	ubo.projection = glm::ortho(-10.f, 10.f, -10.f, 10.f, 0.f, 15.f);
+	ubo.lightSpace = ubo.projection * ubo.view;		// 안씀
+	for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
 		offscreenUniformBufferObject.updateUniformBuffer(ubo, i);
 	}
 
@@ -73,6 +68,16 @@ LobbyScene::~LobbyScene()
 
 void LobbyScene::update(float elapsedTime, uint32_t currentFrame)
 {
+	// scene ubo 업데이트
+	vkf::UniformBufferObject ubo{};
+	ubo.lightPos = lightPos;
+	ubo.view = glm::lookAt(glm::vec3(0.f, 1.375f, 4.125f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+	ubo.projection = glm::perspective(glm::radians(45.f), float(winWidth) / float(winHeight), 1.f, 100.f);		// 종횡비에 알맞게
+	glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+	glm::mat4 lightProj = glm::ortho(-10.f, 10.f, -10.f, 10.f, 0.f, 15.f);
+	ubo.lightSpace = lightProj * lightView;
+	uniformBufferObject.updateUniformBuffer(ubo, currentFrame);
+
 	for (int i = 0; i < 4; ++i) {
 		playerObjects[i].update(elapsedTime, currentFrame);
 	}
@@ -99,7 +104,7 @@ void LobbyScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	for (int i = 0; i < 4; ++i) {
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &button[i].samplerDescriptorSet, 0, nullptr);
 		glm::mat4 matrix = glm::translate(glm::mat4(1.f), glm::vec3(-0.425f, 0.675f - i * 0.3f, 0.f))
-			* glm::scale(glm::mat4(1.f), glm::vec3(0.325f / (16.f / 9.f), 0.08125f, 1.f));
+			* glm::scale(glm::mat4(1.f), glm::vec3(0.325f / (float(winWidth) / float(winHeight)), 0.08125f, 1.f));
 		if (static_cast<int>(selPlayerType) != i)
 			matrix[3][3] = 0.1f;
 		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
@@ -108,7 +113,7 @@ void LobbyScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	// 게임 시작 버튼
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &startButton.samplerDescriptorSet, 0, nullptr);
 	glm::mat4 matrix = glm::translate(glm::mat4(1.f), glm::vec3(0.f, -0.625f, 0.f))
-		* glm::scale(glm::mat4(1.f), glm::vec3(0.35f / (16.f / 9.f), 0.0875f, 1.f));
+		* glm::scale(glm::mat4(1.f), glm::vec3(0.35f / (float(winWidth) / float(winHeight)), 0.0875f, 1.f));
 	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 	vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 }
@@ -166,8 +171,8 @@ void LobbyScene::processMouseButton(int button, int action, int mods, float xpos
 			// 플레이어 선택
 			for (int i = 0; i < 4; ++i) {
 				// 그린 곳의 위치와 같게한다
-				float bLeft = -1.f * (0.325f / (16.f / 9.f)) - 0.425f;
-				float bRight = 1.f * (0.325f / (16.f / 9.f)) - 0.425f;
+				float bLeft = -1.f * (0.325f / (float(winWidth) / float(winHeight))) - 0.425f;
+				float bRight = 1.f * (0.325f / (float(winWidth) / float(winHeight))) - 0.425f;
 				float bTop = 1.f * 0.08125f + (0.675f - i * 0.3f);
 				float bBottom = -1.f * 0.08125f + (0.675f - i * 0.3f);
 				if (xpos > bLeft and xpos < bRight and ypos < bTop and ypos > bBottom) {	// 선택
@@ -177,8 +182,8 @@ void LobbyScene::processMouseButton(int button, int action, int mods, float xpos
 			}
 			// 게임 시작 버튼 선택
 			{
-				float bLeft = -1.f * 0.35f / (16.f / 9.f);
-				float bRight = 1.f * 0.35f / (16.f / 9.f);
+				float bLeft = -1.f * 0.35f / (float(winWidth) / float(winHeight));
+				float bRight = 1.f * 0.35f / (float(winWidth) / float(winHeight));
 				float bTop = 1.f * 0.0875f - 0.625f;
 				float bBottom = -1.f * 0.0875f - 0.625f;
 				if (xpos > bLeft and xpos < bRight and ypos < bTop and ypos > bBottom) {	// 선택
