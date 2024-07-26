@@ -71,7 +71,7 @@ void HealerObject::update(float elapsedTime, uint32_t currentFrame)
 		mEffect.accumTime += elapsedTime;
 	}
 
-	std::list<std::vector<HealerObject::HealerEffect>::iterator> deleteEffects;
+	std::list<std::list<HealerObject::HealerEffect>::iterator> deleteEffects;
 	for (auto itr = healerEffects.begin(); itr != healerEffects.end(); ++itr) {
 		if (itr->accumTime >= 2.35f)
 			deleteEffects.emplace_back(itr);

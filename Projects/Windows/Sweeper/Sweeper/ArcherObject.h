@@ -2,6 +2,8 @@
 
 #include "PlayerObject.h"
 
+#include <list>
+
 class ArcherATTACKState : public StateMachine
 {
 public:
@@ -36,7 +38,7 @@ private:
 	};
 
 	vkf::Effect& effect;
-	std::vector<ArcherEffect> archerEffects;
+	std::list<ArcherEffect> archerEffects;
 
 public:
 	ArcherObject(GLTFModelObject& mapObject, vkf::Effect& effect);

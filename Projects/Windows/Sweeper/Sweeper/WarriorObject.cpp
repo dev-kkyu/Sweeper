@@ -1,7 +1,5 @@
 #include "WarriorObject.h"
 
-#include <algorithm>
-
 #define PLAYER_CLIP_ATTACK_WARRIOR	16
 #define PLAYER_CLIP_SKILL_WARRIOR	12
 
@@ -73,7 +71,7 @@ void WarriorObject::update(float elapsedTime, uint32_t currentFrame)
 		wEffect.accumTime += elapsedTime;
 	}
 
-	std::list<std::vector<WarriorObject::WarriorEffect>::iterator> deleteEffects;
+	std::list<std::list<WarriorObject::WarriorEffect>::iterator> deleteEffects;
 	for (auto itr = warriorEffects.begin(); itr != warriorEffects.end(); ++itr) {
 		if (itr->accumTime >= 1.f)
 			deleteEffects.emplace_back(itr);
@@ -99,8 +97,8 @@ void WarriorObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout p
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &effect.texture.samplerDescriptorSet, 0, nullptr);
 
 		// 투명한 물체 정렬
-		std::vector<WarriorObject::WarriorEffect> sortEffects = warriorEffects;
-		std::sort(sortEffects.begin(), sortEffects.end(),
+		std::list<WarriorObject::WarriorEffect> sortEffects = warriorEffects;
+		sortEffects.sort(
 			[](const WarriorObject::WarriorEffect& a, const WarriorObject::WarriorEffect& b) {
 				return a.pos.z > b.pos.z;
 			});

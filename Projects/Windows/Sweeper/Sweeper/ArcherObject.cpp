@@ -1,7 +1,5 @@
 #include "ArcherObject.h"
 
-#include <algorithm>
-
 #define PLAYER_CLIP_ATTACK_ARCHER	26
 #define PLAYER_CLIP_SKILL_ARCHER	26
 
@@ -75,7 +73,7 @@ void ArcherObject::update(float elapsedTime, uint32_t currentFrame)
 			aEffect.pos += aEffect.dir * 12.f * elapsedTime;
 	}
 
-	std::list<std::vector<ArcherObject::ArcherEffect>::iterator> deleteEffects;
+	std::list<std::list<ArcherObject::ArcherEffect>::iterator> deleteEffects;
 	for (auto itr = archerEffects.begin(); itr != archerEffects.end(); ++itr) {
 		if (itr->accumTime >= 0.625f)
 			deleteEffects.emplace_back(itr);
@@ -101,8 +99,8 @@ void ArcherObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pi
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &effect.texture.samplerDescriptorSet, 0, nullptr);
 
 		// 투명한 물체 정렬
-		std::vector<ArcherObject::ArcherEffect> sortEffects = archerEffects;
-		std::sort(sortEffects.begin(), sortEffects.end(),
+		std::list<ArcherObject::ArcherEffect> sortEffects = archerEffects;
+		sortEffects.sort(
 			[](const ArcherObject::ArcherEffect& a, const ArcherObject::ArcherEffect& b) {
 				return a.pos.z > b.pos.z;
 			});

@@ -1,7 +1,5 @@
 #include "MageObject.h"
 
-#include <algorithm>
-
 #define PLAYER_CLIP_ATTACK_MAGE		10
 #define PLAYER_CLIP_SKILL_MAGE		11
 
@@ -79,7 +77,7 @@ void MageObject::update(float elapsedTime, uint32_t currentFrame)
 		mEffect.accumTime += elapsedTime;
 	}
 
-	std::list<std::vector<MageObject::MageEffect>::iterator> deleteEffects;
+	std::list<std::list<MageObject::MageEffect>::iterator> deleteEffects;
 	for (auto itr = mageAttackEffects.begin(); itr != mageAttackEffects.end(); ++itr) {
 		if (itr->accumTime >= 0.625f)
 			deleteEffects.emplace_back(itr);

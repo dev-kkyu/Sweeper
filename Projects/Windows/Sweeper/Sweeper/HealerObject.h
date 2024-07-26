@@ -2,6 +2,8 @@
 
 #include "PlayerObject.h"
 
+#include <list>
+
 class HealerATTACKState : public StateMachine
 {
 public:
@@ -35,7 +37,7 @@ private:
 	};
 
 	vkf::Effect& effect;
-	std::vector<HealerEffect> healerEffects;
+	std::list<HealerEffect> healerEffects;
 
 public:
 	HealerObject(GLTFModelObject& mapObject, vkf::Effect& effect);

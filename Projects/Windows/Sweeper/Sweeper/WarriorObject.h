@@ -2,6 +2,8 @@
 
 #include "PlayerObject.h"
 
+#include <list>
+
 class WarriorATTACKState : public StateMachine
 {
 public:
@@ -35,7 +37,7 @@ private:
 	};
 
 	vkf::Effect& effect;
-	std::vector<WarriorEffect> warriorEffects;
+	std::list<WarriorEffect> warriorEffects;
 
 public:
 	WarriorObject(GLTFModelObject& mapObject, vkf::Effect& effect);

@@ -2,6 +2,8 @@
 
 #include "PlayerObject.h"
 
+#include <list>
+
 class MageATTACKState : public StateMachine
 {
 public:
@@ -37,8 +39,8 @@ private:
 
 	vkf::Effect& attackEffect;
 	vkf::Effect& skillEffect;
-	std::vector<MageEffect> mageAttackEffects;
-	std::vector<MageEffect> mageSkillEffects;
+	std::list<MageEffect> mageAttackEffects;
+	std::list<MageEffect> mageSkillEffects;
 
 public:
 	MageObject(GLTFModelObject& mapObject, vkf::Effect& aEffect, vkf::Effect& sEffect);
