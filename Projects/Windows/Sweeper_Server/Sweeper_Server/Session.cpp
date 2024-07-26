@@ -177,6 +177,7 @@ bool Session::processPacket(unsigned char* packet)
 	}
 	case CS_KEY_EVENT: {
 		CS_KEY_EVENT_PACKET* p = reinterpret_cast<CS_KEY_EVENT_PACKET*>(packet);
+		// Todo : 클라이언트 변조시 LOGIN_PACKET 전에 해당 패킷이 오면 player가 생성되었는지 확인해 봐야 한다
 		player->processKeyInput(p->key, p->is_pressed);
 		std::cout << "Key Event 수신, ID: " << parentRoom->room_id << ":" << player_id << std::endl;
 

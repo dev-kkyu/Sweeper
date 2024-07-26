@@ -36,7 +36,7 @@ private:
 	};
 	struct {
 		union {
-			ScenePipeline sceneOnOff[2]{};
+			ScenePipeline sceneOnOff[2];
 			struct {
 				ScenePipeline scene;
 				ScenePipeline offscreen;
@@ -68,7 +68,7 @@ private:
 
 	struct {
 		union {
-			vkf::BufferObject uboOnOff[2]{};
+			vkf::BufferObject uboOnOff[2];
 			struct {
 				vkf::BufferObject scene;
 				vkf::BufferObject offscreen;
