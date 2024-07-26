@@ -6,7 +6,7 @@
 
 Camera::Camera(int& width, int& height)
 	: winWidth{ width }, winHeight{ height }
-	, distanceFromPlayer{ 12.f }		// 카메라 거리
+	, distanceFromPlayer{ 14.f }		// 카메라 거리
 	, pitchAngle{ 45.f }					// 카메라 각도
 {
 	viewTransform = glm::lookAt(glm::vec3(0.f, 3.f, 10.f), glm::vec3(0.f), glm::vec3(0.0f, 1.0f, 0.0f));
