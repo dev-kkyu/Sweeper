@@ -16,6 +16,8 @@ private:
 	std::shared_ptr<asio::io_context> p_io_context;
 	void* p_socket;					// asio::ip::tcp::socket 클래스가 원형이다.
 
+	bool isStart;					// start 이후에 poll을 시작한다.
+
 	int my_id;
 
 	// recv용 변수
@@ -40,7 +42,7 @@ public:
 public:
 	void connectServer(std::string ipAddress);
 	void start(PLAYER_TYPE player_type);
-	void poll();
+	void update();
 	void stop();
 	void sendPacket(void* packet);
 

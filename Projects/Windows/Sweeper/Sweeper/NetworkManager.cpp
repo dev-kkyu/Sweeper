@@ -16,6 +16,8 @@ NetworkManager::NetworkManager()
 	p_io_context = std::make_shared<asio::io_context>();
 	p_socket = new asio::ip::tcp::socket{ *p_io_context };
 
+	isStart = false;
+
 	remain_size = 0;
 	my_id = -1;
 }
@@ -61,11 +63,13 @@ void NetworkManager::start(PLAYER_TYPE player_type)
 
 	doRead();		// 수신하기를 시작한다.
 
+	isStart = true;	// poll 시작
 }
 
-void NetworkManager::poll()
+void NetworkManager::update()
 {
-	p_io_context->poll();
+	if (isStart)
+		p_io_context->poll();
 }
 
 void NetworkManager::stop()
