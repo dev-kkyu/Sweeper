@@ -9,28 +9,33 @@ StartScene::StartScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples,
 	: msaaSamples{ msaaSamples }, renderPass{ renderPass }, fDevice{ fDevice }, pipelineLayout{ pipelineLayout }
 {
 	createGraphicsPipeline();
-	createSamplerDescriptorPool();
+	createSamplerDescriptorPool(2);		// 텍스처 두개
 
-	texture.loadFromFile(fDevice, "models/Textures/startscene.png", samplerDescriptorPool, samplerDescriptorSetLayout);
+	texture[0].loadFromFile(fDevice, "models/Textures/startscene1.png", samplerDescriptorPool, samplerDescriptorSetLayout);
+	texture[1].loadFromFile(fDevice, "models/Textures/startscene2.png", samplerDescriptorPool, samplerDescriptorSetLayout);
 
 	isEnd = false;
 }
 
 StartScene::~StartScene()
 {
-	texture.destroy();
+	texture[0].destroy();
+	texture[1].destroy();
 	vkDestroyDescriptorPool(fDevice.logicalDevice, samplerDescriptorPool, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline, nullptr);
 }
 
 void StartScene::update(float elapsedTime, uint32_t currentFrame)
 {
+	sceneElapsedTime += elapsedTime;
 }
 
 void StartScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &texture.samplerDescriptorSet, 0, nullptr);
+
+	int texIndex = static_cast<int>(glm::fract(sceneElapsedTime) * 2.f);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &texture[texIndex].samplerDescriptorSet, 0, nullptr);
 
 	glm::mat4 matrix{ 1.f };
 	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
@@ -157,17 +162,17 @@ void StartScene::createGraphicsPipeline()
 	}
 }
 
-void StartScene::createSamplerDescriptorPool()
+void StartScene::createSamplerDescriptorPool(uint32_t setCount)
 {
 	std::array<VkDescriptorPoolSize, 1> poolSizes{};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[0].descriptorCount = 1;
+	poolSizes[0].descriptorCount = setCount;
 
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = 1;
+	poolInfo.maxSets = setCount;
 
 	if (vkCreateDescriptorPool(fDevice.logicalDevice, &poolInfo, nullptr, &samplerDescriptorPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");

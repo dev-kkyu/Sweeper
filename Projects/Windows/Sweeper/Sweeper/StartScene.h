@@ -15,7 +15,8 @@ private:
 	VkPipeline pipeline;
 
 	VkDescriptorPool samplerDescriptorPool;
-	vkf::Texture texture;
+	vkf::Texture texture[2];
+	float sceneElapsedTime = 0.f;	// 텍스처 깜빡임을 위하여 사용
 
 public:
 	StartScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout samplerDescriptorSetLayout, VkPipelineLayout pipelineLayout);
@@ -30,7 +31,7 @@ public:
 
 private:
 	void createGraphicsPipeline();
-	void createSamplerDescriptorPool();
+	void createSamplerDescriptorPool(uint32_t setCount);
 
 };
 
