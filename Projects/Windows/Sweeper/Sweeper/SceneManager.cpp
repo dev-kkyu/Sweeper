@@ -20,17 +20,23 @@ void SceneManager::update(float elapsedTime, uint32_t currentFrame)
 	switch (nowScene)
 	{
 	case SceneManager::SCENE_TYPE::START:
-		pStartScene->update(elapsedTime, currentFrame);
 		if (pStartScene->getIsEnd()) {
 			nowScene = SCENE_TYPE::LOBBY;
+			pLobbyScene->update(elapsedTime, currentFrame);
+		}
+		else {
+			pStartScene->update(elapsedTime, currentFrame);
 		}
 		break;
 	case SceneManager::SCENE_TYPE::LOBBY:
-		pLobbyScene->update(elapsedTime, currentFrame);
 		if (pLobbyScene->getIsEnd()) {
 			NetworkManager::getInstance().start(pLobbyScene->getPlayerType());		// 로그인 및 Recv 시작
-			pGameScene->start(pLobbyScene->getPlayerType());
 			nowScene = SCENE_TYPE::INGAME;
+			pGameScene->start(pLobbyScene->getPlayerType());
+			pGameScene->update(elapsedTime, currentFrame);
+		}
+		else {
+			pLobbyScene->update(elapsedTime, currentFrame);
 		}
 		break;
 	case SceneManager::SCENE_TYPE::INGAME:
