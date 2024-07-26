@@ -121,16 +121,16 @@ namespace vkf
 	class BufferObject
 	{
 	private:
-		vkf::Device* fDevice = nullptr;
+		vkf::Device* fDevice;
 
-		std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT> buffers{};
-		std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> buffersMemory{};
-		std::array<void*, MAX_FRAMES_IN_FLIGHT> buffersMapped{};
+		std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT> buffers;
+		std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> buffersMemory;
+		std::array<void*, MAX_FRAMES_IN_FLIGHT> buffersMapped;
 
-		VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+		VkDescriptorPool descriptorPool;
 
 	public:
-		std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> descriptorSets{};
+		std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> descriptorSets;
 
 	public:
 		void createUniformBufferObjects(vkf::Device& fDevice, VkDescriptorSetLayout descriptorSetLayout);		// ubo, ssbo 중 하나만 생성 및 호출할 것

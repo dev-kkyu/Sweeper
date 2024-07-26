@@ -15,7 +15,7 @@
 
 GameScene::GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, int& width, int& height)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }
-	, camera{ width, height }, uniformBufferObject{}
+	, camera{ width, height }
 {
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
