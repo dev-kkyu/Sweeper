@@ -47,6 +47,7 @@ public:
 	void offscreenDraw(VkCommandBuffer commandBuffer, uint32_t currentFrame, VkPipeline offscreenModelPipeline, VkPipeline offscreenSkinModelPipeline);
 
 	void processKeyboard(int key, int action, int mods);
+	void processMouseButton(int button, int action, int mods, float xpos, float ypos);
 
 	PLAYER_TYPE getPlayerType() const;
 

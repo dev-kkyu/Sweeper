@@ -157,6 +157,41 @@ void LobbyScene::processKeyboard(int key, int action, int mods)
 	}
 }
 
+void LobbyScene::processMouseButton(int button, int action, int mods, float xpos, float ypos)
+{
+	switch (action) {
+	case GLFW_RELEASE:
+		switch (button) {
+		case GLFW_MOUSE_BUTTON_LEFT:
+			// 플레이어 선택
+			for (int i = 0; i < 4; ++i) {
+				// 그린 곳의 위치와 같게한다
+				float bLeft = -1.f * (0.325f / (16.f / 9.f)) - 0.425f;
+				float bRight = 1.f * (0.325f / (16.f / 9.f)) - 0.425f;
+				float bTop = 1.f * 0.08125f + (0.675f - i * 0.3f);
+				float bBottom = -1.f * 0.08125f + (0.675f - i * 0.3f);
+				if (xpos > bLeft and xpos < bRight and ypos < bTop and ypos > bBottom) {	// 선택
+					selPlayerType = static_cast<PLAYER_TYPE>(i);
+					break;
+				}
+			}
+			// 게임 시작 버튼 선택
+			{
+				float bLeft = -1.f * 0.35f / (16.f / 9.f);
+				float bRight = 1.f * 0.35f / (16.f / 9.f);
+				float bTop = 1.f * 0.0875f - 0.625f;
+				float bBottom = -1.f * 0.0875f - 0.625f;
+				if (xpos > bLeft and xpos < bRight and ypos < bTop and ypos > bBottom) {	// 선택
+					isEnd = true;
+					break;
+				}
+			}
+			break;
+		}
+		break;
+	}
+}
+
 PLAYER_TYPE LobbyScene::getPlayerType() const
 {
 	return selPlayerType;

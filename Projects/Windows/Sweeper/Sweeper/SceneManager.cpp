@@ -100,6 +100,7 @@ void SceneManager::processMouseButton(int button, int action, int mods, float xp
 	case SceneManager::SCENE_TYPE::START:
 		break;
 	case SceneManager::SCENE_TYPE::LOBBY:
+		pLobbyScene->processMouseButton(button, action, mods, xpos, ypos);
 		break;
 	case SceneManager::SCENE_TYPE::INGAME:
 		pGameScene->processMouseButton(button, action, mods, xpos, ypos);
