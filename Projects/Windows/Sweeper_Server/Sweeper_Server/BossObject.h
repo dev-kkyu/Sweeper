@@ -88,6 +88,8 @@ class BossRIGHTPUNCH : public BossState
 {
 	float stateAccumTime;
 
+	std::array<bool, 4> hitPlayer;	// 이미 hit 했는지
+
 public:
 	BossRIGHTPUNCH(BossObject& boss);
 	virtual ~BossRIGHTPUNCH() = default;
