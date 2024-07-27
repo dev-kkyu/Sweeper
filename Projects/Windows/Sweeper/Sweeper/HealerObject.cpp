@@ -56,6 +56,8 @@ void HealerSKILLState::exit()
 HealerObject::HealerObject(GLTFModelObject& mapObject, vkf::Effect& effect)
 	: PlayerObject{ mapObject }, effect{ effect }
 {
+	player_type = PLAYER_TYPE::HEALER;
+
 	maxHP = HP = MAX_HP_PLAYER_HEALER;
 }
 
@@ -125,4 +127,9 @@ void HealerObject::changeSKILLState()
 	currentState->exit();
 	currentState = std::make_unique<HealerSKILLState>(*this);
 	currentState->enter();
+}
+
+const std::list<HealerObject::HealerEffect>& HealerObject::getHealerEffects() const
+{
+	return healerEffects;
 }

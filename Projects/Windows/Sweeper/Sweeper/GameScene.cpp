@@ -306,16 +306,37 @@ void GameScene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 
 	// 힐러 스킬의 대상 플레이어 주위에 그려주는 파티클
 	{
-		if (pMyPlayer) {
-			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.particlePipeline);
-			VkDeviceSize offsets[] = { 0 };
-			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &particleVertexBuffer, offsets);
-			glm::mat4 matrix = glm::translate(glm::mat4(1.f), pMyPlayer->getPosition());		// 단위행렬에 파티클의 위치만 지정해 준다.
-			matrix[3][3] = sceneElapsedTime;	// 여기에 시간 포함에서 넘겨주기
-			vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &matrix);
-			// set = 1에 샘플러 바인드
-			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &particleTexture.samplerDescriptorSet, 0, nullptr);
-			vkCmdDraw(commandBuffer, particleVertexCount, 1, 0, 0);
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.particlePipeline);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &particleTexture.samplerDescriptorSet, 0, nullptr);
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &particleVertexBuffer, offsets);
+
+		for (const auto& player : pPlayers) {
+			if (player) {									// 모든 플레이어 중에 힐러를 찾는다
+				if (player->getPlayerType() == PLAYER_TYPE::HEALER) {
+					auto healer = dynamic_cast<HealerObject*>(player.get());
+					const auto& effects = healer->getHealerEffects();
+
+					// 힐러의 이펙트를 찾는다
+					for (const auto& effect : effects) {
+						for (int i = 0; i < 4; ++i) {		// 해당 이펙트 위에 있는 플레이어를 다시 찾는다
+							if (pPlayers[i]) {
+								auto playerPos = pPlayers[i]->getPosition();
+								float dist = glm::length(playerPos - effect.pos);
+								if (dist <= pPlayers[i]->getCollisionRadius() + 2.f) {
+									// 이펙트로부터 반지름 2.f 안에 있다면 그려준다
+
+									glm::mat4 matrix = glm::translate(glm::mat4(1.f), pPlayers[i]->getPosition());
+									matrix[3][3] = sceneElapsedTime;	// 여기에 시간 포함에서 넘겨주기
+									vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &matrix);
+									// set = 1에 샘플러 바인드
+									vkCmdDraw(commandBuffer, particleVertexCount, 1, 0, 0);
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 }

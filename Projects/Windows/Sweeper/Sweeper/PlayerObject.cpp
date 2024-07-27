@@ -258,6 +258,11 @@ void PlayerObject::processKeyInput(unsigned int key, bool is_pressed)
 	}
 }
 
+PLAYER_TYPE PlayerObject::getPlayerType() const
+{
+	return player_type;
+}
+
 void PlayerObject::changeIDLEState()
 {
 	currentState->exit();

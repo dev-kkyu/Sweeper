@@ -58,6 +58,8 @@ void MageSKILLState::exit()
 MageObject::MageObject(GLTFModelObject& mapObject, vkf::Effect& aEffect, vkf::Effect& sEffect)
 	: PlayerObject{ mapObject }, attackEffect{ aEffect }, skillEffect{ sEffect }
 {
+	player_type = PLAYER_TYPE::MAGE;
+
 	maxHP = HP = MAX_HP_PLAYER_MAGE;
 }
 

@@ -108,6 +108,8 @@ class PlayerObject : public GLTFSkinModelObject
 	friend class HealerSKILLState;
 
 protected:
+	PLAYER_TYPE player_type;
+
 	// 맵과의 충돌처리를 위한 MapObject
 	GLTFModelObject& mapObject;
 
@@ -130,6 +132,8 @@ public:
 	virtual void drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const override = 0;
 
 	void processKeyInput(unsigned int key, bool is_pressed);
+
+	virtual PLAYER_TYPE getPlayerType() const final;
 
 	virtual void changeIDLEState() final;
 	virtual void changeRUNState() final;

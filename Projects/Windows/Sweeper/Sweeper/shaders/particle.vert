@@ -42,7 +42,7 @@ void main() {
     float accmTime = push.model[3][3];      // 코드에서, 이곳에 누적시간을 넣어줬다.
 	float t = accmTime - emitTime;          // 시작시간이 되었다면
 	vec4 newPosition = vec4(0.f, 0.f, 0.f, 1.f);
-    vec4 newColor = vec4(1.f, 1.f, 1.f, 1.f);
+    vec4 newColor = vec4(1.1f, 1.4f, 1.4f, 1.f);
     if (t < 0.f) {
         newColor.a = 0.f;
     }
@@ -58,7 +58,7 @@ void main() {
     outUV = uv[gl_VertexIndex % 6];
 
     // 카메라의 반대로 회전시킨 후, 그릴 위치로 이동해 준다.
-	vec3 quadPos = quad[gl_VertexIndex % 6] * 0.2f;		// 사이즈 조정
+	vec3 quadPos = quad[gl_VertexIndex % 6] * 0.3f;		// 사이즈 조정
 	// 직교행렬이기 때문에 inverse와 transpose가 같다. transpose가 더 빠르다
     vec3 finalPos = push.model[3].xyz + newPosition.xyz + inPosition + transpose(mat3(ubo.view)) * quadPos;
 

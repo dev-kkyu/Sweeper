@@ -54,5 +54,7 @@ public:
 	virtual void changeATTACKState() override;
 	virtual void changeSKILLState() override;
 
+	const std::list<HealerObject::HealerEffect>& getHealerEffects() const;
+
 };
 
