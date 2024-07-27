@@ -50,5 +50,6 @@ public:
 	virtual BoundingBox getBoundingBox() const final;
 
 	virtual short getHP() const final;
+	virtual void setHP(short hp) final;
 
 };

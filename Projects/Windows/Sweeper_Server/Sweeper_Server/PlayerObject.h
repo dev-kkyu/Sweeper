@@ -143,6 +143,8 @@ public:
 
 	void processKeyInput(unsigned int key, bool is_pressed);
 
+	void broadcastMyHP() const;
+
 protected:
 	void rotateAndMoveToDirection(const glm::vec3& direction, float moveSpeed, float elapsedTime);
 	void moveAndCheckCollision(const glm::vec3& direction, float moveSpeed, float elapsedTime);

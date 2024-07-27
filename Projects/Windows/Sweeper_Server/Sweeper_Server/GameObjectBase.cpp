@@ -113,3 +113,8 @@ short GameObjectBase::getHP() const
 	return HP;
 }
 
+void GameObjectBase::setHP(short hp)
+{
+	HP = hp;
+}
+

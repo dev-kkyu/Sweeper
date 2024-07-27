@@ -3,6 +3,7 @@
 #include "PlayerObject.h"
 
 #include <unordered_set>
+#include <unordered_map>
 
 class HealerATTACKState : public StateMachine
 {
@@ -35,7 +36,16 @@ public:
 
 class HealerObject : public PlayerObject
 {
+	friend class HealerSKILLState;
+
 private:
+	struct HealerEffect {
+		glm::vec3 pos;
+		float accumTime = 0.f;
+		std::unordered_map<PlayerObject*, std::chrono::steady_clock::time_point> healedPlayer;
+	};
+
+	std::list<HealerEffect> healerEffects;
 
 public:
 	HealerObject(Room* parentRoom, int p_id);

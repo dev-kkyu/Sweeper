@@ -69,8 +69,8 @@ void HealerObject::update(float elapsedTime, uint32_t currentFrame)
 {
 	PlayerObject::update(elapsedTime, currentFrame);
 
-	for (auto& mEffect : healerEffects) {
-		mEffect.accumTime += elapsedTime;
+	for (auto& hEffect : healerEffects) {
+		hEffect.accumTime += elapsedTime;
 	}
 
 	std::list<std::list<HealerObject::HealerEffect>::iterator> deleteEffects;
@@ -98,10 +98,10 @@ void HealerObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pi
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, effect.pipeline);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &effect.texture.samplerDescriptorSet, 0, nullptr);
 
-		for (const auto& mEffect : healerEffects) {
-			if (mEffect.accumTime >= 0.f) {
-				glm::mat4 matrix = glm::translate(glm::mat4(1.f), mEffect.pos);
-				matrix[3][3] = mEffect.accumTime;
+		for (const auto& hEffect : healerEffects) {
+			if (hEffect.accumTime >= 0.f) {
+				glm::mat4 matrix = glm::translate(glm::mat4(1.f), hEffect.pos);
+				matrix[3][3] = hEffect.accumTime;
 				vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 
 				vkCmdDraw(commandBuffer, 6, 1, 0, 0);

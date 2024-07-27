@@ -76,6 +76,8 @@ void HealerSKILLState::enter()
 	stateBeginTime = std::chrono::steady_clock::now();
 
 	StateMachine::enter();
+
+	dynamic_cast<HealerObject*>(&player)->healerEffects.push_back(HealerObject::HealerEffect{ player.getPosition() + player.getLook() * 5.5f, -0.4f });
 }
 
 void HealerSKILLState::update(float elapsedTime)
@@ -115,7 +117,7 @@ HealerObject::HealerObject(Room* parentRoom, int p_id)
 	maxHP = HP = MAX_HP_PLAYER_HEALER;
 
 	attackDamage = 100;
-	skillDamage = 25;		// 초당 힐량
+	skillDamage = 30;		// 플레이어에게 주는 힐량
 }
 
 void HealerObject::initialize()
@@ -124,6 +126,49 @@ void HealerObject::initialize()
 
 bool HealerObject::update(float elapsedTime)
 {
+	// 이펙트 시간 업데이트
+	for (auto& hEffect : healerEffects) {
+		hEffect.accumTime += elapsedTime;
+	}
+	// 이펙트 수명 관리
+	std::list<std::list<HealerObject::HealerEffect>::iterator> deleteEffects;
+	for (auto itr = healerEffects.begin(); itr != healerEffects.end(); ++itr) {
+		if (itr->accumTime >= 2.35f)
+			deleteEffects.emplace_back(itr);
+	}
+	for (const auto& itr : deleteEffects) {
+		healerEffects.erase(itr);
+	}
+	// 이펙트 유지되는동안 힐
+	for (auto& hEffect : healerEffects) {
+		if (hEffect.accumTime >= 0.f) {
+			for (auto& a : parentRoom->sessions) {
+				std::shared_ptr<Session> session = a.load();
+				if (Room::isValidSession(session)) {
+					auto playerPos = session->player->getPosition();
+					float dist = glm::length(playerPos - hEffect.pos);
+					if (dist <= session->player->getCollisionRadius() + 2.f) {
+						// 이펙트로부터 반지름 2.f 안에 있다면 힐
+						PlayerObject* ptrPlayer = session->player.get();
+						auto nowTime = std::chrono::steady_clock::now();
+						if (hEffect.healedPlayer.find(ptrPlayer) == hEffect.healedPlayer.end()) {
+							hEffect.healedPlayer.try_emplace(ptrPlayer, nowTime);
+							short nowHP = session->player->getHP();
+							session->player->setHP(nowHP + skillDamage);
+							session->player->broadcastMyHP();
+						}	// 0.75초마다 힐
+						else if (hEffect.healedPlayer[ptrPlayer] + std::chrono::milliseconds(750) <= nowTime) {
+							hEffect.healedPlayer[ptrPlayer] += std::chrono::milliseconds(750);
+							short nowHP = session->player->getHP();
+							session->player->setHP(nowHP + skillDamage);
+							session->player->broadcastMyHP();
+						}
+					}
+				}
+			}
+		}
+	}
+
 	return PlayerObject::update(elapsedTime);
 }
 
