@@ -335,8 +335,8 @@ bool PlayerObject::update(float elapsedTime)
 	}
 	currentState->update(elapsedTime);
 
-	if (dynamic_cast<RUNState*>(currentState.get()) or dynamic_cast<DASHState*>(currentState.get()) or runJump) {
-		return true;	// Run, Dash 상태이거나 점프 중일 때만 위치가 바뀐다.
+	if (dynamic_cast<RUNState*>(currentState.get()) or dynamic_cast<DASHState*>(currentState.get()) or dynamic_cast<HITState*>(currentState.get()) or runJump) {
+		return true;	// Run, Dash, Hit 상태이거나 점프 중일 때만 위치가 바뀐다.
 	}
 	return false;
 }
