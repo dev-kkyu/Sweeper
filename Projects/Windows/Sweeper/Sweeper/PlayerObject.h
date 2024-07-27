@@ -70,6 +70,26 @@ public:
 	virtual void exit() override;
 };
 
+class HITState : public StateMachine
+{
+private:
+	int accFlag;			// 가속 플래그 (증가, 감소)
+
+	// 움직이는 속도	// 값은 생성자에서
+	float maxMoveSpeed;		// 최대 속도
+	float moveSpeed;		// 현재 속도
+	float acceleration;		// 현재 가속도
+	glm::vec3 direction;	// 이동할 방향 (xz만 사용)
+
+public:
+	HITState(PlayerObject& player);
+	virtual ~HITState() = default;
+
+	virtual void enter() override;
+	virtual void update(float elapsedTime, uint32_t currentFrame) override;
+	virtual void exit() override;
+};
+
 class GLTFModelObject;
 class PlayerObject : public GLTFSkinModelObject
 {
@@ -77,6 +97,7 @@ class PlayerObject : public GLTFSkinModelObject
 	friend class IDLEState;
 	friend class RUNState;
 	friend class DASHState;
+	friend class HITState;
 	friend class WarriorATTACKState;
 	friend class WarriorSKILLState;
 	friend class ArcherATTACKState;
@@ -113,6 +134,7 @@ public:
 	virtual void changeIDLEState() final;
 	virtual void changeRUNState() final;
 	virtual void changeDASHState() final;
+	virtual void changeHITState() final;
 	virtual void changeATTACKState() = 0;
 	virtual void changeSKILLState() = 0;
 

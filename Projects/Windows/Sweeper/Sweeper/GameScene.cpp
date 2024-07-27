@@ -549,6 +549,10 @@ void GameScene::processPacket(unsigned char* packet)
 			pPlayers[p->player_id]->changeDASHState();
 			state = "DASH";
 			break;
+		case PLAYER_STATE::HIT:
+			pPlayers[p->player_id]->changeHITState();
+			state = "HIT";
+			break;
 		case PLAYER_STATE::ATTACK:
 			pPlayers[p->player_id]->changeATTACKState();
 			state = "ATTACK";

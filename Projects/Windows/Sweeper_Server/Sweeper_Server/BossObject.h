@@ -2,6 +2,8 @@
 
 #include "GameObjectBase.h"
 
+#include <array>
+
 #include "protocol.h"	// BOSS_STATE
 
 class BossObject;
@@ -70,6 +72,8 @@ public:
 class BossLEFTPUNCH : public BossState
 {
 	float stateAccumTime;
+
+	std::array<bool, 4> hitPlayer;	// 이미 hit 했는지
 
 public:
 	BossLEFTPUNCH(BossObject& boss);

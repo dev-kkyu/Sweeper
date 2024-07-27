@@ -228,7 +228,7 @@ void BossMOVE::exit()
 }
 
 BossLEFTPUNCH::BossLEFTPUNCH(BossObject& boss)
-	: BossState{ boss }
+	: BossState{ boss }, hitPlayer{}
 {
 	state = BOSS_STATE::LEFT_PUNCH;
 
@@ -261,6 +261,28 @@ void BossLEFTPUNCH::update(float elapsedTime)
 		}
 		else {
 			boss.changeIDLEState();
+		}
+	}
+	else if (stateAccumTime >= 1.125f) {	// 충돌 판정
+		auto bossPos = boss.getPosition();
+		auto hitCenter = bossPos + boss.getLook() * 2.25f;	// 보스 앞쪽에 위치한다면
+		for (int i = 0; i < 4; ++i) {
+			std::shared_ptr<Session> session = boss.parentRoom->sessions[i].load();
+			if (Room::isValidSession(session)) {			// 존재하는 플레이어에 대해서
+				if (not hitPlayer[i]) {						// 아직 hit 한 적이 없다면
+					auto playerPos = session->player->getPosition();
+					playerPos.y = 0.f;
+					float dist = glm::length(playerPos - hitCenter);
+					if (dist <= session->player->getCollisionRadius() + 2.25f) {	// 공격 범위 내에 존재한다면
+						auto destDir = bossPos - playerPos;
+						if (glm::length(destDir) >= glm::epsilon<float>()) {
+							hitPlayer[i] = true;				// 한번만 피격
+							session->player->setLook(destDir);	// look을 변경
+							session->player->onHit(boss, 100);	// Hit
+						}
+					}
+				}
+			}
 		}
 	}
 

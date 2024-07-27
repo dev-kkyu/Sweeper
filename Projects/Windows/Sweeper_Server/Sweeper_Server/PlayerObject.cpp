@@ -246,6 +246,70 @@ void DASHState::exit()
 	StateMachine::exit();
 }
 
+HITState::HITState(PlayerObject& player)
+	: StateMachine{ player }
+{
+	state = PLAYER_STATE::HIT;
+
+	direction = -player.getLook();
+
+	accFlag = 1;
+
+	maxMoveSpeed = 30.f;
+	moveSpeed = 0.f;
+	acceleration = 250.f;
+}
+
+void HITState::enter()
+{
+	stateBeginTime = std::chrono::steady_clock::now();
+
+	// 변경된 Look을 먼저 보내주고 (State 변경시 Look 반대 방향으로 밀릴 것이기 때문에)
+	SC_PLAYER_LOOK_PACKET p;
+	p.size = sizeof(p);
+	p.type = SC_PLAYER_LOOK;
+	p.player_id = player.my_id;
+	auto dir = player.getLook();
+	p.dir_x = dir.x;
+	p.dir_z = dir.z;
+	for (auto& a : player.parentRoom->sessions) {			// 모든 플레이어에게 변경된 플레이어 Look을 보내준다.
+		std::shared_ptr<Session> session = a.load();
+		if (Room::isValidSession(session))
+			session->sendPacket(&p);
+	}
+
+	// 변경된 State를 보내준다
+	StateMachine::enter();
+}
+
+void HITState::update(float elapsedTime)
+{
+	if (stateBeginTime + std::chrono::milliseconds(400) <= std::chrono::steady_clock::now()) {
+		player.changeIDLEState();
+	}
+
+	if (accFlag > 0) {
+		moveSpeed += acceleration * elapsedTime;
+		if (moveSpeed >= maxMoveSpeed) {
+			moveSpeed = maxMoveSpeed;
+			accFlag = -1;
+		}
+	}
+	else {
+		moveSpeed -= acceleration * elapsedTime;
+		if (moveSpeed < 0.f)
+			moveSpeed = 0.f;
+	}
+	player.move(direction, moveSpeed * elapsedTime);
+
+	StateMachine::update(elapsedTime);
+}
+
+void HITState::exit()
+{
+	StateMachine::exit();
+}
+
 PlayerObject::PlayerObject(Room* parentRoom, int p_id)
 	: GameObjectBase{ parentRoom, p_id }
 {
@@ -297,6 +361,11 @@ void PlayerObject::onHit(const GameObjectBase& other, int damage)
 				session->sendPacket(&p);
 			}
 		}
+	}
+
+	// Boss에게 공격받았다면
+	if (dynamic_cast<const BossObject*>(&other)) {
+		changeHITState();
 	}
 }
 
@@ -403,4 +472,9 @@ void PlayerObject::changeRUNState()
 void PlayerObject::changeDASHState()
 {
 	nextState = std::make_unique<DASHState>(*this);
+}
+
+void PlayerObject::changeHITState()
+{
+	nextState = std::make_unique<HITState>(*this);
 }

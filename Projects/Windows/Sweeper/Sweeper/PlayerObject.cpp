@@ -8,6 +8,7 @@
 #define PLAYER_CLIP_IDLE			19
 #define PLAYER_CLIP_RUN				24
 #define PLAYER_CLIP_DASH			7
+#define PLAYER_CLIP_HIT				4
 
 StateMachine::StateMachine(PlayerObject& player)
 	: player{ player }
@@ -171,6 +172,52 @@ void DASHState::exit()
 	StateMachine::exit();
 }
 
+HITState::HITState(PlayerObject& player)
+	: StateMachine{ player }
+{
+	state = PLAYER_STATE::HIT;
+
+	direction = -player.getLook();
+
+	accFlag = 1;
+
+	maxMoveSpeed = 30.f;
+	moveSpeed = 0.f;
+	acceleration = 250.f;
+}
+
+void HITState::enter()
+{
+	StateMachine::enter();
+
+	player.setAnimationClip(PLAYER_CLIP_HIT);
+	player.setAnimateSpeed(1.f);
+}
+
+void HITState::update(float elapsedTime, uint32_t currentFrame)
+{
+	if (accFlag > 0) {
+		moveSpeed += acceleration * elapsedTime;
+		if (moveSpeed >= maxMoveSpeed) {
+			moveSpeed = maxMoveSpeed;
+			accFlag = -1;
+		}
+	}
+	else {
+		moveSpeed -= acceleration * elapsedTime;
+		if (moveSpeed < 0.f)
+			moveSpeed = 0.f;
+	}
+	player.move(direction, moveSpeed * elapsedTime);
+
+	StateMachine::update(elapsedTime, currentFrame);
+}
+
+void HITState::exit()
+{
+	StateMachine::exit();
+}
+
 PlayerObject::PlayerObject(GLTFModelObject& mapObject)
 	: mapObject{ mapObject }
 {
@@ -229,6 +276,13 @@ void PlayerObject::changeDASHState()
 {
 	currentState->exit();
 	currentState = std::make_unique<DASHState>(*this);
+	currentState->enter();
+}
+
+void PlayerObject::changeHITState()
+{
+	currentState->exit();
+	currentState = std::make_unique<HITState>(*this);
 	currentState->enter();
 }
 
