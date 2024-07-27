@@ -60,6 +60,7 @@ LobbyScene::~LobbyScene()
 		texture.destroy();
 	}
 
+	offscreenUniformBufferObject.destroy();
 	uniformBufferObject.destroy();
 
 	vkDestroyDescriptorPool(fDevice.logicalDevice, samplerDescriptorPool, nullptr);
