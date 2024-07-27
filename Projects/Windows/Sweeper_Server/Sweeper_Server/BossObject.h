@@ -125,6 +125,7 @@ public:
 	virtual void exit() override;
 };
 
+class PlayerObject;
 class BossObject : public GameObjectBase
 {
 	friend class BossState;
@@ -168,7 +169,7 @@ private:
 	virtual void changePUNCHDOWNState() final;
 	virtual void changeDIEState() final;
 
-	virtual void changeAttackPattern() final;
+	virtual void changeAttackPattern(const PlayerObject& target) final;
 
 };
 

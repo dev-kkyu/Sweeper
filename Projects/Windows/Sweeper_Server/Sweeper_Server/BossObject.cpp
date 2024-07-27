@@ -195,7 +195,7 @@ void BossMOVE::update(float elapsedTime)
 						}
 					}
 					else if (boss.isCollide(*session1->player)) {	// 충돌이면 상태 변경
-						boss.changeAttackPattern();
+						boss.changeAttackPattern(*session1->player);
 						isMoveAble = false;
 					}
 
@@ -249,7 +249,7 @@ void BossLEFTPUNCH::update(float elapsedTime)
 			std::shared_ptr<Session> session = boss.parentRoom->sessions[boss.targetPlayer].load();
 			if (Room::isValidSession(session)) {
 				if (boss.isCollide(*session->player)) {
-					boss.changeAttackPattern();
+					boss.changeAttackPattern(*session->player);
 				}
 				else {
 					boss.changeMOVEState();
@@ -316,7 +316,7 @@ void BossRIGHTPUNCH::update(float elapsedTime)
 			std::shared_ptr<Session> session = boss.parentRoom->sessions[boss.targetPlayer].load();
 			if (Room::isValidSession(session)) {
 				if (boss.isCollide(*session->player)) {
-					boss.changeAttackPattern();
+					boss.changeAttackPattern(*session->player);
 				}
 				else {
 					boss.changeMOVEState();
@@ -383,7 +383,7 @@ void BossPUNCHDOWN::update(float elapsedTime)
 			std::shared_ptr<Session> session = boss.parentRoom->sessions[boss.targetPlayer].load();
 			if (Room::isValidSession(session)) {
 				if (boss.isCollide(*session->player)) {
-					boss.changeAttackPattern();
+					boss.changeAttackPattern(*session->player);
 				}
 				else {
 					boss.changeMOVEState();
@@ -557,8 +557,33 @@ void BossObject::changeDIEState()
 	nextState = std::make_unique<BossDIE>(*this);
 }
 
-void BossObject::changeAttackPattern()
+void BossObject::changeAttackPattern(const PlayerObject& target)
 {
+	{	// Attack을 할 때마다 보스가 보는 방향을 타겟에게로 바꿔준다
+		auto targetPos = target.getPosition();
+		targetPos.y = 0.f;
+		auto myPos = getPosition();
+		auto newDir = targetPos - myPos;
+		if (glm::length(newDir) >= glm::epsilon<float>()) {
+			setLook(newDir);
+
+			SC_MOVE_BOSS_PACKET p;
+			p.size = sizeof(p);
+			p.type = SC_MOVE_BOSS;
+			auto pos = myPos;
+			auto look = getLook();
+			p.pos_x = pos.x;
+			p.pos_z = pos.z;
+			p.dir_x = look.x;
+			p.dir_z = look.z;
+			for (auto& a : parentRoom->sessions) {		// 모든 세션에게 변화된 보스 위치 정보를 보내준다
+				std::shared_ptr<Session> session = a.load();
+				if (Room::isValidSession(session))
+					session->sendPacket(&p);
+			}
+		}
+	}
+
 	switch (attackStateFlag)
 	{
 	case 0:
