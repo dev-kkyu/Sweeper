@@ -17,7 +17,7 @@ void BossState::enter()
 	p.size = sizeof(p);
 	p.type = SC_BOSS_STATE;
 	p.state = state;
-	for (auto& a : boss.parentRoom->sessions) {			// 모든 플레이어에게 변경된 플레이어 State를 보내준다.
+	for (auto& a : boss.parentRoom->sessions) {			// 모든 플레이어에게 변경된 보스 State를 보내준다.
 		std::shared_ptr<Session> session = a.load();
 		if (Room::isValidSession(session))
 			session->sendPacket(&p);
@@ -463,6 +463,8 @@ BossObject::BossObject(Room* parentRoom)
 	targetPlayer = -1;
 
 	attackStateFlag = 0;
+
+	isLastLeftPunch = false;
 }
 
 BossObject::~BossObject()
@@ -561,17 +563,27 @@ void BossObject::changeAttackPattern()
 	{
 	case 0:
 		changeLEFTPUNCHState();
+		isLastLeftPunch = true;
 		break;
 	case 1:
 		changeRIGHTPUNCHState();
+		isLastLeftPunch = false;
 		break;
 	case 2:
 		changePUNCHDOWNState();
 		break;
 	}
 
-	if (HP <= 5000) {
-		attackStateFlag = (attackStateFlag + 1) % 3;
+	if (HP <= MAX_HP_BOSS / 2) {
+		if (2 == attackStateFlag) {
+			if (isLastLeftPunch)
+				attackStateFlag = 1;
+			else
+				attackStateFlag = 0;
+		}
+		else {
+			attackStateFlag = 2;
+		}
 	}
 	else {
 		attackStateFlag = (attackStateFlag + 1) % 2;

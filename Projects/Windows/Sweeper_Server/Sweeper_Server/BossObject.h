@@ -145,6 +145,7 @@ private:
 	int targetPlayer;
 
 	int attackStateFlag;
+	bool isLastLeftPunch;	// 체력이 절반 이하일 때 사용하는 변수 (왼 - 내려찍기 - 오 - 내려찍기 패턴)
 
 public:
 	BossObject(Room* parentRoom);
