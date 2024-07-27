@@ -42,7 +42,7 @@ void main() {
     float accmTime = push.model[3][3];      // 코드에서, 이곳에 누적시간을 넣어줬다.
 	float t = accmTime - emitTime;          // 시작시간이 되었다면
 	vec4 newPosition = vec4(0.f, 0.f, 0.f, 1.f);
-    vec4 newColor = vec4(1.1f, 1.4f, 1.4f, 1.f);
+    vec4 newColor = vec4(2.f, 1.f, 1.f, 1.f);
     if (t < 0.f) {
         newColor.a = 0.f;
     }
