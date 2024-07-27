@@ -103,6 +103,8 @@ class BossPUNCHDOWN : public BossState
 {
 	float stateAccumTime;
 
+	std::array<bool, 4> hitPlayer;	// 이미 hit 했는지
+
 public:
 	BossPUNCHDOWN(BossObject& boss);
 	virtual ~BossPUNCHDOWN() = default;
