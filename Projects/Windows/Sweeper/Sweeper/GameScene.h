@@ -49,6 +49,8 @@ private:
 		VkPipeline bossHpBarPipeline;
 		// 쿼드 백그라운드 파이프라인
 		VkPipeline cloudPipeline;
+		// 힐러 파티클 파이프라인
+		VkPipeline particlePipeline;
 	} pipeline;
 
 	VkDescriptorPool sceneSamplerDescriptorPool;
@@ -75,6 +77,12 @@ private:
 			};
 		};
 	} uniformBufferObject;
+
+	// 힐러 스킬 발동시 대상 플레이어 주변에 띄울 파티클
+	VkBuffer particleVertexBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory particleVertexBufferMemory = VK_NULL_HANDLE;
+	uint32_t particleVertexCount;
+	vkf::Texture particleTexture;
 
 	glm::vec3 lightPos = glm::vec3(10.f, 10.f, 10.f);
 
@@ -144,4 +152,18 @@ private:
 
 	void createSamplerDescriptorPool(uint32_t setCount);
 
+	// 힐러가 사용할 파티클. Scene에서 그려준다
+	void createParticle(int particleCount);
+
+};
+
+struct HealerParticleData {
+	glm::vec3 pos;
+	float emitTime;
+	float lifeTime;
+
+	HealerParticleData(glm::vec3 pos, float emitTime, float lifeTime);
+
+	static VkVertexInputBindingDescription getBindingDescription();
+	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
 };

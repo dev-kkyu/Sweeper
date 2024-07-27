@@ -295,5 +295,11 @@
     <None Include="shaders\lobbybutton.frag">
       <Filter>소스 파일\Shader</Filter>
     </None>
+    <None Include="shaders\particle.vert">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
+    <None Include="shaders\particle.frag">
+      <Filter>소스 파일\Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

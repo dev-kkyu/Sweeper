@@ -211,6 +211,8 @@
     <None Include="shaders\mageskill.frag" />
     <None Include="shaders\mageskill.vert" />
     <None Include="shaders\model.vert" />
+    <None Include="shaders\particle.frag" />
+    <None Include="shaders\particle.vert" />
     <None Include="shaders\skinnedmodel.vert" />
     <None Include="shaders\startscene.frag" />
     <None Include="shaders\startscene.vert" />

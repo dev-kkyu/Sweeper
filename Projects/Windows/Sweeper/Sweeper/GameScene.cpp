@@ -19,7 +19,9 @@ GameScene::GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, v
 {
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
-	createSamplerDescriptorPool(8);		// 배경 구름, 이펙트7개
+	createSamplerDescriptorPool(9);		// 배경 구름, 이펙트7개, 힐러 파티클
+	// 힐러 파티클 생성
+	createParticle(50);
 
 	uniformBufferObject.scene.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
 	uniformBufferObject.offscreen.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
@@ -36,6 +38,9 @@ GameScene::GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, v
 	effect.mage.skill.texture.loadFromFile(fDevice, "models/Textures/magiccircle.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 	effect.arrow.texture.loadFromFile(fDevice, "models/Textures/arroweffect.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 	effect.boss.texture.loadFromFile(fDevice, "models/Textures/bossmagic.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
+
+	// 힐러 파티클 이미지
+	particleTexture.loadFromFile(fDevice, "models/Textures/particle.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 
 	// gltf 모델 로드
 	mapModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/map.glb");
@@ -83,6 +88,11 @@ GameScene::~GameScene()
 	uniformBufferObject.scene.destroy();
 	uniformBufferObject.offscreen.destroy();
 
+	// 힐러 파티클 Destroy
+	vkDestroyBuffer(fDevice.logicalDevice, particleVertexBuffer, nullptr);
+	vkFreeMemory(fDevice.logicalDevice, particleVertexBufferMemory, nullptr);
+	particleTexture.destroy();				// 힐러 파티클 텍스처
+
 	effect.warrior.texture.destroy();		// 전사 이펙트 텍스처
 	effect.archer.texture.destroy();		// 궁수 이펙트 텍스처
 	effect.healer.texture.destroy();		// 힐러 이펙트 텍스처
@@ -95,6 +105,7 @@ GameScene::~GameScene()
 
 	vkDestroyDescriptorPool(fDevice.logicalDevice, sceneSamplerDescriptorPool, nullptr);
 
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.particlePipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.boss.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.arrow.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.mage.attack.pipeline, nullptr);
@@ -292,6 +303,21 @@ void GameScene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	}
 
 	pBossObject->drawEffect(commandBuffer, pipelineLayout);
+
+	// 힐러 스킬의 대상 플레이어 주위에 그려주는 파티클
+	{
+		if (pMyPlayer) {
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.particlePipeline);
+			VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &particleVertexBuffer, offsets);
+			glm::mat4 matrix = glm::translate(glm::mat4(1.f), pMyPlayer->getPosition());		// 단위행렬에 파티클의 위치만 지정해 준다.
+			matrix[3][3] = sceneElapsedTime;	// 여기에 시간 포함에서 넘겨주기
+			vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &matrix);
+			// set = 1에 샘플러 바인드
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &particleTexture.samplerDescriptorSet, 0, nullptr);
+			vkCmdDraw(commandBuffer, particleVertexCount, 1, 0, 0);
+		}
+	}
 }
 
 void GameScene::drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -1102,6 +1128,21 @@ void GameScene::createGraphicsPipeline()
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &effect.boss.pipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
+
+	vkf::Shader particleShader{ fDevice, "shaders/particle.vert.spv", "shaders/particle.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(particleShader.shaderStages.size());
+	pipelineInfo.pStages = particleShader.shaderStages.data();
+
+	auto particleBindingDescription = HealerParticleData::getBindingDescription();
+	auto particleAttributeDescriptions = HealerParticleData::getAttributeDescriptions();
+	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.pVertexBindingDescriptions = &particleBindingDescription;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(particleAttributeDescriptions.size());
+	vertexInputInfo.pVertexAttributeDescriptions = particleAttributeDescriptions.data();
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.particlePipeline) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
 }
 
 void GameScene::createSamplerDescriptorPool(uint32_t setCount)
@@ -1120,4 +1161,87 @@ void GameScene::createSamplerDescriptorPool(uint32_t setCount)
 	if (vkCreateDescriptorPool(fDevice.logicalDevice, &poolInfo, nullptr, &sceneSamplerDescriptorPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
+}
+
+void GameScene::createParticle(int particleCount)
+{
+	std::vector<HealerParticleData> vertices;
+
+	int verticesCount = particleCount * 6;
+	vertices.reserve(verticesCount);
+
+	for (int i = 0; i < particleCount; ++i) {
+		// 원통 만들어주기
+		float randRadianAngle = rand() / float(RAND_MAX) * 2.f * glm::pi<float>();	// 0 ~ 2pi
+		float radius = 0.75f;
+		glm::vec3 pos{
+			radius * rand() / float(RAND_MAX) * glm::cos(randRadianAngle),
+			rand() / float(RAND_MAX),
+			radius * rand() / float(RAND_MAX) * glm::sin(randRadianAngle) };
+		float emitTime = rand() / float(RAND_MAX) * 0.5f;			// 0 ~ 0.5초
+		float lifeTime = rand() / float(RAND_MAX) * 0.5f + 0.5f;	// 0.5 ~ 1초
+
+		vertices.push_back(HealerParticleData{ pos, emitTime, lifeTime });
+		vertices.push_back(HealerParticleData{ pos, emitTime, lifeTime });
+		vertices.push_back(HealerParticleData{ pos, emitTime, lifeTime });
+		vertices.push_back(HealerParticleData{ pos, emitTime, lifeTime });
+		vertices.push_back(HealerParticleData{ pos, emitTime, lifeTime });
+		vertices.push_back(HealerParticleData{ pos, emitTime, lifeTime });
+	}
+	particleVertexCount = static_cast<uint32_t>(vertices.size());		// 버텍스 개수 지정
+
+	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	void* data;
+	vkMapMemory(fDevice.logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, vertices.data(), (size_t)bufferSize);
+	vkUnmapMemory(fDevice.logicalDevice, stagingBufferMemory);
+
+	vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, particleVertexBuffer, particleVertexBufferMemory);
+
+	vkf::copyBuffer(fDevice, stagingBuffer, particleVertexBuffer, bufferSize);
+
+	vkDestroyBuffer(fDevice.logicalDevice, stagingBuffer, nullptr);
+	vkFreeMemory(fDevice.logicalDevice, stagingBufferMemory, nullptr);
+}
+
+HealerParticleData::HealerParticleData(glm::vec3 pos, float emitTime, float lifeTime)
+	: pos{ pos }, emitTime{ emitTime }, lifeTime{ lifeTime }
+{
+}
+
+VkVertexInputBindingDescription HealerParticleData::getBindingDescription()
+{
+	VkVertexInputBindingDescription bindingDescription{};
+	bindingDescription.binding = 0;
+	bindingDescription.stride = sizeof(HealerParticleData);
+	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+	return bindingDescription;
+}
+
+std::array<VkVertexInputAttributeDescription, 3> HealerParticleData::getAttributeDescriptions()
+{
+	std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
+
+	attributeDescriptions[0].binding = 0;
+	attributeDescriptions[0].location = 0;
+	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributeDescriptions[0].offset = offsetof(HealerParticleData, pos);
+
+	attributeDescriptions[1].binding = 0;
+	attributeDescriptions[1].location = 1;
+	attributeDescriptions[1].format = VK_FORMAT_R32_SFLOAT;
+	attributeDescriptions[1].offset = offsetof(HealerParticleData, emitTime);
+
+	attributeDescriptions[2].binding = 0;
+	attributeDescriptions[2].location = 2;
+	attributeDescriptions[2].format = VK_FORMAT_R32_SFLOAT;
+	attributeDescriptions[2].offset = offsetof(HealerParticleData, lifeTime);
+
+	return attributeDescriptions;
 }
