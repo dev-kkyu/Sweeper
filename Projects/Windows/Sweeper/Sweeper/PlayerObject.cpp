@@ -296,6 +296,11 @@ PLAYER_TYPE PlayerObject::getPlayerType() const
 	return player_type;
 }
 
+PLAYER_STATE PlayerObject::getPlayerState() const
+{
+	return currentState->getState();
+}
+
 void PlayerObject::changeIDLEState()
 {
 	currentState->exit();

@@ -400,7 +400,37 @@ void GameScene::processKeyboard(int key, int action, int mods)
 				std::cout << "Position - (" << pos.x << ", " << pos.y << ", " << pos.z << ")" << std::endl;
 			}
 			break;
-		}
+		case GLFW_KEY_LEFT:
+			if (pMyPlayer) {
+				if (pMyPlayer->getPlayerState() == PLAYER_STATE::DIE) {
+					for (int i = 0; i < 4; ++i) {
+						--observer_id;
+						if (observer_id < 0)
+							observer_id = 3;
+						if (pPlayers[observer_id]) {
+							camera.setPlayer(pPlayers[observer_id]);
+							break;
+						}
+					}
+				}
+			}
+			break;
+		case GLFW_KEY_RIGHT:
+			if (pMyPlayer) {
+				if (pMyPlayer->getPlayerState() == PLAYER_STATE::DIE) {
+					for (int i = 0; i < 4; ++i) {
+						++observer_id;
+						if (observer_id > 3)
+							observer_id = 0;
+						if (pPlayers[observer_id]) {
+							camera.setPlayer(pPlayers[observer_id]);
+							break;
+						}
+					}
+				}
+			}
+			break;
+		}	// switch (key)
 		break;
 	case GLFW_RELEASE:
 		p.is_pressed = false;
@@ -531,6 +561,7 @@ void GameScene::processPacket(unsigned char* packet)
 		std::cout << "로그인 패킷 수신, ROOM:ID->[" << int(p->room_id) << ":" << int(p->player_id) << "]\n";
 		// 룸 ID는 아직 사용하지 않음
 		my_id = p->player_id;
+		observer_id = my_id;
 		pMyPlayer->setPosition(glm::vec3(p->pos_x, 0.f, p->pos_z));
 		pMyPlayer->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
 		pPlayers[my_id] = pMyPlayer;

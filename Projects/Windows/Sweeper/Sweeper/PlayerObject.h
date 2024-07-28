@@ -151,6 +151,7 @@ public:
 	void processKeyInput(unsigned int key, bool is_pressed);
 
 	virtual PLAYER_TYPE getPlayerType() const final;
+	virtual PLAYER_STATE getPlayerState() const final;
 
 	virtual void changeIDLEState() final;
 	virtual void changeRUNState() final;
