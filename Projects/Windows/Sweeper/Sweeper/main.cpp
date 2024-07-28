@@ -2,6 +2,7 @@
 
 #include "GameFramework.h"
 #include "NetworkManager.h"
+#include "SoundManager.h"
 
 // 전역 변수
 static int g_WinWidth = 1600;
@@ -33,6 +34,8 @@ static void vulkanMain()
 		ipAddr = std::move(input);
 	// 사용할 IP 주소 설정
 	NetworkManager::getInstance().setIPAddress(ipAddr);
+	// 사운드 시스템 최초 호출로 싱글톤 객체 생성 및 초기화
+	SoundManager::getInstance();
 
 	glfwInit();
 
@@ -66,6 +69,9 @@ static void vulkanMain()
 
 		// frame 그리기
 		g_GameFramework.drawFrame();
+
+		// 사운드 시스템 업데이트
+		SoundManager::getInstance().update();
 	}
 
 	// 네트워크 연결 해제

@@ -58,6 +58,9 @@
     <Filter Include="Scene">
       <UniqueIdentifier>{007f448c-d34a-4607-82d5-3ebbddfdf92e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SoundManager">
+      <UniqueIdentifier>{2839aa6e-f9a4-4909-8557-42e68451fb3d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -135,6 +138,9 @@
     <ClCompile Include="StartScene.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="SoundManager.cpp">
+      <Filter>SoundManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObjectBase.h">
@@ -208,6 +214,9 @@
     </ClInclude>
     <ClInclude Include="StartScene.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundManager.h">
+      <Filter>SoundManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
