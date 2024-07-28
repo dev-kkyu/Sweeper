@@ -1,6 +1,6 @@
 #include "Map.h"
 
-#define MAP_NAME "../../../../Projects/Windows/Sweeper/Sweeper/Models/map.glb"
+#define MAP_NAME "resources/map.glb"
 
 Map::Map()
 	: model{ MAP_NAME }
