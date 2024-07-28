@@ -163,6 +163,7 @@ public:
 
 protected:
 	void rotateAndMoveToDirection(const glm::vec3& direction, float moveSpeed, float elapsedTime);
+	void moveAndCheckCollisionWithRotate(const glm::vec3& direction, float moveSpeed, float elapsedTime);
 	void moveAndCheckCollision(const glm::vec3& direction, float moveSpeed, float elapsedTime);
 
 	virtual void changeIDLEState() final;
