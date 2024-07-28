@@ -96,6 +96,19 @@ public:
 	virtual void exit() override;
 };
 
+class DIEState : public StateMachine
+{
+private:
+
+public:
+	DIEState(PlayerObject& player);
+	virtual ~DIEState() = default;
+
+	virtual void enter() override;
+	virtual void update(float elapsedTime) override;
+	virtual void exit() override;
+};
+
 class PlayerObject : public GameObjectBase
 {
 	friend class StateMachine;
@@ -103,6 +116,7 @@ class PlayerObject : public GameObjectBase
 	friend class RUNState;
 	friend class DASHState;
 	friend class HITState;
+	friend class DIEState;
 	friend class WarriorATTACKState;
 	friend class WarriorSKILLState;
 	friend class ArcherATTACKState;
@@ -153,6 +167,7 @@ protected:
 	virtual void changeRUNState() final;
 	virtual void changeDASHState() final;
 	virtual void changeHITState() final;
+	virtual void changeDIEState() final;
 	virtual void changeATTACKState() = 0;
 	virtual void changeSKILLState() = 0;
 

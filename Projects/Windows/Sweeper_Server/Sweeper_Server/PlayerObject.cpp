@@ -30,6 +30,12 @@ void StateMachine::enter()
 
 void StateMachine::update(float elapsedTime)
 {
+	if (PLAYER_STATE::DIE == state)
+		return;
+
+	if (player.HP <= 0)
+		player.changeDIEState();
+
 	// 점프는 상태 관계없이 해도 된다.
 	if (player.keyState & KEY_SPACE) {
 		if (!player.runJump) {
@@ -310,6 +316,27 @@ void HITState::exit()
 	StateMachine::exit();
 }
 
+DIEState::DIEState(PlayerObject& player)
+	: StateMachine{ player }
+{
+	state = PLAYER_STATE::DIE;
+}
+
+void DIEState::enter()
+{
+	StateMachine::enter();
+}
+
+void DIEState::update(float elapsedTime)
+{
+	StateMachine::update(elapsedTime);
+}
+
+void DIEState::exit()
+{
+	StateMachine::exit();
+}
+
 PlayerObject::PlayerObject(Room* parentRoom, int p_id)
 	: GameObjectBase{ parentRoom, p_id }
 {
@@ -482,4 +509,9 @@ void PlayerObject::changeDASHState()
 void PlayerObject::changeHITState()
 {
 	nextState = std::make_unique<HITState>(*this);
+}
+
+void PlayerObject::changeDIEState()
+{
+	nextState = std::make_unique<DIEState>(*this);
 }

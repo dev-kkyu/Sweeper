@@ -64,8 +64,9 @@ enum class PLAYER_STATE : char
 	RUN = 1,
 	DASH = 2,
 	HIT = 3,
-	ATTACK = 4,
-	SKILL = 5
+	DIE = 4,
+	ATTACK = 5,
+	SKILL = 6
 };
 
 enum class MONSTER_TYPE : char

@@ -90,6 +90,19 @@ public:
 	virtual void exit() override;
 };
 
+class DIEState : public StateMachine
+{
+private:
+
+public:
+	DIEState(PlayerObject& player);
+	virtual ~DIEState() = default;
+
+	virtual void enter() override;
+	virtual void update(float elapsedTime, uint32_t currentFrame) override;
+	virtual void exit() override;
+};
+
 class GLTFModelObject;
 class PlayerObject : public GLTFSkinModelObject
 {
@@ -98,6 +111,7 @@ class PlayerObject : public GLTFSkinModelObject
 	friend class RUNState;
 	friend class DASHState;
 	friend class HITState;
+	friend class DIEState;
 	friend class WarriorATTACKState;
 	friend class WarriorSKILLState;
 	friend class ArcherATTACKState;
@@ -119,6 +133,9 @@ protected:
 	// 키가 눌려진 상태를 종합한다.
 	unsigned int keyState = 0;
 
+	bool isDead;
+	float deadAccumTime;
+
 public:
 	PlayerObject(GLTFModelObject& mapObject);
 	virtual ~PlayerObject() = default;
@@ -139,6 +156,7 @@ public:
 	virtual void changeRUNState() final;
 	virtual void changeDASHState() final;
 	virtual void changeHITState() final;
+	virtual void changeDIEState() final;
 	virtual void changeATTACKState() = 0;
 	virtual void changeSKILLState() = 0;
 

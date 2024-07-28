@@ -9,6 +9,7 @@
 #define PLAYER_CLIP_RUN				24
 #define PLAYER_CLIP_DASH			7
 #define PLAYER_CLIP_HIT				4
+#define PLAYER_CLIP_DIE				6
 
 StateMachine::StateMachine(PlayerObject& player)
 	: player{ player }
@@ -218,12 +219,43 @@ void HITState::exit()
 	StateMachine::exit();
 }
 
+DIEState::DIEState(PlayerObject& player)
+	: StateMachine{ player }
+{
+	state = PLAYER_STATE::DIE;
+}
+
+void DIEState::enter()
+{
+	StateMachine::enter();
+
+	player.setAnimationClip(PLAYER_CLIP_DIE);
+	player.setAnimateSpeed(0.8f);
+
+	player.isDead = true;
+}
+
+void DIEState::update(float elapsedTime, uint32_t currentFrame)
+{
+	player.deadAccumTime += elapsedTime;
+
+	StateMachine::update(elapsedTime, currentFrame);
+}
+
+void DIEState::exit()
+{
+	StateMachine::exit();
+}
+
 PlayerObject::PlayerObject(GLTFModelObject& mapObject)
 	: mapObject{ mapObject }
 {
 	currentState = std::make_unique<IDLEState>(*this);
 
 	collisionRadius = 0.4f;						// 캐릭터 충돌 반지름 조정
+
+	isDead = false;
+	deadAccumTime = 0.f;
 }
 
 void PlayerObject::initialize()
@@ -236,7 +268,8 @@ void PlayerObject::update(float elapsedTime, uint32_t currentFrame)
 	// Run, Dash 등 각종 보정 처리
 	currentState->update(elapsedTime, currentFrame);
 
-	GLTFSkinModelObject::update(elapsedTime, currentFrame);
+	if (currentState->getState() != PLAYER_STATE::DIE or deadAccumTime < 1.5f)
+		GLTFSkinModelObject::update(elapsedTime, currentFrame);
 }
 
 void PlayerObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
@@ -288,6 +321,13 @@ void PlayerObject::changeHITState()
 {
 	currentState->exit();
 	currentState = std::make_unique<HITState>(*this);
+	currentState->enter();
+}
+
+void PlayerObject::changeDIEState()
+{
+	currentState->exit();
+	currentState = std::make_unique<DIEState>(*this);
 	currentState->enter();
 }
 
