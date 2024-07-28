@@ -41,6 +41,7 @@ public:
 
 	void setDistance(float distance);
 	float getDistance() const;
+	void setPitchAngle(float angle);
 
 	void setStartMousePos(float xpos, float ypos);
 	void processMouseCursor(float xpos, float ypos);

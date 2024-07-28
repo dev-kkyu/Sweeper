@@ -11,7 +11,7 @@ const vec3 quad[6] = {
 	vec3(1.f, 1.f, 0.f)
 };
 
-const vec3 color[2] = {
+vec3 color[2] = {
 	vec3(0.5f, 0.5f, 0.5f),
 	vec3(1.f, 0.f, 0.f)
 };
@@ -22,6 +22,7 @@ layout (push_constant) uniform PushConstants {
 
 void main()
 {
+	color[1] = push.model[3].rgb;
 	float offset = push.model[3][3];	// 이곳에 체력 퍼센트 0 ~ 1로 넣어줬다
 
 	vec3 quadPos = quad[gl_VertexIndex % 6];

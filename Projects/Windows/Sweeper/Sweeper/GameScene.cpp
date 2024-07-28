@@ -456,6 +456,10 @@ void GameScene::processKeyboard(int key, int action, int mods)
 				std::cout << "Position - (" << pos.x << ", " << pos.y << ", " << pos.z << ")" << std::endl;
 			}
 			break;
+		case GLFW_KEY_C:
+			camera.setDistance(12.f);		// C 키 누를 시 카메라 초기화
+			camera.setPitchAngle(45.f);
+			break;
 		case GLFW_KEY_LEFT:
 			if (pMyPlayer) {
 				if (pMyPlayer->getPlayerState() == PLAYER_STATE::DIE) {
@@ -759,6 +763,7 @@ void GameScene::processPacket(unsigned char* packet)
 		{
 		case MONSTER_TYPE::MUSHROOM:
 			pMonsterObjects[p->monster_id]->setMaxHP(MAX_HP_MONSTER_MUSHROOM);
+			pMonsterObjects[p->monster_id]->setHeadHeight(0.975f);
 			break;
 		case MONSTER_TYPE::BORNDOG:
 			pMonsterObjects[p->monster_id]->setMaxHP(MAX_HP_MONSTER_BORNDOG);

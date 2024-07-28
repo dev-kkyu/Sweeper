@@ -70,7 +70,10 @@ void BossObject::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipe
 void BossObject::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
 {
 	glm::mat4 matrix{ 1.f };
-	matrix[3][3] = float(HP) / float(maxHP);
+	if (HP < maxHP / 2.f)
+		matrix[3] = glm::vec4(glm::vec3(1.f, 0.f, 0.f), float(HP) / float(maxHP));		// 색상과 체력 게이지
+	else
+		matrix[3] = glm::vec4(glm::vec3(1.f, 0.1f, 0.f), float(HP) / float(maxHP));		// 색상과 체력 게이지
 	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 	vkCmdDraw(commandBuffer, 12, 1, 0, 0);
 }

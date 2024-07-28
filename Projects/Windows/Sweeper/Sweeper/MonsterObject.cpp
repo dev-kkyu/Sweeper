@@ -33,7 +33,7 @@ void MonsterObject::release()
 
 void MonsterObject::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
 {
-	glm::mat4 matrix = glm::scale(glm::mat4(1.f), glm::vec3{ 0.5f, 0.05f, 1.f });
+	glm::mat4 matrix = glm::scale(glm::mat4(1.f), glm::vec3{ 0.4f, 0.03f, 1.f });
 	auto pos = getPosition();
 	matrix = glm::translate(glm::mat4(1.f), glm::vec3(pos.x, pos.y + headHeight, pos.z)) * matrix;
 	matrix[3][3] = float(HP) / float(maxHP);

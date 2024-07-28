@@ -128,7 +128,7 @@ void GLTFSkinModelObject::setMaxHP(short maxHP)
 
 void GLTFSkinModelObject::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout) const
 {
-	glm::mat4 matrix = glm::scale(glm::mat4(1.f), glm::vec3{ 1.f, 0.1f, 1.f });
+	glm::mat4 matrix = glm::scale(glm::mat4(1.f), glm::vec3{ 0.7f, 0.07f, 1.f });
 	auto pos = getPosition();
 	matrix = glm::translate(glm::mat4(1.f), glm::vec3(pos.x, pos.y + 2.f, pos.z)) * matrix;
 	matrix[3][3] = float(HP) / float(maxHP);

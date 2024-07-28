@@ -6,7 +6,7 @@
 
 Camera::Camera(VkExtent2D& framebufferExtent)
 	: framebufferExtent{ framebufferExtent }
-	, distanceFromPlayer{ 14.f }		// 카메라 거리
+	, distanceFromPlayer{ 12.f }		// 카메라 거리
 	, pitchAngle{ 45.f }					// 카메라 각도
 {
 	viewTransform = glm::lookAt(glm::vec3(0.f, 3.f, 10.f), glm::vec3(0.f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -53,6 +53,11 @@ void Camera::setDistance(float distance)
 float Camera::getDistance() const
 {
 	return distanceFromPlayer;
+}
+
+void Camera::setPitchAngle(float angle)
+{
+	pitchAngle = angle;
 }
 
 void Camera::setStartMousePos(float xpos, float ypos)
