@@ -19,7 +19,7 @@ GameScene::GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, v
 {
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
-	createSamplerDescriptorPool(9);		// 배경 구름, 이펙트7개, 힐러 파티클
+	createSamplerDescriptorPool(11);		// 배경 구름, 게임종료 2개, 이펙트7개, 힐러 파티클
 	// 힐러 파티클 생성
 	createParticle(50);
 
@@ -29,6 +29,9 @@ GameScene::GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, v
 	// pool 개수 조절 필수
 	// 배경 사각형 텍스처 생성
 	cloudTexture.loadFromFile(fDevice, "models/Textures/cloud.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
+
+	gameendTexture[0].loadFromFile(fDevice, "models/Textures/gameover.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
+	gameendTexture[1].loadFromFile(fDevice, "models/Textures/gameclear.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
 
 	// 캐릭터 Effect 생성
 	effect.warrior.texture.loadFromFile(fDevice, "models/Textures/smoke.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
@@ -63,7 +66,11 @@ GameScene::GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, v
 	// 맵 생성
 	mapObject.setModel(mapModel);
 
+	// 게임 리셋 데이터
 	isEnd = false;
+	isEndPacketReceived = false;
+	isWin = false;
+	gameEndAfterTime = 0.f;
 }
 
 GameScene::~GameScene()
@@ -101,6 +108,9 @@ GameScene::~GameScene()
 	effect.mage.skill.texture.destroy();	// 마법사 이펙트 텍스처
 	effect.arrow.texture.destroy();			// 화살 이펙트 텍스처
 	effect.boss.texture.destroy();			// 보스 이펙트 텍스처
+
+	gameendTexture[0].destroy();			// 게임End 텍스처
+	gameendTexture[1].destroy();			// 게임End 텍스처
 
 	cloudTexture.destroy();					// 구름 텍스처
 
@@ -166,11 +176,24 @@ void GameScene::start(PLAYER_TYPE player_type)
 	pMyPlayer->setScale(glm::vec3(1.3f));
 	camera.setPlayer(pMyPlayer);
 
+	// 게임 리셋 데이터
 	isEnd = false;
+	isEndPacketReceived = false;
+	isWin = false;
+	gameEndAfterTime = 0.f;
 }
 
 void GameScene::update(float elapsedTime, uint32_t currentFrame)
 {
+	if (not isEnd) {
+		if (isEndPacketReceived) {
+			gameEndAfterTime += elapsedTime;
+			if (gameEndAfterTime > 5.f) {
+				isEnd = true;
+			}
+		}
+	}
+
 	sceneElapsedTime += elapsedTime;
 
 	glm::vec3 playerPos = pMyPlayer->getPosition();
@@ -279,16 +302,28 @@ void GameScene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 		}
 	}
 
-	// 배경 사각형 그리기
-	glm::mat4 matrix{ 1.f };
-	if (pMyPlayer) {
-		matrix[3] = glm::vec4(pMyPlayer->getPosition(), 1.f);
+	{	// 배경 사각형 그리기
+		glm::mat4 matrix{ 1.f };
+		if (pMyPlayer) {
+			matrix[3] = glm::vec4(pMyPlayer->getPosition(), 1.f);
+		}
+		matrix[3][3] = sceneElapsedTime;
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.cloudPipeline);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &cloudTexture.samplerDescriptorSet, 0, nullptr);
+		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+		vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 	}
-	matrix[3][3] = sceneElapsedTime;
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.cloudPipeline);
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &cloudTexture.samplerDescriptorSet, 0, nullptr);
-	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
-	vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+
+	// 게임 승리/패배 그려주기
+	{
+		if (isEndPacketReceived and gameEndAfterTime > 1.5f) {
+			glm::mat4 matrix{ 1.f };
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.gameendPipeline);
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &gameendTexture[static_cast<int>(isWin)].samplerDescriptorSet, 0, nullptr);
+			vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+			vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+		}
+	}
 }
 
 void GameScene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -792,6 +827,8 @@ void GameScene::processPacket(unsigned char* packet)
 	}
 	case SC_GAME_END: {
 		auto p = reinterpret_cast<SC_GAME_END_PACKET*>(packet);
+		isEndPacketReceived = true;
+		isWin = p->is_win;
 		if (p->is_win) {
 			std::cout << "게임 승리 패킷 수신!" << std::endl;
 		}
@@ -1142,6 +1179,18 @@ void GameScene::createGraphicsPipeline()
 	depthStencil.depthWriteEnable = VK_FALSE;
 
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.cloudPipeline) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+	// 게임 승리/패배 파이프라인 생성
+	vkf::Shader gameendShader{ fDevice, "shaders/startscene.vert.spv", "shaders/startscene.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(gameendShader.shaderStages.size());
+	pipelineInfo.pStages = gameendShader.shaderStages.data();
+
+	depthStencil.depthTestEnable = VK_FALSE;
+	depthStencil.depthWriteEnable = VK_FALSE;
+
+	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.gameendPipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 

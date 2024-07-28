@@ -18,6 +18,10 @@ class GameScene
 private:
 	bool isEnd;
 
+	bool isEndPacketReceived;
+	bool isWin;
+	float gameEndAfterTime;
+
 private:
 	vkf::Device& fDevice;
 	VkSampleCountFlagBits& msaaSamples;
@@ -50,8 +54,10 @@ private:
 		// 체력 바 UI 파이프라인
 		VkPipeline hpBarPipeline;
 		VkPipeline bossHpBarPipeline;
-		// 쿼드 백그라운드 파이프라인
+		// 백그라운드 구름 파이프라인
 		VkPipeline cloudPipeline;
+		// 백그라운드 게임승리, 패배 파이프라인
+		VkPipeline gameendPipeline;
 		// 힐러 파티클 파이프라인
 		VkPipeline particlePipeline;
 	} pipeline;
@@ -69,6 +75,7 @@ private:
 		vkf::Effect boss;
 	} effect;
 	vkf::Texture cloudTexture;
+	vkf::Texture gameendTexture[2];
 	float sceneElapsedTime = 0.f;	// 현재는 구름 애니메이션에 사용
 
 	struct {
