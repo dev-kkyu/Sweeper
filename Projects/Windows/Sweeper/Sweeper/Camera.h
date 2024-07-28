@@ -7,12 +7,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+struct VkExtent2D;
 class PlayerObject;
 class Camera
 {
 private:
-	int& winWidth;
-	int& winHeight;
+	VkExtent2D& framebufferExtent;
 
 	float distanceFromPlayer;	// 생성자 호출 시 값 정해주기
 
@@ -29,7 +29,7 @@ private:
 	float pitchAngle;			// 생성자 호출 시 값 정해주기
 
 public:
-	Camera(int& width, int& height);
+	Camera(VkExtent2D& framebufferExtent);
 	~Camera();
 
 	void update(float elapsedTime);

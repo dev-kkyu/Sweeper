@@ -52,8 +52,8 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
 }
 
 
-GameFramework::GameFramework(std::string title, int& width, int& height)
-	: gameTimer{ title, width, height }, framebufferWidth{ width }, framebufferHeight{ height }
+GameFramework::GameFramework(std::string title, int& winWidth, int& winHeight, VkExtent2D& framebufferExtent)
+	: gameTimer{ title, winWidth, winHeight }, framebufferExtent{ framebufferExtent }
 {
 }
 
@@ -85,7 +85,7 @@ void GameFramework::initVulkan(GLFWwindow* window)
 	// 씬매니저 생성
 	pSceneManager = std::make_unique<SceneManager>(fDevice, msaaSamples, renderPass,
 		offscreenPass.samplerDescriptorSetLayout, offscreenPass.samplerDescriptorSet,
-		framebufferWidth, framebufferHeight);
+		framebufferExtent);
 	gameTimer.SetWindow(window);
 	gameTimer.SetGpuName(fDevice.physicalDeviceProperties.deviceName);
 }
@@ -285,7 +285,7 @@ void GameFramework::cleanupSwapChain()
 
 void GameFramework::recreateSwapChain()
 {
-	while (framebufferWidth == 0 || framebufferHeight == 0) {
+	while (framebufferExtent.width == 0 || framebufferExtent.height == 0) {
 		glfwWaitEvents();
 	}
 
@@ -1038,10 +1038,7 @@ VkExtent2D GameFramework::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capab
 		return capabilities.currentExtent;
 	}
 	else {
-		VkExtent2D actualExtent = {
-			static_cast<uint32_t>(framebufferWidth),
-			static_cast<uint32_t>(framebufferHeight)
-		};
+		VkExtent2D actualExtent = framebufferExtent;
 
 		actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
 		actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);

@@ -4,14 +4,16 @@
 #include "NetworkManager.h"
 
 // 전역 변수
-static int g_Width = 1600;
-static int g_Height = 900;
+static int g_WinWidth = 1600;
+static int g_WinHeight = 900;
+VkExtent2D g_FramebufferExtent{ static_cast<uint32_t>(g_WinWidth), static_cast<uint32_t>(g_WinHeight) };
 
 static std::string Title = "Sweeper";
-static GameFramework g_GameFramework{ Title, g_Width, g_Height };
+static GameFramework g_GameFramework{ Title, g_WinWidth, g_WinHeight, g_FramebufferExtent };
 
 // 이벤트 콜백함수
 static void fullScreenToggle(GLFWwindow* window);
+static void windowResizeCallback(GLFWwindow* window, int width, int height);
 static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
@@ -34,10 +36,11 @@ static void vulkanMain()
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-	GLFWwindow* window = glfwCreateWindow(g_Width, g_Height, Title.c_str(), nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(g_WinWidth, g_WinHeight, Title.c_str(), nullptr, nullptr);
 	glfwSetWindowAspectRatio(window, 16, 9);
 
 	// 콜백함수 설정
+	glfwSetWindowSizeCallback(window, windowResizeCallback);
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 	glfwSetKeyCallback(window, keyCallback);
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -117,10 +120,16 @@ void fullScreenToggle(GLFWwindow* window)
 	}
 }
 
+void windowResizeCallback(GLFWwindow* window, int width, int height)
+{
+	g_WinWidth = width;
+	g_WinHeight = height;
+}
+
 void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 {
-	g_Width = width;
-	g_Height = height;
+	g_FramebufferExtent.width = static_cast<uint32_t>(width);
+	g_FramebufferExtent.height = static_cast<uint32_t>(height);
 
 	// 스왑체인에 알려주기
 	g_GameFramework.setFramebufferResized();
@@ -163,8 +172,8 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
-	xpos = xpos / g_Width * 2. - 1.;
-	ypos = static_cast<double>(g_Height - ypos) / g_Height * 2. - 1.;
+	xpos = xpos / g_WinWidth * 2.0 - 1.0;
+	ypos = (g_WinHeight - ypos) / g_WinHeight * 2.0 - 1.0;
 	g_GameFramework.processMouseButton(button, action, mods, float(xpos), float(ypos));
 
 	switch (action)
@@ -200,8 +209,8 @@ void cursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
 	// 좌상단 [0, 0], 우하단 [width, height]
 
-	xpos = xpos / g_Width * 2. - 1.;
-	ypos = static_cast<double>(g_Height - ypos) / g_Height * 2. - 1.;
+	xpos = xpos / g_WinWidth * 2.0 - 1.0;
+	ypos = (g_WinHeight - ypos) / g_WinHeight * 2.0 - 1.0;
 	g_GameFramework.processMouseCursor(float(xpos), float(ypos));
 }
 

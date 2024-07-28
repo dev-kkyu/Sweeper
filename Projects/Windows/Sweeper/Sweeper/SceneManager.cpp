@@ -1,7 +1,7 @@
 #include "SceneManager.h"
 
-SceneManager::SceneManager(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, int& winWidth, int& winHeight)
-	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }, winWidth{ winWidth }, winHeight{ winHeight }
+SceneManager::SceneManager(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent)
+	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }, framebufferExtent{ framebufferExtent }
 {
 	nowScene = SCENE_TYPE::START;
 
@@ -164,13 +164,13 @@ void SceneManager::changeIsDrawBoundingBox()
 void SceneManager::initScene()
 {
 	pGameScene = std::make_unique<GameScene>(fDevice, msaaSamples, renderPass,
-		shadowSetLayout, shadowSet, winWidth, winHeight);
+		shadowSetLayout, shadowSet, framebufferExtent);
 
 	// GameScene 积己 饶 积己 啊瓷
 	pStartScene = std::make_unique<StartScene>(fDevice, msaaSamples, renderPass,
 		pGameScene->getSamplerDescriptorSetLayout(), pGameScene->getPipelineLayout());
 	// GameScene 积己 饶 积己 啊瓷
-	pLobbyScene = std::make_unique<LobbyScene>(fDevice, msaaSamples, renderPass, winWidth, winHeight, pGameScene->getPlayerModel(),
+	pLobbyScene = std::make_unique<LobbyScene>(fDevice, msaaSamples, renderPass, framebufferExtent, pGameScene->getPlayerModel(),
 		pGameScene->getUBODescriptorSetLayout(), pGameScene->getSSBODescriptorSetLayout(), pGameScene->getSamplerDescriptorSetLayout(),
 		shadowSet, pGameScene->getPipelineLayout(), pGameScene->getModelPipeline(), pGameScene->getSkinModelPipeline());
 

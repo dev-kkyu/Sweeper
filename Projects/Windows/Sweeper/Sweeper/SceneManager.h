@@ -13,8 +13,7 @@ private:
 	VkDescriptorSetLayout& shadowSetLayout;
 	VkDescriptorSet& shadowSet;
 
-	int& winWidth;
-	int& winHeight;
+	VkExtent2D& framebufferExtent;
 
 private:
 	enum class SCENE_TYPE {
@@ -30,7 +29,7 @@ private:
 
 
 public:
-	SceneManager(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, int& winWidth, int& winHeight);
+	SceneManager(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent);
 	~SceneManager();
 
 	void update(float elapsedTime, uint32_t currentFrame);

@@ -17,8 +17,7 @@ private:
 	VkSampleCountFlagBits& msaaSamples;
 	vkf::RenderPass& renderPass;
 
-	int& winWidth;
-	int& winHeight;
+	VkExtent2D& framebufferExtent;
 
 	VkDescriptorSet shadowSet;
 	VkPipelineLayout pipelineLayout;
@@ -42,7 +41,7 @@ private:
 	std::array<GLTFSkinModelObject, 4> playerObjects;
 
 public:
-	LobbyScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, int& width, int& height,
+	LobbyScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkExtent2D& framebufferExtent,
 		std::array<VulkanGLTFSkinModel, 4>& playerModel,
 		VkDescriptorSetLayout uboDescriptorSetLayout, VkDescriptorSetLayout ssboDescriptorSetLayout, VkDescriptorSetLayout samplerDescriptorSetLayout,
 		VkDescriptorSet shadowSet, VkPipelineLayout pipelineLayout, VkPipeline modelPipeline, VkPipeline skinModelPipeline);

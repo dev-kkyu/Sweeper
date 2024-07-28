@@ -33,7 +33,7 @@ struct SwapChainSupportDetails {
 class GameFramework
 {
 public:
-	GameFramework(std::string title, int& width, int& height);
+	GameFramework(std::string title, int& winWidth, int& winHeight, VkExtent2D& framebufferExtent);
 
 	void setFramebufferResized();
 
@@ -55,8 +55,7 @@ private:
 	Timer gameTimer;
 
 	bool framebufferResized = false;
-	int& framebufferWidth;
-	int& framebufferHeight;
+	VkExtent2D& framebufferExtent;
 
 	std::unique_ptr<SceneManager> pSceneManager;
 
