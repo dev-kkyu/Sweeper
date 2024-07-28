@@ -55,7 +55,7 @@ void WarriorSKILLState::update(float elapsedTime, uint32_t currentFrame)
 	stateAccumTime += elapsedTime;
 
 	if (not isSoundPlayed) {
-		if (stateAccumTime > 0.2f) {
+		if (stateAccumTime > 0.5f) {
 			SoundManager::getInstance().playWarriorSkillSound();
 			isSoundPlayed = true;
 		}

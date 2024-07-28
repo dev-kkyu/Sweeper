@@ -68,7 +68,9 @@ void SoundManager::playNormalAttackSound()
 
 void SoundManager::playWarriorSkillSound()
 {
-	ssystem->playSound(sounds[2], nullptr, false, nullptr);
+	FMOD::Channel* channel;
+	ssystem->playSound(sounds[2], nullptr, false, &channel);
+	channel->setVolume(0.5f);
 }
 
 void SoundManager::playArcherAttackSound()
