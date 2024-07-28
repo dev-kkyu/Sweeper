@@ -16,7 +16,7 @@ private:
 
 	FMOD::Channel* backgroundChannel;
 
-	std::array<FMOD::Sound*, 11> sounds;
+	std::array<FMOD::Sound*, 13> sounds;
 
 private:
 	// ΩÃ±€≈Ê
@@ -47,7 +47,10 @@ public:
 	void playHealerSkillSound();
 
 	void playDashSound();
+	void playPlayerHitSound();
 	void playMonsterHitSound();
+
+	void playBossSkillSound();
 
 	void playButtonSound();
 

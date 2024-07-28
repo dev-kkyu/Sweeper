@@ -16,6 +16,9 @@ private:
 	bool isDead;
 	float deadAccumTime;
 
+	bool isPunchState;
+	float punchAccumTime;
+
 public:
 	BossObject(vkf::Effect& effect);
 	virtual ~BossObject() = default;

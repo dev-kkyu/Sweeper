@@ -197,6 +197,8 @@ void HITState::enter()
 
 	player.setAnimationClip(PLAYER_CLIP_HIT);
 	player.setAnimateSpeed(1.f);
+
+	SoundManager::getInstance().playPlayerHitSound();
 }
 
 void HITState::update(float elapsedTime, uint32_t currentFrame)

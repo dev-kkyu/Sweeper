@@ -13,6 +13,8 @@
 #define BOSS_CLIP_PUNCH_DOWN	2
 #define BOSS_CLIP_DIE			3
 
+#include "SoundManager.h"
+
 BossObject::BossObject(vkf::Effect& effect)
 	: effect{ effect }
 {
@@ -22,6 +24,9 @@ BossObject::BossObject(vkf::Effect& effect)
 
 	isDead = false;
 	deadAccumTime = 0.f;
+
+	isPunchState = false;
+	punchAccumTime = 0.f;
 }
 
 void BossObject::initialize()
@@ -42,6 +47,14 @@ void BossObject::update(float elapsedTime, uint32_t currentFrame)
 
 	// 이펙트 누적시간 업데이트
 	bossEffect.accumTime += elapsedTime;
+
+	if (isPunchState) {
+		punchAccumTime += elapsedTime;
+		if (punchAccumTime > 1.1f) {
+			SoundManager::getInstance().playBossSkillSound();
+			isPunchState = false;
+		}
+	}
 }
 
 void BossObject::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
@@ -110,6 +123,8 @@ void BossObject::setBossState(BOSS_STATE state)
 		setAnimateSpeed(0.55f);
 		// 보스 스킬 이펙트 발동
 		bossEffect = BossEffect{ getPosition(), 0.f };
+		isPunchState = true;
+		punchAccumTime = 0.f;
 		break;
 	case BOSS_STATE::DIE:
 		setAnimationClip(BOSS_CLIP_DIE);

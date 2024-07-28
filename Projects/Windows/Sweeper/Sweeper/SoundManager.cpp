@@ -27,9 +27,9 @@ SoundManager::~SoundManager()
 
 void SoundManager::loadSoundFiles()
 {
-	std::string filename[11]{ "bgm", "normalattack", "warriorskill", "archerattack",
-	"archerskill", "mageattack", "mageskill", "healerskill", "dash", "hit", "button" };
-	for (int i = 0; i < 11; ++i) {
+	std::string filename[13]{ "bgm", "normalattack", "warriorskill", "archerattack", "archerskill",
+		"mageattack", "mageskill", "healerskill", "dash", "playerhit", "monsterhit", "bossskill", "button" };
+	for (int i = 0; i < sounds.size(); ++i) {
 		std::string name = "./sounds/" + filename[i] + ".mp3";
 		if (i < 1)
 			ssystem->createSound(name.c_str(), FMOD_LOOP_NORMAL, nullptr, &sounds[i]);
@@ -101,14 +101,26 @@ void SoundManager::playDashSound()
 	ssystem->playSound(sounds[8], nullptr, false, nullptr);
 }
 
-void SoundManager::playMonsterHitSound()
+void SoundManager::playPlayerHitSound()
 {
 	ssystem->playSound(sounds[9], nullptr, false, nullptr);
 }
 
-void SoundManager::playButtonSound()
+void SoundManager::playMonsterHitSound()
 {
 	ssystem->playSound(sounds[10], nullptr, false, nullptr);
+}
+
+void SoundManager::playBossSkillSound()
+{
+	FMOD::Channel* channel;
+	ssystem->playSound(sounds[11], nullptr, false, &channel);
+	channel->setVolume(0.5f);
+}
+
+void SoundManager::playButtonSound()
+{
+	ssystem->playSound(sounds[12], nullptr, false, nullptr);
 }
 
 #else
