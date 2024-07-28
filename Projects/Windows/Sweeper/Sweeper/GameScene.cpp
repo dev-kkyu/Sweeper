@@ -188,8 +188,15 @@ void GameScene::update(float elapsedTime, uint32_t currentFrame)
 	if (not isEnd) {
 		if (isEndPacketReceived) {
 			gameEndAfterTime += elapsedTime;
-			if (gameEndAfterTime > 5.f) {
-				isEnd = true;
+			if (isWin) {
+				if (gameEndAfterTime > 8.f) {
+					isEnd = true;
+				}
+			}
+			else {
+				if (gameEndAfterTime > 6.5f) {
+					isEnd = true;
+				}
 			}
 		}
 	}
@@ -315,13 +322,24 @@ void GameScene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	}
 
 	// 게임 승리/패배 그려주기
-	{
-		if (isEndPacketReceived and gameEndAfterTime > 1.5f) {
-			glm::mat4 matrix{ 1.f };
-			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.gameendPipeline);
-			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &gameendTexture[static_cast<int>(isWin)].samplerDescriptorSet, 0, nullptr);
-			vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
-			vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+	if (isEndPacketReceived) {
+		if (isWin) {
+			if (gameEndAfterTime > 4.5f) {
+				glm::mat4 matrix{ 1.f };
+				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.gameendPipeline);
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &gameendTexture[1].samplerDescriptorSet, 0, nullptr);
+				vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+				vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+			}
+		}
+		else {
+			if (gameEndAfterTime > 3.f) {
+				glm::mat4 matrix{ 1.f };
+				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.gameendPipeline);
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &gameendTexture[0].samplerDescriptorSet, 0, nullptr);
+				vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+				vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+			}
 		}
 	}
 }
