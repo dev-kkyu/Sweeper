@@ -263,7 +263,7 @@ void BossLEFTPUNCH::update(float elapsedTime)
 			boss.changeIDLEState();
 		}
 	}
-	else if (stateAccumTime >= 1.125f) {	// 충돌 판정
+	else if (stateAccumTime >= 1.125f and stateAccumTime < 1.325f) {	// 충돌 판정
 		auto bossPos = boss.getPosition();
 		auto hitCenter = bossPos + boss.getLook() * 2.25f;	// 보스 앞쪽에 위치한다면
 		for (int i = 0; i < 4; ++i) {
@@ -330,7 +330,7 @@ void BossRIGHTPUNCH::update(float elapsedTime)
 			boss.changeIDLEState();
 		}
 	}
-	else if (stateAccumTime >= 1.355f) {	// 충돌 판정
+	else if (stateAccumTime >= 1.355f and stateAccumTime < 1.555f) {	// 충돌 판정
 		auto bossPos = boss.getPosition();
 		auto hitCenter = bossPos + boss.getLook() * 2.25f;	// 보스 앞쪽에 위치한다면
 		for (int i = 0; i < 4; ++i) {
