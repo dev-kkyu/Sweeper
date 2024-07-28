@@ -64,7 +64,7 @@ bool MonsterObject::update(float elapsedTime)
 	case MONSTER_STATE::IDLE: {
 		for (int i = 0; i < 4; ++i) {
 			std::shared_ptr<Session> session = parentRoom->sessions[i].load();
-			if (Room::isValidSession(session)) {
+			if (Room::isValidPlayer(session)) {
 				auto playerPos = session->player->getPosition();
 				auto myPos = getPosition();
 
@@ -90,7 +90,7 @@ bool MonsterObject::update(float elapsedTime)
 	case MONSTER_STATE::MOVE: {
 		if (targetPlayer >= 0) {
 			std::shared_ptr<Session> session = parentRoom->sessions[targetPlayer].load();
-			if (Room::isValidSession(session)) {
+			if (Room::isValidPlayer(session)) {
 				auto playerPos = session->player->getPosition();
 				auto myPos = getPosition();
 
@@ -151,7 +151,7 @@ bool MonsterObject::update(float elapsedTime)
 			state = MONSTER_STATE::IDLE;
 			if (targetPlayer >= 0) {			// 타겟이 있고 아직도 충돌이면 Attack
 				std::shared_ptr<Session> session = parentRoom->sessions[targetPlayer].load();
-				if (Room::isValidSession(session)) {
+				if (Room::isValidPlayer(session)) {
 					auto playerPos = session->player->getPosition();
 					auto myPos = getPosition();
 					// 나와 플레이어 사이의 거리
@@ -177,7 +177,7 @@ bool MonsterObject::update(float elapsedTime)
 	case MONSTER_STATE::ATTACK: {
 		if (targetPlayer >= 0) {
 			std::shared_ptr<Session> session = parentRoom->sessions[targetPlayer].load();
-			if (Room::isValidSession(session)) {
+			if (Room::isValidPlayer(session)) {
 				auto playerPos = session->player->getPosition();
 				auto myPos = getPosition();
 				// 나와 플레이어 사이의 거리

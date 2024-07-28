@@ -1,6 +1,7 @@
 #include "Room.h"
 
 #include "Session.h"
+#include "PlayerObject.h"
 #include "MushroomObject.h"
 #include "BornDogObject.h"
 #include "GoblinObject.h"
@@ -129,4 +130,9 @@ void Room::update(float elapsedTime)
 bool Room::isValidSession(const std::shared_ptr<Session>& session)
 {
 	return session and session->player;		// 세션이 접속된 상태이면서, 로그인 패킷이 날라왔는지
+}
+
+bool Room::isValidPlayer(const std::shared_ptr<Session>& session)
+{
+	return isValidSession(session) and session->player->getPlayerState() != PLAYER_STATE::DIE;
 }

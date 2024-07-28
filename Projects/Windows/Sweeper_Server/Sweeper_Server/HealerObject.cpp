@@ -129,7 +129,7 @@ bool HealerObject::update(float elapsedTime)
 		if (hEffect.accumTime >= 0.f) {
 			for (auto& a : parentRoom->sessions) {
 				std::shared_ptr<Session> session = a.load();
-				if (Room::isValidSession(session)) {
+				if (Room::isValidPlayer(session)) {
 					auto playerPos = session->player->getPosition();
 					float dist = glm::length(playerPos - hEffect.pos);
 					if (dist <= session->player->getCollisionRadius() + 2.f) {

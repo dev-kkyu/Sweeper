@@ -169,7 +169,7 @@ void RUNState::update(float elapsedTime)
 			if (i == player.my_id)
 				continue;
 			std::shared_ptr<Session> session = player.parentRoom->sessions[i].load();
-			if (Room::isValidSession(session)) {
+			if (Room::isValidPlayer(session)) {
 				if (player.isCollide(*session->player)) {
 					glm::vec3 myPos = player.getPosition();
 					glm::vec3 otherPos = session->player->getPosition();
@@ -398,6 +398,11 @@ void PlayerObject::processKeyInput(unsigned int key, bool is_pressed)
 	else {
 		keyState &= ~key;
 	}
+}
+
+PLAYER_STATE PlayerObject::getPlayerState() const
+{
+	return currentState->getState();
 }
 
 void PlayerObject::broadcastMyHP() const

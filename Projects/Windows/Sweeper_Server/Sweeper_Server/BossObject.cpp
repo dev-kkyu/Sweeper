@@ -57,7 +57,7 @@ void BossSLEEP::update(float elapsedTime)
 {
 	for (auto& a : boss.parentRoom->sessions) {
 		std::shared_ptr<Session> session = a.load();
-		if (Room::isValidSession(session)) {
+		if (Room::isValidPlayer(session)) {
 			auto myPos = boss.getPosition();
 			auto playerPos = session->player->getPosition();
 
@@ -123,7 +123,7 @@ void BossIDLE::update(float elapsedTime)
 {
 	for (int i = 0; i < 4; ++i) {
 		std::shared_ptr<Session> session = boss.parentRoom->sessions[i].load();
-		if (Room::isValidSession(session)) {
+		if (Room::isValidPlayer(session)) {
 			BoundingBox boundingBox;
 			boundingBox.setBound(1.f, 0.1f, 125.f, 107.f, 3.f, 21.f);	// 보스 방의 사각형
 			// 보스 방에 있는 타겟만 검색한다
@@ -166,7 +166,7 @@ void BossMOVE::update(float elapsedTime)
 {
 	if (boss.targetPlayer >= 0) {
 		std::shared_ptr<Session> session1 = boss.parentRoom->sessions[boss.targetPlayer].load();
-		if (Room::isValidSession(session1)) {
+		if (Room::isValidPlayer(session1)) {
 			BoundingBox boundingBox;
 			boundingBox.setBound(1.f, 0.1f, 125.f, 107.f, 3.f, 21.f);	// 보스 방의 사각형
 			// 플레이어가 보스 방의 사각형 내에 있을때만 따라간다
@@ -182,7 +182,7 @@ void BossMOVE::update(float elapsedTime)
 							if (i == boss.targetPlayer)
 								continue;
 							std::shared_ptr<Session> session2 = boss.parentRoom->sessions[i].load();
-							if (Room::isValidSession(session2)) {
+							if (Room::isValidPlayer(session2)) {
 								// 보스 방에 있는 타겟만 검색한다
 								if (boundingBox.isCollide(session2->player->getBoundingBox())) {
 									auto myPos2 = boss.getPosition();
@@ -252,7 +252,7 @@ void BossLEFTPUNCH::update(float elapsedTime)
 	if (stateAccumTime >= 2.8f) {
 		if (boss.targetPlayer >= 0) {
 			std::shared_ptr<Session> session = boss.parentRoom->sessions[boss.targetPlayer].load();
-			if (Room::isValidSession(session)) {
+			if (Room::isValidPlayer(session)) {
 				if (boss.isCollide(*session->player)) {
 					boss.changeAttackPattern(*session->player);
 				}
@@ -273,7 +273,7 @@ void BossLEFTPUNCH::update(float elapsedTime)
 		auto hitCenter = bossPos + boss.getLook() * 2.25f;	// 보스 앞쪽에 위치한다면
 		for (int i = 0; i < 4; ++i) {
 			std::shared_ptr<Session> session = boss.parentRoom->sessions[i].load();
-			if (Room::isValidSession(session)) {			// 존재하는 플레이어에 대해서
+			if (Room::isValidPlayer(session)) {			// 존재하는 플레이어에 대해서
 				if (not hitPlayer[i]) {						// 아직 hit 한 적이 없다면
 					auto playerPos = session->player->getPosition();
 					playerPos.y = 0.f;
@@ -319,7 +319,7 @@ void BossRIGHTPUNCH::update(float elapsedTime)
 	if (stateAccumTime >= 3.4f) {
 		if (boss.targetPlayer >= 0) {
 			std::shared_ptr<Session> session = boss.parentRoom->sessions[boss.targetPlayer].load();
-			if (Room::isValidSession(session)) {
+			if (Room::isValidPlayer(session)) {
 				if (boss.isCollide(*session->player)) {
 					boss.changeAttackPattern(*session->player);
 				}
@@ -340,7 +340,7 @@ void BossRIGHTPUNCH::update(float elapsedTime)
 		auto hitCenter = bossPos + boss.getLook() * 2.25f;	// 보스 앞쪽에 위치한다면
 		for (int i = 0; i < 4; ++i) {
 			std::shared_ptr<Session> session = boss.parentRoom->sessions[i].load();
-			if (Room::isValidSession(session)) {			// 존재하는 플레이어에 대해서
+			if (Room::isValidPlayer(session)) {			// 존재하는 플레이어에 대해서
 				if (not hitPlayer[i]) {						// 아직 hit 한 적이 없다면
 					auto playerPos = session->player->getPosition();
 					playerPos.y = 0.f;
@@ -386,7 +386,7 @@ void BossPUNCHDOWN::update(float elapsedTime)
 	if (stateAccumTime >= 3.05f) {
 		if (boss.targetPlayer >= 0) {
 			std::shared_ptr<Session> session = boss.parentRoom->sessions[boss.targetPlayer].load();
-			if (Room::isValidSession(session)) {
+			if (Room::isValidPlayer(session)) {
 				if (boss.isCollide(*session->player)) {
 					boss.changeAttackPattern(*session->player);
 				}
@@ -406,7 +406,7 @@ void BossPUNCHDOWN::update(float elapsedTime)
 		auto bossPos = boss.getPosition();
 		for (int i = 0; i < 4; ++i) {
 			std::shared_ptr<Session> session = boss.parentRoom->sessions[i].load();
-			if (Room::isValidSession(session)) {			// 존재하는 플레이어에 대해서
+			if (Room::isValidPlayer(session)) {			// 존재하는 플레이어에 대해서
 				if (not hitPlayer[i]) {						// 아직 hit 한 적이 없다면
 					auto playerPos = session->player->getPosition();
 					playerPos.y = 0.f;

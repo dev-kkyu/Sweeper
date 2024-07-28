@@ -157,6 +157,8 @@ public:
 
 	void processKeyInput(unsigned int key, bool is_pressed);
 
+	virtual PLAYER_STATE getPlayerState() const final;
+
 	void broadcastMyHP() const;
 
 protected:
