@@ -347,7 +347,6 @@ PlayerObject::PlayerObject(Room* parentRoom, int p_id)
 	velocity = 0.f;
 
 	collisionRadius = 0.4f;						// 캐릭터 충돌 반지름 조정
-	setPosition(glm::vec3(12.f, 0.f, 95.f));
 }
 
 void PlayerObject::initialize()
@@ -506,10 +505,8 @@ void PlayerObject::moveAndCheckCollision(const glm::vec3& direction, float moveS
 		if (box.isCollide(getBoundingBox())) {
 			setPosition(befPos);			// 충돌시 먼저 기존 위치로 돌아간다.
 			// 슬라이딩 벡터 구현
-			glm::vec3 pDir = getLook();	// 현재 보고있는 방향
-			pDir.y = 0.f;
-			glm::vec3 moveDir = pDir;			// 이동할 방향
-			auto pBox = getBoundingBox();// 충돌 전의 바운딩 박스
+			glm::vec3 moveDir = direction;	// 이동할 방향
+			auto pBox = getBoundingBox();	// 충돌 전의 바운딩 박스
 			// 기존 지점에서 어느 방향이 충돌이었는지 확인 (충돌 전 위치로 돌아갔으니, 해당 방향에서는 현재 충돌이 아니다)
 			glm::vec3 newPos = befPos;
 			if (box.getBack() > pBox.getFront() or box.getFront() < pBox.getBack()) {
@@ -532,9 +529,7 @@ void PlayerObject::moveAndCheckCollision(const glm::vec3& direction, float moveS
 			}
 			setPosition(newPos);			// 충돌이 아닌 최대의 위치로 움직여 준다.
 			if (glm::length(moveDir) > 0.f) {
-				// 내적값의 두배를 하여 직각일 때를 제외하고 두배의 속도, 최대 1.f의 속도로 움직이도록 한다.
-				float moveOffset = glm::clamp(glm::dot(pDir, glm::normalize(moveDir)) * 2.f, 0.f, 1.f);
-				move(moveDir, moveOffset * moveSpeed * elapsedTime);
+				move(moveDir, moveSpeed * elapsedTime);
 				// 슬라이딩을 하였음에도 충돌이면 기존 위치로 돌아가고, 더이상 움직이지 않는다.
 				for (const auto& box2 : boundBox) {
 					if (box2.isCollide(getBoundingBox())) {
