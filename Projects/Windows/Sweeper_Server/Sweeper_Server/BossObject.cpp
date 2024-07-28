@@ -441,6 +441,19 @@ BossDIE::BossDIE(BossObject& boss)
 void BossDIE::enter()
 {
 	BossState::enter();
+
+	SC_GAME_END_PACKET p;
+	p.size = sizeof(p);
+	p.type = SC_GAME_END;
+	p.is_win = true;
+	for (auto& a : boss.parentRoom->sessions) {			// 모든 플레이어에게 게임 종료-승리 를 알려준다
+		std::shared_ptr<Session> session = a.load();
+		if (Room::isValidSession(session))
+			session->sendPacket(&p);
+	}
+	std::cout << "Room[" << boss.parentRoom->room_id << "] : 게임 승리 패킷 전송" << std::endl;
+
+	boss.parentRoom->isEnd = true;
 }
 
 void BossDIE::update(float elapsedTime)

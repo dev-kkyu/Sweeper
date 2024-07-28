@@ -115,5 +115,8 @@ void Server::doTimer()
 
 void Server::update(float elapsedTime)
 {
+	if (room->getIsEnd()) {
+		room = std::make_shared<Room>(io_context, 0, initMonsterInfo);			// 일단 방번호 0번 설정, Room이 끝나면 새로 시작해 준다
+	}
 	room->update(elapsedTime);
 }

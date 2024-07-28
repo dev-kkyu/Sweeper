@@ -44,6 +44,9 @@ Room::Room(asio::io_context& io_context, int room_id, const std::list<MonsterInf
 
 	boss = std::make_unique<BossObject>(this);
 
+	isEnd = false;
+
+	std::cout << "Room[" << room_id << "] 생성!" << std::endl;
 }
 
 void Room::addSession(std::shared_ptr<Session> session)
@@ -72,10 +75,37 @@ void Room::addSession(std::shared_ptr<Session> session)
 
 void Room::update(float elapsedTime)
 {
-	for (auto& a : sessions) {
-		std::shared_ptr<Session> session = a.load();
-		if (isValidSession(session))
-			session->update(elapsedTime);
+	{
+		bool isValidRoom = false;	// 플레이어가 한명 이상 있을때
+		bool isAllDead = true;
+		for (auto& a : sessions) {
+			std::shared_ptr<Session> session = a.load();
+			if (isValidSession(session)) {
+				isValidRoom = true;
+
+				session->update(elapsedTime);
+				if (session->player->getPlayerState() != PLAYER_STATE::DIE) {
+					isAllDead = false;
+				}
+			}
+		}
+		if (not isEnd) {
+			if (isValidRoom) {			// 플레이어가 한명 이상 있을때
+				if (isAllDead) {		// 모두가 죽었다면...
+					SC_GAME_END_PACKET p;
+					p.size = sizeof(p);
+					p.type = SC_GAME_END;
+					p.is_win = false;
+					for (auto& a : sessions) {			// 모든 플레이어에게 게임 종료-패배 를 알려준다
+						std::shared_ptr<Session> session = a.load();
+						if (isValidSession(session))
+							session->sendPacket(&p);
+					}
+					std::cout << "Room[" << room_id << "] : 게임 패배 패킷 전송" << std::endl;
+					isEnd = true;
+				}
+			}
+		}
 	}
 
 	// 삭제가 예약된 몬스터가 있다면 업데이트 전에 제거해 준다.
@@ -125,6 +155,19 @@ void Room::update(float elapsedTime)
 				session->sendPacket(&p);
 		}
 	}
+}
+
+bool Room::getIsEnd() const
+{
+	if (isEnd) {
+		for (const auto& session : sessions) {
+			if (isValidSession(session)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	return false;
 }
 
 bool Room::isValidSession(const std::shared_ptr<Session>& session)

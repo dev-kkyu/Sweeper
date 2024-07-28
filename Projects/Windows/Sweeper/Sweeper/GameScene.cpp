@@ -790,6 +790,16 @@ void GameScene::processPacket(unsigned char* packet)
 		pBossObject->setHP(p->hp);
 		break;
 	}
+	case SC_GAME_END: {
+		auto p = reinterpret_cast<SC_GAME_END_PACKET*>(packet);
+		if (p->is_win) {
+			std::cout << "게임 승리 패킷 수신!" << std::endl;
+		}
+		else {
+			std::cout << "게임 패배 패킷 수신!" << std::endl;
+		}
+		break;
+	}
 	default:
 		std::cerr << "ERROR : INVALID PACKET ON SCENE!" << std::endl;
 		break;

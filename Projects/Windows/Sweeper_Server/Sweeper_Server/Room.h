@@ -27,6 +27,8 @@ private:
 	int monster_ids;		// 몬스터 생성을 관리해주는 ID, 한개씩 늘어난다
 
 public:
+	bool isEnd;
+
 	int room_id = -1;
 
 	// 타이머를 위해 io_context도 들고있는다
@@ -44,6 +46,7 @@ public:
 	Room(asio::io_context& io_context, int room_id, const std::list<MonsterInfo>& initMonsterInfo);
 	void addSession(std::shared_ptr<Session> session);
 	void update(float elapsedTime);
+	bool getIsEnd() const;
 
 	static bool isValidSession(const std::shared_ptr<Session>& session);
 	static bool isValidPlayer(const std::shared_ptr<Session>& session);

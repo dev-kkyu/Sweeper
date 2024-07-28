@@ -296,7 +296,7 @@ struct SC_GAME_END_PACKET
 {
 	unsigned char size;
 	char type;
-	bool isWin;
+	bool is_win;
 };
 
 struct CS_LOGIN_PACKET
