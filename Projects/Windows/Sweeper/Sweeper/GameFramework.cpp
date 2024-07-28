@@ -251,6 +251,7 @@ void GameFramework::processPacket(unsigned char* packet)
 	case SC_MOVE_BOSS:
 	case SC_BOSS_STATE:
 	case SC_BOSS_HP:
+	case SC_GAME_END:
 		pSceneManager->processPacket(packet);
 		break;
 	case SC_LOGIN_FAIL:

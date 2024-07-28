@@ -13,6 +13,8 @@ namespace asio {
 class NetworkManager
 {
 private:
+	std::string ipAddress;			// 접속할 IP 주소
+
 	std::shared_ptr<asio::io_context> p_io_context;
 	void* p_socket;					// asio::ip::tcp::socket 클래스가 원형이다.
 
@@ -40,7 +42,8 @@ public:
 	static NetworkManager& getInstance();	// 싱글톤 객체 얻기 위한 static 함수
 
 public:
-	void connectServer(std::string ipAddress);
+	void setIPAddress(const std::string& ipAddr);
+	void connectServer();
 	void start(PLAYER_TYPE player_type);
 	void update();
 	void stop();

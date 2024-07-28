@@ -16,6 +16,9 @@ class ArrowObject;
 class GameScene
 {
 private:
+	bool isEnd;
+
+private:
 	vkf::Device& fDevice;
 	VkSampleCountFlagBits& msaaSamples;
 	vkf::RenderPass& renderPass;
@@ -146,6 +149,8 @@ public:
 	VkPipeline getSkinModelPipeline() const;
 	VkPipeline getOffscreenModelPipeline() const;
 	VkPipeline getOffscreenSkinModelPipeline() const;
+
+	bool getIsEnd() const;
 
 private:
 	void createDescriptorSetLayout();

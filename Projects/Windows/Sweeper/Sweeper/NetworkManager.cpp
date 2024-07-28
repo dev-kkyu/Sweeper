@@ -13,6 +13,8 @@ static asio::ip::tcp::socket& getSocket(void* p_asio_tcp_socket)
 
 NetworkManager::NetworkManager()
 {
+	ipAddress = "127.0.0.1";
+
 	p_io_context = std::make_shared<asio::io_context>();
 	p_socket = new asio::ip::tcp::socket{ *p_io_context };
 
@@ -34,7 +36,12 @@ NetworkManager& NetworkManager::getInstance()
 	return instance;
 }
 
-void NetworkManager::connectServer(std::string ipAddress)
+void NetworkManager::setIPAddress(const std::string& ipAddr)
+{
+	ipAddress = ipAddr;
+}
+
+void NetworkManager::connectServer()
 {
 	std::cout << "Connect To Server..." << std::endl;
 
@@ -74,6 +81,7 @@ void NetworkManager::update()
 
 void NetworkManager::stop()
 {
+	isStart = false;
 	p_io_context->stop();
 	getSocket(p_socket).close();
 }

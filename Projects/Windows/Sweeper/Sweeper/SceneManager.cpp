@@ -22,6 +22,7 @@ void SceneManager::update(float elapsedTime, uint32_t currentFrame)
 	case SceneManager::SCENE_TYPE::START:
 		if (pStartScene->getIsEnd()) {
 			nowScene = SCENE_TYPE::LOBBY;
+			pLobbyScene->start();
 			pLobbyScene->update(elapsedTime, currentFrame);
 		}
 		else {
@@ -30,6 +31,7 @@ void SceneManager::update(float elapsedTime, uint32_t currentFrame)
 		break;
 	case SceneManager::SCENE_TYPE::LOBBY:
 		if (pLobbyScene->getIsEnd()) {
+			NetworkManager::getInstance().connectServer();							// 서버 연결
 			NetworkManager::getInstance().start(pLobbyScene->getPlayerType());		// 로그인 및 Recv 시작
 			nowScene = SCENE_TYPE::INGAME;
 			pGameScene->start(pLobbyScene->getPlayerType());
@@ -40,7 +42,15 @@ void SceneManager::update(float elapsedTime, uint32_t currentFrame)
 		}
 		break;
 	case SceneManager::SCENE_TYPE::INGAME:
-		pGameScene->update(elapsedTime, currentFrame);
+		if (pGameScene->getIsEnd()) {
+			NetworkManager::getInstance().stop();									// 서버 연결 종료
+			nowScene = SCENE_TYPE::LOBBY;
+			pLobbyScene->start();
+			pLobbyScene->update(elapsedTime, currentFrame);
+		}
+		else {
+			pGameScene->update(elapsedTime, currentFrame);
+		}
 		break;
 	}
 }

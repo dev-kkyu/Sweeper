@@ -25,6 +25,7 @@ constexpr char SC_MONSTER_HP = 18;
 constexpr char SC_MOVE_BOSS = 19;
 constexpr char SC_BOSS_STATE = 20;
 constexpr char SC_BOSS_HP = 21;
+constexpr char SC_GAME_END = 22;
 
 constexpr char CS_LOGIN = 1;
 constexpr char CS_KEY_EVENT = 2;
@@ -289,6 +290,13 @@ struct SC_BOSS_HP_PACKET
 	unsigned char size;
 	char type;
 	short hp;
+};
+
+struct SC_GAME_END_PACKET
+{
+	unsigned char size;
+	char type;
+	bool isWin;
 };
 
 struct CS_LOGIN_PACKET

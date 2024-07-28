@@ -47,6 +47,7 @@ public:
 		VkDescriptorSet shadowSet, VkPipelineLayout pipelineLayout, VkPipeline modelPipeline, VkPipeline skinModelPipeline);
 	~LobbyScene();
 
+	void start();
 	void update(float elapsedTime, uint32_t currentFrame);
 	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 	void offscreenDraw(VkCommandBuffer commandBuffer, uint32_t currentFrame, VkPipeline offscreenModelPipeline, VkPipeline offscreenSkinModelPipeline);

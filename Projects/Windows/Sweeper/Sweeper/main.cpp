@@ -31,6 +31,8 @@ static void vulkanMain()
 	std::string ipAddr = "127.0.0.1";
 	if (not input.empty())
 		ipAddr = std::move(input);
+	// 사용할 IP 주소 설정
+	NetworkManager::getInstance().setIPAddress(ipAddr);
 
 	glfwInit();
 
@@ -51,8 +53,7 @@ static void vulkanMain()
 	std::cout << "Loading Vulkan..." << std::endl;
 	g_GameFramework.initVulkan(window);
 
-	// 네트워크 연결
-	NetworkManager::getInstance().connectServer(ipAddr);
+	// 네트워크 패킷 수신 콜백함수 설정
 	NetworkManager::getInstance().setPacketReceivedCallback(packetCallback);	// Recv된 데이터 처리할 함수 설정
 
 	// 메인루프

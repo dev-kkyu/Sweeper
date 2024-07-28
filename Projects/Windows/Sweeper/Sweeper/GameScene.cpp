@@ -63,6 +63,7 @@ GameScene::GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, v
 	// ¸Ê »ý¼º
 	mapObject.setModel(mapModel);
 
+	isEnd = false;
 }
 
 GameScene::~GameScene()
@@ -164,6 +165,8 @@ void GameScene::start(PLAYER_TYPE player_type)
 	pMyPlayer->initModel(playerModel[static_cast<int>(player_type)], descriptorSetLayout.ssbo);
 	pMyPlayer->setScale(glm::vec3(1.3f));
 	camera.setPlayer(pMyPlayer);
+
+	isEnd = false;
 }
 
 void GameScene::update(float elapsedTime, uint32_t currentFrame)
@@ -841,6 +844,11 @@ VkPipeline GameScene::getOffscreenModelPipeline() const
 VkPipeline GameScene::getOffscreenSkinModelPipeline() const
 {
 	return pipeline.offscreen.skinModel;
+}
+
+bool GameScene::getIsEnd() const
+{
+	return isEnd;
 }
 
 void GameScene::createDescriptorSetLayout()

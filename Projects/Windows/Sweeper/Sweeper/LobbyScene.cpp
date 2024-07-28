@@ -67,6 +67,12 @@ LobbyScene::~LobbyScene()
 	vkDestroyPipeline(fDevice.logicalDevice, buttonPipeline, nullptr);
 }
 
+void LobbyScene::start()
+{
+	isEnd = false;
+	selPlayerType = PLAYER_TYPE::WARRIOR;
+}
+
 void LobbyScene::update(float elapsedTime, uint32_t currentFrame)
 {
 	// scene ubo 업데이트
