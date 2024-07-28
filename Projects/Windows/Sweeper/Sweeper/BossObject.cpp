@@ -19,6 +19,9 @@ BossObject::BossObject(vkf::Effect& effect)
 	activeAnimation = BOSS_CLIP_SLEEP;
 
 	maxHP = HP = MAX_HP_BOSS;
+
+	isDead = false;
+	deadAccumTime = 0.f;
 }
 
 void BossObject::initialize()
@@ -27,7 +30,10 @@ void BossObject::initialize()
 
 void BossObject::update(float elapsedTime, uint32_t currentFrame)
 {
-	GLTFSkinModelObject::update(elapsedTime, currentFrame);
+	if (isDead)
+		deadAccumTime += elapsedTime;
+	if (not isDead or deadAccumTime < 5.f)
+		GLTFSkinModelObject::update(elapsedTime, currentFrame);
 
 	// 이동 보정
 	if (BOSS_CLIP_MOVE == activeAnimation) {
@@ -104,7 +110,9 @@ void BossObject::setBossState(BOSS_STATE state)
 		break;
 	case BOSS_STATE::DIE:
 		setAnimationClip(BOSS_CLIP_DIE);
-		setAnimateSpeed(0.7f);
+		setAnimateSpeed(0.5f);
+		isDead = true;
+		deadAccumTime = 0.f;
 		break;
 	default:
 		std::cerr << "ERROR : INVALID BOSS STATE!" << std::endl;

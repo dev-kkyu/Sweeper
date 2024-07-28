@@ -26,6 +26,11 @@ void BossState::enter()
 
 void BossState::update(float elapsedTime)
 {
+	if (state != BOSS_STATE::DIE) {
+		if (boss.HP <= 0) {
+			boss.changeDIEState();
+		}
+	}
 }
 
 void BossState::exit()
