@@ -36,6 +36,20 @@ public:
 	void update();
 
 	void playBGM();
+	void stopBGM();
+
+	void playNormalAttackSound();
+	void playWarriorSkillSound();
+	void playArcherAttackSound();
+	void playArcherSkillSound();
+	void playMageAttackSound();
+	void playMageSkillSound();
+	void playHealerSkillSound();
+
+	void playDashSound();
+	void playHitSound();
+
+	void playButtonSound();
 
 };
 

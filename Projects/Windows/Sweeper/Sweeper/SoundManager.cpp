@@ -1,6 +1,10 @@
 #include "SoundManager.h"
 
+#ifdef _WIN64
+
 #include <FMOD/fmod.hpp>
+
+#include <string>
 
 SoundManager::SoundManager()
 {
@@ -23,6 +27,15 @@ SoundManager::~SoundManager()
 
 void SoundManager::loadSoundFiles()
 {
+	std::string filename[11]{ "bgm", "normalattack", "warriorskill", "archerattack",
+	"archerskill", "mageattack", "mageskill", "healerskill", "dash", "hit", "button" };
+	for (int i = 0; i < 11; ++i) {
+		std::string name = "./sounds/" + filename[i] + ".mp3";
+		if (i < 1)
+			ssystem->createSound(name.c_str(), FMOD_LOOP_NORMAL, nullptr, &sounds[i]);
+		else
+			ssystem->createSound(name.c_str(), FMOD_DEFAULT, nullptr, &sounds[i]);
+	}
 }
 
 SoundManager& SoundManager::getInstance()
@@ -38,4 +51,136 @@ void SoundManager::update()
 
 void SoundManager::playBGM()
 {
+	stopBGM();
+	ssystem->playSound(sounds[0], nullptr, false, &backgroundChannel);
 }
+
+void SoundManager::stopBGM()
+{
+	if (backgroundChannel)
+		backgroundChannel->stop();
+}
+
+void SoundManager::playNormalAttackSound()
+{
+	ssystem->playSound(sounds[1], nullptr, false, nullptr);
+}
+
+void SoundManager::playWarriorSkillSound()
+{
+	ssystem->playSound(sounds[2], nullptr, false, nullptr);
+}
+
+void SoundManager::playArcherAttackSound()
+{
+	ssystem->playSound(sounds[3], nullptr, false, nullptr);
+}
+
+void SoundManager::playArcherSkillSound()
+{
+	ssystem->playSound(sounds[4], nullptr, false, nullptr);
+}
+
+void SoundManager::playMageAttackSound()
+{
+	ssystem->playSound(sounds[5], nullptr, false, nullptr);
+}
+
+void SoundManager::playMageSkillSound()
+{
+	ssystem->playSound(sounds[6], nullptr, false, nullptr);
+}
+
+void SoundManager::playHealerSkillSound()
+{
+	ssystem->playSound(sounds[7], nullptr, false, nullptr);
+}
+
+void SoundManager::playDashSound()
+{
+	ssystem->playSound(sounds[8], nullptr, false, nullptr);
+}
+
+void SoundManager::playHitSound()
+{
+	ssystem->playSound(sounds[9], nullptr, false, nullptr);
+}
+
+void SoundManager::playButtonSound()
+{
+	ssystem->playSound(sounds[10], nullptr, false, nullptr);
+}
+
+#else
+
+SoundManager::SoundManager()
+{
+}
+
+SoundManager::~SoundManager()
+{
+}
+
+void SoundManager::loadSoundFiles()
+{
+}
+
+SoundManager& SoundManager::getInstance()
+{
+	static SoundManager instance;
+	return instance;
+}
+
+void SoundManager::update()
+{
+}
+
+void SoundManager::playBGM()
+{
+}
+
+void SoundManager::stopBGM()
+{
+}
+
+void SoundManager::playNormalAttackSound()
+{
+}
+
+void SoundManager::playWarriorSkillSound()
+{
+}
+
+void SoundManager::playArcherAttackSound()
+{
+}
+
+void SoundManager::playArcherSkillSound()
+{
+}
+
+void SoundManager::playMageAttackSound()
+{
+}
+
+void SoundManager::playMageSkillSound()
+{
+}
+
+void SoundManager::playHealerSkillSound()
+{
+}
+
+void SoundManager::playDashSound()
+{
+}
+
+void SoundManager::playHitSound()
+{
+}
+
+void SoundManager::playButtonSound()
+{
+}
+
+#endif // _WIN64

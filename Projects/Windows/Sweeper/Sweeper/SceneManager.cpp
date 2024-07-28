@@ -1,5 +1,7 @@
 #include "SceneManager.h"
 
+#include "SoundManager.h"
+
 SceneManager::SceneManager(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }, framebufferExtent{ framebufferExtent }
 {
@@ -36,6 +38,7 @@ void SceneManager::update(float elapsedTime, uint32_t currentFrame)
 			nowScene = SCENE_TYPE::INGAME;
 			pGameScene->start(pLobbyScene->getPlayerType());
 			pGameScene->update(elapsedTime, currentFrame);
+			SoundManager::getInstance().playBGM();									// BGM 시작
 		}
 		else {
 			pLobbyScene->update(elapsedTime, currentFrame);
@@ -43,6 +46,7 @@ void SceneManager::update(float elapsedTime, uint32_t currentFrame)
 		break;
 	case SceneManager::SCENE_TYPE::INGAME:
 		if (pGameScene->getIsEnd()) {
+			SoundManager::getInstance().stopBGM();									// BGM 종료
 			NetworkManager::getInstance().stop();									// 서버 연결 종료
 			nowScene = SCENE_TYPE::LOBBY;
 			pLobbyScene->start();
