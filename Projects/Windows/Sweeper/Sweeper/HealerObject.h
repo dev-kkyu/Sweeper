@@ -17,6 +17,10 @@ public:
 
 class HealerSKILLState : public StateMachine
 {
+private:
+	float stateAccumTime;
+	bool isSoundPlayed;
+
 public:
 	HealerSKILLState(PlayerObject& player);
 	virtual ~HealerSKILLState() = default;

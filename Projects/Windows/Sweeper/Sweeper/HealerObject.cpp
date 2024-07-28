@@ -35,6 +35,9 @@ HealerSKILLState::HealerSKILLState(PlayerObject& player)
 	: StateMachine{ player }
 {
 	state = PLAYER_STATE::SKILL;
+
+	isSoundPlayed = false;
+	stateAccumTime = 0.f;
 }
 
 void HealerSKILLState::enter()
@@ -45,12 +48,19 @@ void HealerSKILLState::enter()
 	player.setAnimateSpeed(1.f);
 
 	dynamic_cast<HealerObject*>(&player)->healerEffects.push_back(HealerObject::HealerEffect{ player.getPosition() + player.getLook() * 5.5f, -0.4f });
-
-	SoundManager::getInstance().playHealerSkillSound();
 }
 
 void HealerSKILLState::update(float elapsedTime, uint32_t currentFrame)
 {
+	stateAccumTime += elapsedTime;
+
+	if (not isSoundPlayed) {
+		if (stateAccumTime > 0.3f) {
+			SoundManager::getInstance().playHealerSkillSound();
+			isSoundPlayed = true;
+		}
+	}
+
 	StateMachine::update(elapsedTime, currentFrame);
 }
 
