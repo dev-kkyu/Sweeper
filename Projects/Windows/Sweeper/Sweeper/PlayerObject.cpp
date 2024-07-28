@@ -11,6 +11,8 @@
 #define PLAYER_CLIP_HIT				4
 #define PLAYER_CLIP_DIE				6
 
+#include "SoundManager.h"
+
 StateMachine::StateMachine(PlayerObject& player)
 	: player{ player }
 {
@@ -147,6 +149,8 @@ void DASHState::enter()
 
 	player.setAnimationClip(PLAYER_CLIP_DASH);
 	player.setAnimateSpeed(2.5f);
+
+	SoundManager::getInstance().playDashSound();
 }
 
 void DASHState::update(float elapsedTime, uint32_t currentFrame)

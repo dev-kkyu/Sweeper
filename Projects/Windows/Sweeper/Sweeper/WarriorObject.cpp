@@ -3,6 +3,8 @@
 #define PLAYER_CLIP_ATTACK_WARRIOR	16
 #define PLAYER_CLIP_SKILL_WARRIOR	12
 
+#include "SoundManager.h"
+
 WarriorATTACKState::WarriorATTACKState(PlayerObject& player)
 	: StateMachine{ player }
 {
@@ -15,6 +17,8 @@ void WarriorATTACKState::enter()
 
 	player.setAnimationClip(PLAYER_CLIP_ATTACK_WARRIOR);
 	player.setAnimateSpeed(0.4f);
+
+	SoundManager::getInstance().playNormalAttackSound();
 }
 
 void WarriorATTACKState::update(float elapsedTime, uint32_t currentFrame)
@@ -31,6 +35,9 @@ WarriorSKILLState::WarriorSKILLState(PlayerObject& player)
 	: StateMachine{ player }
 {
 	state = PLAYER_STATE::SKILL;
+
+	isSoundPlayed = false;
+	stateAccumTime = 0.f;
 }
 
 void WarriorSKILLState::enter()
@@ -45,6 +52,15 @@ void WarriorSKILLState::enter()
 
 void WarriorSKILLState::update(float elapsedTime, uint32_t currentFrame)
 {
+	stateAccumTime += elapsedTime;
+
+	if (not isSoundPlayed) {
+		if (stateAccumTime > 0.2f) {
+			SoundManager::getInstance().playWarriorSkillSound();
+			isSoundPlayed = true;
+		}
+	}
+
 	StateMachine::update(elapsedTime, currentFrame);
 }
 

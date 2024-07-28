@@ -12,6 +12,7 @@
 #include "ArrowObject.h"
 
 #include "NetworkManager.h"
+#include "SoundManager.h"
 
 GameScene::GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }
@@ -808,6 +809,9 @@ void GameScene::processPacket(unsigned char* packet)
 	}
 	case SC_MONSTER_STATE: {
 		auto p = reinterpret_cast<SC_MONSTER_STATE_PACKET*>(packet);
+		if (MONSTER_STATE::HIT == p->state) {
+			SoundManager::getInstance().playMonsterHitSound();
+		}
 		switch (p->state)
 		{
 		case MONSTER_STATE::IDLE:

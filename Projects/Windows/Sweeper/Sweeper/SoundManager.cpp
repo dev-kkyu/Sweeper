@@ -101,7 +101,7 @@ void SoundManager::playDashSound()
 	ssystem->playSound(sounds[8], nullptr, false, nullptr);
 }
 
-void SoundManager::playHitSound()
+void SoundManager::playMonsterHitSound()
 {
 	ssystem->playSound(sounds[9], nullptr, false, nullptr);
 }

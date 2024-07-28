@@ -347,6 +347,7 @@ PlayerObject::PlayerObject(Room* parentRoom, int p_id)
 	velocity = 0.f;
 
 	collisionRadius = 0.4f;						// 캐릭터 충돌 반지름 조정
+	setPosition(glm::vec3(12.f, 0.f, 95.f));
 }
 
 void PlayerObject::initialize()

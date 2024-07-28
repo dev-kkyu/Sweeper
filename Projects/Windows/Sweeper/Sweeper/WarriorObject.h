@@ -17,6 +17,10 @@ public:
 
 class WarriorSKILLState : public StateMachine
 {
+private:
+	float stateAccumTime;
+	bool isSoundPlayed;
+
 public:
 	WarriorSKILLState(PlayerObject& player);
 	virtual ~WarriorSKILLState() = default;

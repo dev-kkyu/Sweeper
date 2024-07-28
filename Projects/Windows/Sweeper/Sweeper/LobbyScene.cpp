@@ -4,6 +4,8 @@
 
 #include <stdexcept>
 
+#include "SoundManager.h"
+
 LobbyScene::LobbyScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkExtent2D& framebufferExtent,
 	std::array<VulkanGLTFSkinModel, 4>& playerModel,
 	VkDescriptorSetLayout uboDescriptorSetLayout, VkDescriptorSetLayout ssboDescriptorSetLayout, VkDescriptorSetLayout samplerDescriptorSetLayout,
@@ -184,6 +186,7 @@ void LobbyScene::processMouseButton(int button, int action, int mods, float xpos
 				float bBottom = -1.f * 0.08125f + (0.675f - i * 0.3f);
 				if (xpos > bLeft and xpos < bRight and ypos < bTop and ypos > bBottom) {	// 선택
 					selPlayerType = static_cast<PLAYER_TYPE>(i);
+					SoundManager::getInstance().playButtonSound();
 					break;
 				}
 			}
@@ -194,6 +197,7 @@ void LobbyScene::processMouseButton(int button, int action, int mods, float xpos
 				float bTop = 1.f * 0.0875f - 0.625f;
 				float bBottom = -1.f * 0.0875f - 0.625f;
 				if (xpos > bLeft and xpos < bRight and ypos < bTop and ypos > bBottom) {	// 선택
+					SoundManager::getInstance().playButtonSound();
 					isEnd = true;
 					break;
 				}

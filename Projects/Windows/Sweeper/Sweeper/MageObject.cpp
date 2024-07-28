@@ -3,6 +3,8 @@
 #define PLAYER_CLIP_ATTACK_MAGE		10
 #define PLAYER_CLIP_SKILL_MAGE		11
 
+#include "SoundManager.h"
+
 MageATTACKState::MageATTACKState(PlayerObject& player)
 	: StateMachine{ player }
 {
@@ -17,6 +19,8 @@ void MageATTACKState::enter()
 	player.setAnimateSpeed(1.f);
 
 	dynamic_cast<MageObject*>(&player)->mageAttackEffects.push_back(MageObject::MageEffect{ player.getPosition() + player.getLook() * 3.f, -0.23f });
+
+	SoundManager::getInstance().playMageAttackSound();
 }
 
 void MageATTACKState::update(float elapsedTime, uint32_t currentFrame)
@@ -43,6 +47,8 @@ void MageSKILLState::enter()
 	player.setAnimateSpeed(1.f);
 
 	dynamic_cast<MageObject*>(&player)->mageSkillEffects.push_back(MageObject::MageEffect{ player.getPosition() + player.getLook() * 4.f, -0.3f });
+
+	SoundManager::getInstance().playMageSkillSound();
 }
 
 void MageSKILLState::update(float elapsedTime, uint32_t currentFrame)

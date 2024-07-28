@@ -3,6 +3,8 @@
 #define PLAYER_CLIP_ATTACK_HEALER	16
 #define PLAYER_CLIP_SKILL_HEALER	31
 
+#include "SoundManager.h"
+
 HealerATTACKState::HealerATTACKState(PlayerObject& player)
 	: StateMachine{ player }
 {
@@ -15,6 +17,8 @@ void HealerATTACKState::enter()
 
 	player.setAnimationClip(PLAYER_CLIP_ATTACK_HEALER);
 	player.setAnimateSpeed(0.4f);
+
+	SoundManager::getInstance().playNormalAttackSound();
 }
 
 void HealerATTACKState::update(float elapsedTime, uint32_t currentFrame)
@@ -41,6 +45,8 @@ void HealerSKILLState::enter()
 	player.setAnimateSpeed(1.f);
 
 	dynamic_cast<HealerObject*>(&player)->healerEffects.push_back(HealerObject::HealerEffect{ player.getPosition() + player.getLook() * 5.5f, -0.4f });
+
+	SoundManager::getInstance().playHealerSkillSound();
 }
 
 void HealerSKILLState::update(float elapsedTime, uint32_t currentFrame)

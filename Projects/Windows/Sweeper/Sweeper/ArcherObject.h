@@ -17,6 +17,10 @@ public:
 
 class ArcherSKILLState : public StateMachine
 {
+private:
+	float stateAccumTime;
+	bool isSoundPlayed;
+
 public:
 	ArcherSKILLState(PlayerObject& player);
 	virtual ~ArcherSKILLState() = default;

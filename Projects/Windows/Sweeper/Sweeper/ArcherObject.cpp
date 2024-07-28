@@ -3,6 +3,8 @@
 #define PLAYER_CLIP_ATTACK_ARCHER	26
 #define PLAYER_CLIP_SKILL_ARCHER	26
 
+#include "SoundManager.h"
+
 ArcherATTACKState::ArcherATTACKState(PlayerObject& player)
 	: StateMachine{ player }
 {
@@ -15,6 +17,8 @@ void ArcherATTACKState::enter()
 
 	player.setAnimationClip(PLAYER_CLIP_ATTACK_ARCHER);
 	player.setAnimateSpeed(0.8f);
+
+	SoundManager::getInstance().playArcherAttackSound();
 }
 
 void ArcherATTACKState::update(float elapsedTime, uint32_t currentFrame)
@@ -31,6 +35,9 @@ ArcherSKILLState::ArcherSKILLState(PlayerObject& player)
 	: StateMachine{ player }
 {
 	state = PLAYER_STATE::SKILL;
+
+	isSoundPlayed = false;
+	stateAccumTime = 0.f;
 }
 
 void ArcherSKILLState::enter()
@@ -45,6 +52,15 @@ void ArcherSKILLState::enter()
 
 void ArcherSKILLState::update(float elapsedTime, uint32_t currentFrame)
 {
+	stateAccumTime += elapsedTime;
+
+	if (not isSoundPlayed) {
+		if (stateAccumTime > 0.2f) {
+			SoundManager::getInstance().playArcherSkillSound();
+			isSoundPlayed = true;
+		}
+	}
+
 	StateMachine::update(elapsedTime, currentFrame);
 }
 

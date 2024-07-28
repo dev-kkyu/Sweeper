@@ -47,7 +47,7 @@ public:
 	void playHealerSkillSound();
 
 	void playDashSound();
-	void playHitSound();
+	void playMonsterHitSound();
 
 	void playButtonSound();
 
