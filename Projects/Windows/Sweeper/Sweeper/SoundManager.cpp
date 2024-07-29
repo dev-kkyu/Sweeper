@@ -193,7 +193,15 @@ void SoundManager::playDashSound()
 {
 }
 
-void SoundManager::playHitSound()
+void SoundManager::playPlayerHitSound()
+{
+}
+
+void SoundManager::playMonsterHitSound()
+{
+}
+
+void SoundManager::playBossSkillSound()
 {
 }
 
