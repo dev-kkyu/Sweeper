@@ -849,6 +849,7 @@ void GameScene::processPacket(unsigned char* packet)
 	}
 	case SC_BOSS_HP: {
 		auto p = reinterpret_cast<SC_BOSS_HP_PACKET*>(packet);
+		SoundManager::getInstance().playMonsterHitSound();
 		pBossObject->setHP(p->hp);
 		break;
 	}
