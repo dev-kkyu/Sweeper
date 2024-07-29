@@ -110,7 +110,9 @@ void SoundManager::playPlayerHitSound()
 
 void SoundManager::playMonsterHitSound()
 {
-	ssystem->playSound(sounds[10], nullptr, false, nullptr);
+	FMOD::Channel* channel;
+	ssystem->playSound(sounds[10], nullptr, false, &channel);
+	channel->setVolume(0.75f);
 }
 
 void SoundManager::playBossSkillSound()
