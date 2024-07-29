@@ -35,6 +35,7 @@ public:
 	void update(float elapsedTime);
 
 	void setPlayer(std::shared_ptr<PlayerObject> pPlayer);
+	const std::shared_ptr<PlayerObject>& getPlayer() const;
 
 	glm::mat4 getView() const;
 	glm::mat4 getProjection() const;

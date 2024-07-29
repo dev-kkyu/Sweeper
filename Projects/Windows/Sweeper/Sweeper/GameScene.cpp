@@ -204,7 +204,7 @@ void GameScene::update(float elapsedTime, uint32_t currentFrame)
 
 	sceneElapsedTime += elapsedTime;
 
-	glm::vec3 playerPos = pMyPlayer->getPosition();
+	glm::vec3 playerPos = camera.getPlayer()->getPosition();
 	lightPos = playerPos + glm::vec3(-2.f, 5.2f, -2.f);		// light는 플레이어 위치에 따라서 바뀐다
 
 	// 카메라 업데이트

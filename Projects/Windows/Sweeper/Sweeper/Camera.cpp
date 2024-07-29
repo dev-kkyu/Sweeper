@@ -35,6 +35,11 @@ void Camera::setPlayer(std::shared_ptr<PlayerObject> pPlayer)
 	this->pPlayer = pPlayer;
 }
 
+const std::shared_ptr<PlayerObject>& Camera::getPlayer() const
+{
+	return pPlayer;
+}
+
 glm::mat4 Camera::getView() const
 {
 	return viewTransform;
