@@ -115,6 +115,6 @@ short GameObjectBase::getHP() const
 
 void GameObjectBase::setHP(short hp)
 {
-	HP = hp;
+	HP = glm::clamp<short>(hp, 0, maxHP);
 }
 
