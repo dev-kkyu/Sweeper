@@ -95,7 +95,9 @@ void SoundManager::playMageSkillSound()
 
 void SoundManager::playHealerSkillSound()
 {
-	ssystem->playSound(sounds[7], nullptr, false, nullptr);
+	FMOD::Channel* channel;
+	ssystem->playSound(sounds[7], nullptr, false, &channel);
+	channel->setVolume(0.75f);
 }
 
 void SoundManager::playDashSound()
