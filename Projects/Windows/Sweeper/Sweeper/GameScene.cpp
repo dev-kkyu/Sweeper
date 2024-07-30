@@ -1,5 +1,6 @@
 #include "GameScene.h"
 #include <iostream>
+#include <cstring>
 #include <stdexcept>
 
 #include <GLFW/glfw3.h>
@@ -1351,7 +1352,7 @@ void GameScene::createParticle(int particleCount)
 
 	void* data;
 	vkMapMemory(fDevice.logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-	memcpy(data, vertices.data(), (size_t)bufferSize);
+	std::memcpy(data, vertices.data(), (size_t)bufferSize);
 	vkUnmapMemory(fDevice.logicalDevice, stagingBufferMemory);
 
 	vkf::createBuffer(fDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, particleVertexBuffer, particleVertexBufferMemory);
