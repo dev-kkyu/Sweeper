@@ -377,11 +377,11 @@ void GLTFSkinModelObject::loadNode(const tinygltf::Node& inputNode, const std::s
 glm::mat4 GLTFSkinModelObject::getNodeMatrix(const std::shared_ptr<Node>& node) const
 {
 	glm::mat4				nodeMatrix = node->getLocalMatrix();
-	std::shared_ptr<Node>	currentParent = node->parent;
+	std::shared_ptr<Node>	currentParent = node->parent.lock();
 	while (currentParent)
 	{
 		nodeMatrix = currentParent->getLocalMatrix() * nodeMatrix;
-		currentParent = currentParent->parent;
+		currentParent = currentParent->parent.lock();
 	}
 	return nodeMatrix;
 }
@@ -480,11 +480,11 @@ void GLTFSkinModelObject::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayo
 		// Pass the node's matrix via push constants
 		// Traverse the node hierarchy to the top-most parent to get the final matrix of the current node
 		glm::mat4				nodeMatrix = node->matrix;
-		std::shared_ptr<Node>	currentParent = node->parent;
+		std::shared_ptr<Node>	currentParent = node->parent.lock();
 		while (currentParent)
 		{
 			nodeMatrix = currentParent->matrix * nodeMatrix;
-			currentParent = currentParent->parent;
+			currentParent = currentParent->parent.lock();
 		}
 		// 월드 좌표계로 이동
 		nodeMatrix = worldMatrix * nodeMatrix;

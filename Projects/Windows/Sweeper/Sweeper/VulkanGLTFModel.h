@@ -45,7 +45,7 @@ public:
 
 	// A node represents an object in the glTF scene graph
 	struct Node {
-		std::shared_ptr<Node> parent;
+		std::weak_ptr<Node> parent;
 		std::vector<std::shared_ptr<Node>> children;
 		Mesh mesh;
 		glm::mat4 matrix;

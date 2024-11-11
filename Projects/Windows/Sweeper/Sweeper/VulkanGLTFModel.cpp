@@ -47,10 +47,10 @@ void VulkanGLTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout p
 		// Pass the node's matrix via push constants
 		// Traverse the node hierarchy to the top-most parent to get the final matrix of the current node
 		glm::mat4 nodeMatrix = node->matrix;
-		std::shared_ptr<VulkanGLTFModel::Node> currentParent = node->parent;
+		std::shared_ptr<VulkanGLTFModel::Node> currentParent = node->parent.lock();
 		while (currentParent) {
 			nodeMatrix = currentParent->matrix * nodeMatrix;
-			currentParent = currentParent->parent;
+			currentParent = currentParent->parent.lock();
 		}
 		// 월드 좌표계로 이동
 		nodeMatrix = worldMatrix * nodeMatrix;
@@ -334,10 +334,10 @@ void VulkanGLTFModel::createBoundingBoxNode(const std::shared_ptr<VulkanGLTFMode
 {
 	if (node->mesh.primitives.size() > 0) {
 		glm::mat4 nodeMatrix = node->matrix;
-		std::shared_ptr<VulkanGLTFModel::Node> currentParent = node->parent;
+		std::shared_ptr<VulkanGLTFModel::Node> currentParent = node->parent.lock();
 		while (currentParent) {
 			nodeMatrix = currentParent->matrix * nodeMatrix;
-			currentParent = currentParent->parent;
+			currentParent = currentParent->parent.lock();
 		}
 
 		for (const VulkanGLTFModel::Primitive& primitive : node->mesh.primitives) {

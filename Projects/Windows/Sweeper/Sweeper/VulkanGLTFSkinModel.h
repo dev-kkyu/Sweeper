@@ -57,7 +57,7 @@ public:
 
 	struct Node
 	{
-		std::shared_ptr<Node>				parent;
+		std::weak_ptr<Node>					parent;
 		uint32_t							index;
 		std::vector<std::shared_ptr<Node>>	children;
 		Mesh								mesh;
