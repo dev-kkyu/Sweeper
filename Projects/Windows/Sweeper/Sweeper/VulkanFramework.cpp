@@ -1,9 +1,6 @@
 #include "VulkanFramework.h"
 #include <stdexcept>
 #include <fstream>
-#include <unordered_map>
-
-#include <glm/gtx/hash.hpp>
 
 #define TINYGLTF_IMPLEMENTATION				// 이 선언 이후 tiny_gltf.h include 하면 컴파일이 됨 -> 프로젝트에서 단 한곳에서만 컴파일 해야함 (cpp)
 #define TINYGLTF_NO_STB_IMAGE_WRITE			// image_write 할 일이 없으면 stb_image_write.h 파일이 없어도 되는데, 그러려면 이 선언을 해야함
