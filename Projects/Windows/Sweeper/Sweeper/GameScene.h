@@ -2,7 +2,6 @@
 
 #include <unordered_map>
 
-//#include "OBJModelObject.h"
 #include "BossObject.h"
 #include "GLTFModelObject.h"		// for mapObject
 //#include "GLTFSkinModelObject.h"	// included BossObject

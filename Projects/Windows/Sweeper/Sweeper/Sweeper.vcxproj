@@ -150,7 +150,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MonsterObject.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
-    <ClCompile Include="OBJModelObject.cpp" />
     <ClCompile Include="PlayerObject.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
@@ -177,7 +176,6 @@
     <ClInclude Include="MageObject.h" />
     <ClInclude Include="MonsterObject.h" />
     <ClInclude Include="NetworkManager.h" />
-    <ClInclude Include="OBJModelObject.h" />
     <ClInclude Include="PlayerObject.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="SceneManager.h" />

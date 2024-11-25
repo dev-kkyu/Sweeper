@@ -22,9 +22,6 @@
     <Filter Include="GameObjectBase\GLTFSkinModelObject">
       <UniqueIdentifier>{6a8917a1-1cd7-4ac7-a7a5-5aea8da1f377}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameObjectBase\OBJModelObject">
-      <UniqueIdentifier>{8bc615de-f7e0-4a13-81de-507fad9bedcb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\Shader">
       <UniqueIdentifier>{49041d60-2bc3-4257-875e-f617b8e397f8}</UniqueIdentifier>
     </Filter>
@@ -87,9 +84,6 @@
     <ClCompile Include="GameObjectBase.cpp">
       <Filter>GameObjectBase</Filter>
     </ClCompile>
-    <ClCompile Include="OBJModelObject.cpp">
-      <Filter>GameObjectBase\OBJModelObject</Filter>
-    </ClCompile>
     <ClCompile Include="PlayerObject.cpp">
       <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject</Filter>
     </ClCompile>
@@ -145,9 +139,6 @@
   <ItemGroup>
     <ClInclude Include="GameObjectBase.h">
       <Filter>GameObjectBase</Filter>
-    </ClInclude>
-    <ClInclude Include="OBJModelObject.h">
-      <Filter>GameObjectBase\OBJModelObject</Filter>
     </ClInclude>
     <ClInclude Include="PlayerObject.h">
       <Filter>GameObjectBase\GLTFSkinModelObject\PlayerObject</Filter>
