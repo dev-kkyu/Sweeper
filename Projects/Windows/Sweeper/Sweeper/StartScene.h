@@ -1,12 +1,10 @@
 #pragma once
 
-#include "VulkanFramework.h"
+#include "SceneBase.h"
 
-class StartScene
+class StartScene : public SceneBase
 {
 private:
-	bool isEnd;
-
 	vkf::Device& fDevice;
 	VkSampleCountFlagBits& msaaSamples;
 	vkf::RenderPass& renderPass;
@@ -20,14 +18,26 @@ private:
 
 public:
 	StartScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout samplerDescriptorSetLayout, VkPipelineLayout pipelineLayout);
-	~StartScene();
+	virtual ~StartScene();
 
-	void update(float elapsedTime, uint32_t currentFrame);
-	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+	virtual void enter() override;
+	virtual void exit() override;
 
-	void processKeyboard(int key, int action, int mods);
+	virtual void update(float elapsedTime, uint32_t currentFrame) override;
 
-	bool getIsEnd() const;
+	virtual void drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
+	virtual void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
+
+	virtual void processKeyboard(int key, int action, int mods) override;
+	virtual void processMouseButton(int button, int action, int mods, float xpos, float ypos) override;
+	virtual void processMouseScroll(double xoffset, double yoffset) override;
+	virtual void processMouseCursor(float xpos, float ypos) override;
+
+	// 네트워크 패킷 처리
+	virtual void processPacket(unsigned char* packet) override;
+
+	// 씬 종료 조건
+	virtual bool getIsEnd() const override;
 
 private:
 	void createGraphicsPipeline();

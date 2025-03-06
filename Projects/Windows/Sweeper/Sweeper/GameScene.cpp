@@ -185,6 +185,15 @@ void GameScene::start(PLAYER_TYPE player_type)
 	gameEndAfterTime = 0.f;
 }
 
+void GameScene::enter()
+{
+	start(PLAYER_TYPE::WARRIOR);	// Todo : Lobby에서 선택된 것 가져와야 함
+}
+
+void GameScene::exit()
+{
+}
+
 void GameScene::update(float elapsedTime, uint32_t currentFrame)
 {
 	if (not isEnd) {
@@ -250,6 +259,19 @@ void GameScene::update(float elapsedTime, uint32_t currentFrame)
 			player->update(elapsedTime, currentFrame);
 		}
 	}
+}
+
+void GameScene::drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+{
+	draw(commandBuffer, currentFrame, true);
+}
+
+void GameScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+{
+	draw(commandBuffer, currentFrame, false);
+	//drawBoundingBox(commandBuffer, currentFrame);	// Todo : 활성화
+	drawEffect(commandBuffer, currentFrame);
+	drawUI(commandBuffer, currentFrame);
 }
 
 void GameScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen)
@@ -872,6 +894,11 @@ void GameScene::processPacket(unsigned char* packet)
 	}
 }
 
+bool GameScene::getIsEnd() const
+{
+	return isEnd;
+}
+
 PLAYER_TYPE GameScene::getPlayerType() const
 {
 	return player_type;
@@ -920,11 +947,6 @@ VkPipeline GameScene::getOffscreenModelPipeline() const
 VkPipeline GameScene::getOffscreenSkinModelPipeline() const
 {
 	return pipeline.offscreen.skinModel;
-}
-
-bool GameScene::getIsEnd() const
-{
-	return isEnd;
 }
 
 void GameScene::createDescriptorSetLayout()

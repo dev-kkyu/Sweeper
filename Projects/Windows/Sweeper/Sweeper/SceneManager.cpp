@@ -2,6 +2,10 @@
 
 #include "SoundManager.h"
 
+#include "StartScene.h"
+#include "LobbyScene.h"
+#include "GameScene.h"
+
 SceneManager::SceneManager(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }, framebufferExtent{ framebufferExtent }
 {
@@ -19,155 +23,72 @@ SceneManager::~SceneManager()
 
 void SceneManager::update(float elapsedTime, uint32_t currentFrame)
 {
-	switch (nowScene)
-	{
-	case SceneManager::SCENE_TYPE::START:
-		if (pStartScene->getIsEnd()) {
+	if (pScene->getIsEnd()) {
+		pScene->exit();
+
+		switch (nowScene) {
+		case SceneManager::SCENE_TYPE::START:
 			nowScene = SCENE_TYPE::LOBBY;
-			pLobbyScene->start();
-			pLobbyScene->update(elapsedTime, currentFrame);
-		}
-		else {
-			pStartScene->update(elapsedTime, currentFrame);
-		}
-		break;
-	case SceneManager::SCENE_TYPE::LOBBY:
-		if (pLobbyScene->getIsEnd()) {
+			pScene = pLobbyScene;
+			break;
+		case SceneManager::SCENE_TYPE::LOBBY:
 			NetworkManager::getInstance().connectServer();							// 서버 연결
 			NetworkManager::getInstance().start(pLobbyScene->getPlayerType());		// 로그인 및 Recv 시작
-			nowScene = SCENE_TYPE::INGAME;
-			pGameScene->start(pLobbyScene->getPlayerType());
-			pGameScene->update(elapsedTime, currentFrame);
 			SoundManager::getInstance().playBGM();									// BGM 시작
-		}
-		else {
-			pLobbyScene->update(elapsedTime, currentFrame);
-		}
-		break;
-	case SceneManager::SCENE_TYPE::INGAME:
-		if (pGameScene->getIsEnd()) {
+
+			nowScene = SCENE_TYPE::INGAME;
+			pScene = pGameScene;
+			break;
+		case SceneManager::SCENE_TYPE::INGAME:
 			SoundManager::getInstance().stopBGM();									// BGM 종료
 			NetworkManager::getInstance().stop();									// 서버 연결 종료
+
 			nowScene = SCENE_TYPE::LOBBY;
-			pLobbyScene->start();
-			pLobbyScene->update(elapsedTime, currentFrame);
+			pScene = pLobbyScene;
+			break;
 		}
-		else {
-			pGameScene->update(elapsedTime, currentFrame);
-		}
-		break;
+
+		pScene->enter();
 	}
+
+	pScene->update(elapsedTime, currentFrame);
 }
 
 void SceneManager::drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
-	switch (nowScene)
-	{
-	case SceneManager::SCENE_TYPE::START:
-		break;
-	case SceneManager::SCENE_TYPE::LOBBY:
-		pLobbyScene->offscreenDraw(commandBuffer, currentFrame, pGameScene->getOffscreenModelPipeline(), pGameScene->getOffscreenSkinModelPipeline());
-		break;
-	case SceneManager::SCENE_TYPE::INGAME:
-		pGameScene->draw(commandBuffer, currentFrame, true);
-		break;
-	}
+	pScene->drawOffscreen(commandBuffer, currentFrame);
+	// Todo : 로비에서 그림자 활성화 해주기
 }
 
 void SceneManager::drawScene(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
-	switch (nowScene)
-	{
-	case SceneManager::SCENE_TYPE::START:
-		pStartScene->draw(commandBuffer, currentFrame);
-		break;
-	case SceneManager::SCENE_TYPE::LOBBY:
-		pLobbyScene->draw(commandBuffer, currentFrame);
-		break;
-	case SceneManager::SCENE_TYPE::INGAME:
-		pGameScene->draw(commandBuffer, currentFrame, false);
-
-		if (isDrawBoundingBox)
-			pGameScene->drawBoundingBox(commandBuffer, currentFrame);
-
-		pGameScene->drawEffect(commandBuffer, currentFrame);
-
-		pGameScene->drawUI(commandBuffer, currentFrame);
-		break;
-	}
+	pScene->draw(commandBuffer, currentFrame);
+	// Todo : 인게임 씬에서 바운딩박스 온오프 기능 활성화 해주기
 }
 
 void SceneManager::processKeyboard(int key, int action, int mods)
 {
-	switch (nowScene)
-	{
-	case SceneManager::SCENE_TYPE::START:
-		pStartScene->processKeyboard(key, action, mods);
-		break;
-	case SceneManager::SCENE_TYPE::LOBBY:
-		pLobbyScene->processKeyboard(key, action, mods);
-		break;
-	case SceneManager::SCENE_TYPE::INGAME:
-		pGameScene->processKeyboard(key, action, mods);
-		break;
-	}
+	pScene->processKeyboard(key, action, mods);
 }
 
 void SceneManager::processMouseButton(int button, int action, int mods, float xpos, float ypos)
 {
-	switch (nowScene)
-	{
-	case SceneManager::SCENE_TYPE::START:
-		break;
-	case SceneManager::SCENE_TYPE::LOBBY:
-		pLobbyScene->processMouseButton(button, action, mods, xpos, ypos);
-		break;
-	case SceneManager::SCENE_TYPE::INGAME:
-		pGameScene->processMouseButton(button, action, mods, xpos, ypos);
-		break;
-	}
+	pScene->processMouseButton(button, action, mods, xpos, ypos);
 }
 
 void SceneManager::processMouseScroll(double xoffset, double yoffset)
 {
-	switch (nowScene)
-	{
-	case SceneManager::SCENE_TYPE::START:
-		break;
-	case SceneManager::SCENE_TYPE::LOBBY:
-		break;
-	case SceneManager::SCENE_TYPE::INGAME:
-		pGameScene->processMouseScroll(xoffset, yoffset);
-		break;
-	}
+	pScene->processMouseScroll(xoffset, yoffset);
 }
 
 void SceneManager::processMouseCursor(float xpos, float ypos)
 {
-	switch (nowScene)
-	{
-	case SceneManager::SCENE_TYPE::START:
-		break;
-	case SceneManager::SCENE_TYPE::LOBBY:
-		break;
-	case SceneManager::SCENE_TYPE::INGAME:
-		pGameScene->processMouseCursor(xpos, ypos);
-		break;
-	}
+	pScene->processMouseCursor(xpos, ypos);
 }
 
 void SceneManager::processPacket(unsigned char* packet)
 {
-	switch (nowScene)
-	{
-	case SceneManager::SCENE_TYPE::START:
-		break;
-	case SceneManager::SCENE_TYPE::LOBBY:
-		break;
-	case SceneManager::SCENE_TYPE::INGAME:
-		pGameScene->processPacket(packet);
-		break;
-	}
+	pScene->processPacket(packet);
 }
 
 void SceneManager::changeIsDrawBoundingBox()
@@ -177,15 +98,16 @@ void SceneManager::changeIsDrawBoundingBox()
 
 void SceneManager::initScene()
 {
-	pGameScene = std::make_unique<GameScene>(fDevice, msaaSamples, renderPass,
+	pGameScene = std::make_shared<GameScene>(fDevice, msaaSamples, renderPass,
 		shadowSetLayout, shadowSet, framebufferExtent);
 
 	// GameScene 생성 후 생성 가능
-	pStartScene = std::make_unique<StartScene>(fDevice, msaaSamples, renderPass,
+	pStartScene = std::make_shared<StartScene>(fDevice, msaaSamples, renderPass,
 		pGameScene->getSamplerDescriptorSetLayout(), pGameScene->getPipelineLayout());
 	// GameScene 생성 후 생성 가능
-	pLobbyScene = std::make_unique<LobbyScene>(fDevice, msaaSamples, renderPass, framebufferExtent, pGameScene->getPlayerModel(),
+	pLobbyScene = std::make_shared<LobbyScene>(fDevice, msaaSamples, renderPass, framebufferExtent, pGameScene->getPlayerModel(),
 		pGameScene->getUBODescriptorSetLayout(), pGameScene->getSSBODescriptorSetLayout(), pGameScene->getSamplerDescriptorSetLayout(),
 		shadowSet, pGameScene->getPipelineLayout(), pGameScene->getModelPipeline(), pGameScene->getSkinModelPipeline());
 
+	pScene = pStartScene;
 }

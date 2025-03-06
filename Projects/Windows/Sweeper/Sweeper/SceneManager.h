@@ -1,9 +1,13 @@
 #pragma once
 
-#include "StartScene.h"
-#include "LobbyScene.h"
-#include "GameScene.h"
+#include <memory>
 
+#include "VulkanFramework.h"
+
+class SceneBase;
+class StartScene;
+class LobbyScene;
+class GameScene;
 class SceneManager
 {
 private:
@@ -23,9 +27,11 @@ private:
 
 	bool isDrawBoundingBox;
 
-	std::unique_ptr<StartScene> pStartScene;
-	std::unique_ptr<LobbyScene> pLobbyScene;
-	std::unique_ptr<GameScene> pGameScene;
+	std::shared_ptr<SceneBase> pScene;
+
+	std::shared_ptr<StartScene> pStartScene;
+	std::shared_ptr<LobbyScene> pLobbyScene;
+	std::shared_ptr<GameScene> pGameScene;
 
 
 public:

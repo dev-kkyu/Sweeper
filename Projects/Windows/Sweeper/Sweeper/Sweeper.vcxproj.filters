@@ -52,11 +52,17 @@
     <Filter Include="GameObjectBase\GLTFSkinModelObject\PlayerObject\ArcherObject">
       <UniqueIdentifier>{0e7f9c92-510d-4cd1-b5ed-016c342fa202}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scene">
-      <UniqueIdentifier>{007f448c-d34a-4607-82d5-3ebbddfdf92e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="SoundManager">
       <UniqueIdentifier>{2839aa6e-f9a4-4909-8557-42e68451fb3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SceneManager">
+      <UniqueIdentifier>{c597f24e-dec1-48bb-9ff2-8b7fdb3d4efe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SceneBase">
+      <UniqueIdentifier>{007f448c-d34a-4607-82d5-3ebbddfdf92e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SceneBase\Scene">
+      <UniqueIdentifier>{31779786-1014-425b-b767-2b4a167cb48a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -120,20 +126,23 @@
     <ClCompile Include="BossObject.cpp">
       <Filter>GameObjectBase\GLTFSkinModelObject\BossObject</Filter>
     </ClCompile>
-    <ClCompile Include="SceneManager.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="GameScene.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="LobbyScene.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="StartScene.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
     <ClCompile Include="SoundManager.cpp">
       <Filter>SoundManager</Filter>
+    </ClCompile>
+    <ClCompile Include="StartScene.cpp">
+      <Filter>SceneBase\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="LobbyScene.cpp">
+      <Filter>SceneBase\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameScene.cpp">
+      <Filter>SceneBase\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneManager.cpp">
+      <Filter>SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneBase.cpp">
+      <Filter>SceneBase</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -194,20 +203,23 @@
     <ClInclude Include="BossObject.h">
       <Filter>GameObjectBase\GLTFSkinModelObject\BossObject</Filter>
     </ClInclude>
-    <ClInclude Include="SceneManager.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="GameScene.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="LobbyScene.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="StartScene.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
     <ClInclude Include="SoundManager.h">
       <Filter>SoundManager</Filter>
+    </ClInclude>
+    <ClInclude Include="StartScene.h">
+      <Filter>SceneBase\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="LobbyScene.h">
+      <Filter>SceneBase\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="GameScene.h">
+      <Filter>SceneBase\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneManager.h">
+      <Filter>SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneBase.h">
+      <Filter>SceneBase</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

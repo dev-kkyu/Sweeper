@@ -25,9 +25,22 @@ StartScene::~StartScene()
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline, nullptr);
 }
 
+void StartScene::enter()
+{
+	isEnd = false;
+}
+
+void StartScene::exit()
+{
+}
+
 void StartScene::update(float elapsedTime, uint32_t currentFrame)
 {
 	sceneElapsedTime += elapsedTime;
+}
+
+void StartScene::drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+{
 }
 
 void StartScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -54,6 +67,22 @@ void StartScene::processKeyboard(int key, int action, int mods)
 		}
 		break;
 	}
+}
+
+void StartScene::processMouseButton(int button, int action, int mods, float xpos, float ypos)
+{
+}
+
+void StartScene::processMouseScroll(double xoffset, double yoffset)
+{
+}
+
+void StartScene::processMouseCursor(float xpos, float ypos)
+{
+}
+
+void StartScene::processPacket(unsigned char* packet)
+{
 }
 
 bool StartScene::getIsEnd() const

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SceneBase.h"
+
 #include <unordered_map>
 
 #include "BossObject.h"
@@ -12,11 +14,9 @@
 class PlayerObject;
 class MonsterObject;
 class ArrowObject;
-class GameScene
+class GameScene : public SceneBase
 {
 private:
-	bool isEnd;
-
 	bool isEndPacketReceived;
 	bool isWin;
 	float gameEndAfterTime;
@@ -125,23 +125,35 @@ private:
 
 public:
 	GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent);
-	~GameScene();
+	virtual ~GameScene();
 
+	// Todo.. 처리.. start 함수 제거하기 (enter로 통합)
 	void start(PLAYER_TYPE player_type);
 
-	void update(float elapsedTime, uint32_t currentFrame);
+	virtual void enter() override;
+	virtual void exit() override;
+
+	virtual void update(float elapsedTime, uint32_t currentFrame) override;
+
+	virtual void drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
+	virtual void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
+
+	// draw에 offscreen을 분리하지 않기 위한 함수
 	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen);
 	void drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 	void drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 	void drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
-	void processKeyboard(int key, int action, int mods);
-	void processMouseButton(int button, int action, int mods, float xpos, float ypos);
-	void processMouseScroll(double xoffset, double yoffset);
-	void processMouseCursor(float xpos, float ypos);
+	virtual void processKeyboard(int key, int action, int mods) override;
+	virtual void processMouseButton(int button, int action, int mods, float xpos, float ypos) override;
+	virtual void processMouseScroll(double xoffset, double yoffset) override;
+	virtual void processMouseCursor(float xpos, float ypos) override;
 
 	// 네트워크 패킷 처리
-	void processPacket(unsigned char* packet);
+	virtual void processPacket(unsigned char* packet) override;
+
+	// 씬 종료 조건
+	virtual bool getIsEnd() const override;
 
 	PLAYER_TYPE getPlayerType() const;
 
@@ -155,8 +167,6 @@ public:
 	VkPipeline getSkinModelPipeline() const;
 	VkPipeline getOffscreenModelPipeline() const;
 	VkPipeline getOffscreenSkinModelPipeline() const;
-
-	bool getIsEnd() const;
 
 private:
 	void createDescriptorSetLayout();

@@ -1,13 +1,13 @@
 #pragma once
 
+#include "SceneBase.h"
 #include "GLTFModelObject.h"
 #include "GLTFSkinModelObject.h"
 #include "NetworkManager.h"
 
-class LobbyScene
+class LobbyScene : public SceneBase
 {
 private:
-	bool isEnd;
 	PLAYER_TYPE selPlayerType;
 
 	glm::vec3 lightPos;		// 모델 그려줄 때 사용할 조명
@@ -45,19 +45,31 @@ public:
 		std::array<VulkanGLTFSkinModel, 4>& playerModel,
 		VkDescriptorSetLayout uboDescriptorSetLayout, VkDescriptorSetLayout ssboDescriptorSetLayout, VkDescriptorSetLayout samplerDescriptorSetLayout,
 		VkDescriptorSet shadowSet, VkPipelineLayout pipelineLayout, VkPipeline modelPipeline, VkPipeline skinModelPipeline);
-	~LobbyScene();
+	virtual ~LobbyScene();
 
-	void start();
-	void update(float elapsedTime, uint32_t currentFrame);
-	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame);
-	void offscreenDraw(VkCommandBuffer commandBuffer, uint32_t currentFrame, VkPipeline offscreenModelPipeline, VkPipeline offscreenSkinModelPipeline);
+	virtual void enter() override;
+	virtual void exit() override;
 
-	void processKeyboard(int key, int action, int mods);
-	void processMouseButton(int button, int action, int mods, float xpos, float ypos);
+	virtual void update(float elapsedTime, uint32_t currentFrame) override;
+
+	virtual void drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
+	virtual void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
+
+	virtual void processKeyboard(int key, int action, int mods) override;
+	virtual void processMouseButton(int button, int action, int mods, float xpos, float ypos) override;
+	virtual void processMouseScroll(double xoffset, double yoffset) override;
+	virtual void processMouseCursor(float xpos, float ypos) override;
+
+	// 네트워크 패킷 처리
+	virtual void processPacket(unsigned char* packet) override;
+
+	// 씬 종료 조건
+	virtual bool getIsEnd() const override;
+
+	// Todo : 로비 그림자 처리하기. 일단 비활성화, cpp에 코드 주석
+	//void offscreenDraw(VkCommandBuffer commandBuffer, uint32_t currentFrame, VkPipeline offscreenModelPipeline, VkPipeline offscreenSkinModelPipeline);
 
 	PLAYER_TYPE getPlayerType() const;
-
-	bool getIsEnd() const;
 
 private:
 	void createGraphicsPipeline();

@@ -69,10 +69,14 @@ LobbyScene::~LobbyScene()
 	vkDestroyPipeline(fDevice.logicalDevice, buttonPipeline, nullptr);
 }
 
-void LobbyScene::start()
+void LobbyScene::enter()
 {
 	isEnd = false;
 	selPlayerType = PLAYER_TYPE::WARRIOR;
+}
+
+void LobbyScene::exit()
+{
 }
 
 void LobbyScene::update(float elapsedTime, uint32_t currentFrame)
@@ -90,6 +94,10 @@ void LobbyScene::update(float elapsedTime, uint32_t currentFrame)
 	for (int i = 0; i < 4; ++i) {
 		playerObjects[i].update(elapsedTime, currentFrame);
 	}
+}
+
+void LobbyScene::drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+{
 }
 
 void LobbyScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -127,19 +135,19 @@ void LobbyScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 }
 
-void LobbyScene::offscreenDraw(VkCommandBuffer commandBuffer, uint32_t currentFrame, VkPipeline offscreenModelPipeline, VkPipeline offscreenSkinModelPipeline)
-{
-	// UBO 바인드, firstSet은 set의 시작인덱스
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &offscreenUniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
-
-	// 단상 띄워주기 - offscreen
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, offscreenModelPipeline);
-	podiumObject.draw(commandBuffer, pipelineLayout, currentFrame);
-
-	// 플레이어 띄워주기 - offscreen
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, offscreenSkinModelPipeline);
-	playerObjects[static_cast<char>(selPlayerType)].draw(commandBuffer, pipelineLayout, currentFrame);
-}
+//void LobbyScene::offscreenDraw(VkCommandBuffer commandBuffer, uint32_t currentFrame, VkPipeline offscreenModelPipeline, VkPipeline offscreenSkinModelPipeline)
+//{
+//	// UBO 바인드, firstSet은 set의 시작인덱스
+//	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &offscreenUniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
+//
+//	// 단상 띄워주기 - offscreen
+//	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, offscreenModelPipeline);
+//	podiumObject.draw(commandBuffer, pipelineLayout, currentFrame);
+//
+//	// 플레이어 띄워주기 - offscreen
+//	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, offscreenSkinModelPipeline);
+//	playerObjects[static_cast<char>(selPlayerType)].draw(commandBuffer, pipelineLayout, currentFrame);
+//}
 
 void LobbyScene::processKeyboard(int key, int action, int mods)
 {
@@ -208,14 +216,26 @@ void LobbyScene::processMouseButton(int button, int action, int mods, float xpos
 	}
 }
 
-PLAYER_TYPE LobbyScene::getPlayerType() const
+void LobbyScene::processMouseScroll(double xoffset, double yoffset)
 {
-	return selPlayerType;
+}
+
+void LobbyScene::processMouseCursor(float xpos, float ypos)
+{
+}
+
+void LobbyScene::processPacket(unsigned char* packet)
+{
 }
 
 bool LobbyScene::getIsEnd() const
 {
 	return isEnd;
+}
+
+PLAYER_TYPE LobbyScene::getPlayerType() const
+{
+	return selPlayerType;
 }
 
 void LobbyScene::createGraphicsPipeline()
