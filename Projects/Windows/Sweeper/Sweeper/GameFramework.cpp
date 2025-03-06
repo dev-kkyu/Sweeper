@@ -937,6 +937,8 @@ void GameFramework::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 		vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 		// Offscreen 렌더시에는 NDC 좌표 뒤집지 않는다
+		// Vertex Shader에서 UV좌표 계산시 y축이 뒤집힌 [0~1]값으로 나오기 때문에 Vulkan NDC와 일치
+		// 혹은 Vertex Shader의 biasMat 2행 2열 성분의 부호를 바꿔 y축 반전시켜주기
 		VkViewport viewport{};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
