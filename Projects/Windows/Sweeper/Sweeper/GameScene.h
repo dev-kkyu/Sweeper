@@ -21,6 +21,10 @@ private:
 	bool isWin;
 	float gameEndAfterTime;
 
+private:	// 사용자 입력에 따른 변수
+	bool middleButtonPressed;
+	bool isDrawingBoundingBox;
+
 private:
 	vkf::Device& fDevice;
 	VkSampleCountFlagBits& msaaSamples;
@@ -119,9 +123,6 @@ private:
 	int observer_id = -1;
 
 	Camera camera;
-
-	unsigned int keyState;
-	bool middleButtonPressed = false;
 
 public:
 	GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent);

@@ -203,9 +203,6 @@ void GameFramework::processKeyboard(int key, int action, int mods)
 {
 	if (pSceneManager)
 		pSceneManager->processKeyboard(key, action, mods);
-
-	if (key == GLFW_KEY_B and action == GLFW_PRESS)
-		pSceneManager->changeIsDrawBoundingBox();
 }
 
 void GameFramework::processMouseButton(int button, int action, int mods, float xpos, float ypos)

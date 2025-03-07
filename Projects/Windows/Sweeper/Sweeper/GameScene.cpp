@@ -68,6 +68,10 @@ GameScene::GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, v
 	// 맵 생성
 	mapObject.setModel(mapModel);
 
+	// 사용자 입력에 따른 변수 초기화
+	middleButtonPressed = false;
+	isDrawingBoundingBox = false;
+
 	// 게임 리셋 데이터
 	isEnd = false;
 	isEndPacketReceived = false;
@@ -269,7 +273,8 @@ void GameScene::drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFra
 void GameScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
 	draw(commandBuffer, currentFrame, false);
-	//drawBoundingBox(commandBuffer, currentFrame);	// Todo : 활성화
+	if (isDrawingBoundingBox)
+		drawBoundingBox(commandBuffer, currentFrame);
 	drawEffect(commandBuffer, currentFrame);
 	drawUI(commandBuffer, currentFrame);
 }
@@ -473,6 +478,9 @@ void GameScene::processKeyboard(int key, int action, int mods)
 		case GLFW_KEY_LEFT_CONTROL:
 			p.key = KEY_CTRL;
 			NetworkManager::getInstance().sendPacket(&p);
+			break;
+		case GLFW_KEY_B:
+			isDrawingBoundingBox = not isDrawingBoundingBox;
 			break;
 		case GLFW_KEY_P:
 			if (pMyPlayer) {	// P 키 누를 시 플레이어의 위치를 콘솔에 출력한다

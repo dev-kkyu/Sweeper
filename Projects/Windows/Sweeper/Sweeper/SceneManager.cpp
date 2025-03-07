@@ -11,8 +11,6 @@ SceneManager::SceneManager(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamp
 {
 	nowScene = SCENE_TYPE::START;
 
-	isDrawBoundingBox = false;
-
 	initScene();
 
 }
@@ -89,11 +87,6 @@ void SceneManager::processMouseCursor(float xpos, float ypos)
 void SceneManager::processPacket(unsigned char* packet)
 {
 	pScene->processPacket(packet);
-}
-
-void SceneManager::changeIsDrawBoundingBox()
-{
-	isDrawBoundingBox = not isDrawBoundingBox;
 }
 
 void SceneManager::initScene()

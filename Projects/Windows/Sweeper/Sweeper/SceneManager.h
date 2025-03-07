@@ -25,8 +25,6 @@ private:
 	};
 	SCENE_TYPE nowScene;
 
-	bool isDrawBoundingBox;
-
 	std::shared_ptr<SceneBase> pScene;
 
 	std::shared_ptr<StartScene> pStartScene;
@@ -50,8 +48,6 @@ public:
 
 	// 匙飘况农 菩哦 贸府
 	void processPacket(unsigned char* packet);
-
-	void changeIsDrawBoundingBox();
 
 private:
 	void initScene();
