@@ -34,6 +34,7 @@ void SceneManager::update(float elapsedTime, uint32_t currentFrame)
 			NetworkManager::getInstance().start(pLobbyScene->getPlayerType());		// 로그인 및 Recv 시작
 			SoundManager::getInstance().playBGM();									// BGM 시작
 
+			pGameScene->setPlayerType(pLobbyScene->getPlayerType());				// 로비에서 선택한 플레이어로 시작
 			nowScene = SCENE_TYPE::INGAME;
 			pScene = pGameScene;
 			break;

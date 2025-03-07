@@ -116,7 +116,7 @@ private:
 
 	// gltf skin 캐릭터 에셋
 	std::array<VulkanGLTFSkinModel, 4> playerModel;		// 캐릭터 종류는 총 4개이다.
-	PLAYER_TYPE player_type;							// 플레이어 타입 (4가지 종류, 서버의 protocol에 정의)
+	PLAYER_TYPE playerType;								// 플레이어 타입 (4가지 종류, 서버의 protocol에 정의)
 	std::shared_ptr<PlayerObject> pMyPlayer;			// pPlayers[my_id] 와 같은 객체를 가리키도록 한다.
 	std::array<std::shared_ptr<PlayerObject>, 4> pPlayers;
 	int my_id = -1;
@@ -127,9 +127,6 @@ private:
 public:
 	GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent);
 	virtual ~GameScene();
-
-	// Todo.. 처리.. start 함수 제거하기 (enter로 통합)
-	void start(PLAYER_TYPE player_type);
 
 	virtual void enter() override;
 	virtual void exit() override;
@@ -158,6 +155,7 @@ public:
 	// 씬 종료 조건
 	virtual bool getIsEnd() const override;
 
+	void setPlayerType(PLAYER_TYPE player_type);
 	PLAYER_TYPE getPlayerType() const;
 
 	// Lobby Scene에서 가져다 쓸 내용들

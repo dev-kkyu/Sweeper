@@ -144,7 +144,7 @@ GameScene::~GameScene()
 	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.ubo, nullptr);
 }
 
-void GameScene::start(PLAYER_TYPE player_type)
+void GameScene::enter()
 {
 	// 오브젝트 초기화
 	pArrowObjects.clear();
@@ -160,7 +160,7 @@ void GameScene::start(PLAYER_TYPE player_type)
 	pBossObject->setScale(glm::vec3{ 2.25f });
 
 	// 내 플레이어 초기화 및 생성
-	switch (this->player_type = player_type)
+	switch (playerType)
 	{
 	case PLAYER_TYPE::WARRIOR:
 		pMyPlayer = std::make_shared<WarriorObject>(mapObject, effect.warrior);
@@ -178,7 +178,7 @@ void GameScene::start(PLAYER_TYPE player_type)
 		throw std::runtime_error("ADD PLAYER ERROR : INVALID TYPE!\n");
 		break;
 	}
-	pMyPlayer->initModel(playerModel[static_cast<int>(player_type)], descriptorSetLayout.ssbo);
+	pMyPlayer->initModel(playerModel[static_cast<int>(playerType)], descriptorSetLayout.ssbo);
 	pMyPlayer->setScale(glm::vec3(1.3f));
 	camera.setPlayer(pMyPlayer);
 
@@ -187,11 +187,6 @@ void GameScene::start(PLAYER_TYPE player_type)
 	isEndPacketReceived = false;
 	isWin = false;
 	gameEndAfterTime = 0.f;
-}
-
-void GameScene::enter()
-{
-	start(PLAYER_TYPE::WARRIOR);	// Todo : Lobby에서 선택된 것 가져와야 함
 }
 
 void GameScene::exit()
@@ -907,9 +902,14 @@ bool GameScene::getIsEnd() const
 	return isEnd;
 }
 
+void GameScene::setPlayerType(PLAYER_TYPE player_type)
+{
+	playerType = player_type;
+}
+
 PLAYER_TYPE GameScene::getPlayerType() const
 {
-	return player_type;
+	return playerType;
 }
 
 std::array<VulkanGLTFSkinModel, 4>& GameScene::getPlayerModel()
