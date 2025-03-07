@@ -139,12 +139,14 @@ public:
 	virtual void drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
 	virtual void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
 
+private:
 	// draw에 offscreen을 분리하지 않기 위한 함수
 	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen);
 	void drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 	void drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 	void drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
+public:
 	virtual void processKeyboard(int key, int action, int mods) override;
 	virtual void processMouseButton(int button, int action, int mods, float xpos, float ypos) override;
 	virtual void processMouseScroll(double xoffset, double yoffset) override;
