@@ -9,7 +9,6 @@ private:
 	VkSampleCountFlagBits& msaaSamples;
 	vkf::RenderPass& renderPass;
 
-	VkPipelineLayout pipelineLayout;
 	VkPipeline pipeline;
 
 	VkDescriptorPool samplerDescriptorPool;
@@ -17,7 +16,7 @@ private:
 	float sceneElapsedTime = 0.f;	// 텍스처 깜빡임을 위하여 사용
 
 public:
-	StartScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout samplerDescriptorSetLayout, VkPipelineLayout pipelineLayout);
+	StartScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass);
 	virtual ~StartScene();
 
 	virtual void enter() override;

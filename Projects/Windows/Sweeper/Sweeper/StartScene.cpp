@@ -4,15 +4,16 @@
 
 #include <stdexcept>
 
-StartScene::StartScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass,
-	VkDescriptorSetLayout samplerDescriptorSetLayout, VkPipelineLayout pipelineLayout)
-	: msaaSamples{ msaaSamples }, renderPass{ renderPass }, fDevice{ fDevice }, pipelineLayout{ pipelineLayout }
+#include "ResourceManager.h"
+
+StartScene::StartScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass)
+	: msaaSamples{ msaaSamples }, renderPass{ renderPass }, fDevice{ fDevice }
 {
 	createGraphicsPipeline();
 	createSamplerDescriptorPool(2);		// 텍스처 두개
 
-	texture[0].loadFromFile(fDevice, "models/Textures/startscene1.png", samplerDescriptorPool, samplerDescriptorSetLayout);
-	texture[1].loadFromFile(fDevice, "models/Textures/startscene2.png", samplerDescriptorPool, samplerDescriptorSetLayout);
+	texture[0].loadFromFile(fDevice, "models/Textures/startscene1.png", samplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
+	texture[1].loadFromFile(fDevice, "models/Textures/startscene2.png", samplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
 
 	isEnd = false;
 }
@@ -48,10 +49,10 @@ void StartScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 	int texIndex = static_cast<int>(glm::fract(sceneElapsedTime) * 2.f);
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &texture[texIndex].samplerDescriptorSet, 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 1, 1, &texture[texIndex].samplerDescriptorSet, 0, nullptr);
 
 	glm::mat4 matrix{ 1.f };
-	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+	vkCmdPushConstants(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 
 	vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 }
@@ -181,7 +182,7 @@ void StartScene::createGraphicsPipeline()
 	pipelineInfo.pDepthStencilState = &depthStencil;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.layout = pipelineLayout;
+	pipelineInfo.layout = ResourceManager::getInstance().getPipelineLayout();
 	pipelineInfo.renderPass = renderPass.scene;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;

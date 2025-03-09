@@ -914,26 +914,6 @@ std::array<VulkanGLTFSkinModel, 4>& GameScene::getPlayerModel()
 	return playerModel;
 }
 
-VkDescriptorSetLayout GameScene::getUBODescriptorSetLayout() const
-{
-	return ResourceManager::getInstance().getDescriptorSetLayout().ubo;
-}
-
-VkDescriptorSetLayout GameScene::getSamplerDescriptorSetLayout() const
-{
-	return ResourceManager::getInstance().getDescriptorSetLayout().sampler;
-}
-
-VkDescriptorSetLayout GameScene::getSSBODescriptorSetLayout() const
-{
-	return ResourceManager::getInstance().getDescriptorSetLayout().ssbo;
-}
-
-VkPipelineLayout GameScene::getPipelineLayout() const
-{
-	return ResourceManager::getInstance().getPipelineLayout();
-}
-
 VkPipeline GameScene::getModelPipeline() const
 {
 	return pipeline.scene.model;

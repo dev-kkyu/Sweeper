@@ -95,12 +95,10 @@ void SceneManager::initScene()
 	pGameScene = std::make_shared<GameScene>(fDevice, msaaSamples, renderPass, shadowSet, framebufferExtent);
 
 	// GameScene 积己 饶 积己 啊瓷
-	pStartScene = std::make_shared<StartScene>(fDevice, msaaSamples, renderPass,
-		pGameScene->getSamplerDescriptorSetLayout(), pGameScene->getPipelineLayout());
+	pStartScene = std::make_shared<StartScene>(fDevice, msaaSamples, renderPass);
 	// GameScene 积己 饶 积己 啊瓷
 	pLobbyScene = std::make_shared<LobbyScene>(fDevice, msaaSamples, renderPass, framebufferExtent, pGameScene->getPlayerModel(),
-		pGameScene->getUBODescriptorSetLayout(), pGameScene->getSSBODescriptorSetLayout(), pGameScene->getSamplerDescriptorSetLayout(),
-		shadowSet, pGameScene->getPipelineLayout(), pGameScene->getModelPipeline(), pGameScene->getSkinModelPipeline());
+		shadowSet, pGameScene->getModelPipeline(), pGameScene->getSkinModelPipeline());
 
 	pScene = pStartScene;
 }

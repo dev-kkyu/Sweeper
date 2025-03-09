@@ -4,28 +4,27 @@
 
 #include <stdexcept>
 
+#include "ResourceManager.h"
 #include "SoundManager.h"
 
 LobbyScene::LobbyScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkExtent2D& framebufferExtent,
-	std::array<VulkanGLTFSkinModel, 4>& playerModel,
-	VkDescriptorSetLayout uboDescriptorSetLayout, VkDescriptorSetLayout ssboDescriptorSetLayout, VkDescriptorSetLayout samplerDescriptorSetLayout,
-	VkDescriptorSet shadowSet, VkPipelineLayout pipelineLayout, VkPipeline modelPipeline, VkPipeline skinModelPipeline)
+	std::array<VulkanGLTFSkinModel, 4>& playerModel, VkDescriptorSet shadowSet, VkPipeline modelPipeline, VkPipeline skinModelPipeline)
 	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, framebufferExtent{ framebufferExtent }, shadowSet{ shadowSet },
-	pipelineLayout{ pipelineLayout }, modelPipeline{ modelPipeline }, skinModelPipeline{ skinModelPipeline }
+	modelPipeline{ modelPipeline }, skinModelPipeline{ skinModelPipeline }
 {
 	createGraphicsPipeline();
 	createSamplerDescriptorPool(5);		// 텍스처 5개
 
-	uniformBufferObject.createUniformBufferObjects(fDevice, uboDescriptorSetLayout);
-	offscreenUniformBufferObject.createUniformBufferObjects(fDevice, uboDescriptorSetLayout);
+	uniformBufferObject.createUniformBufferObjects(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().ubo);
+	offscreenUniformBufferObject.createUniformBufferObjects(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().ubo);
 
-	button[static_cast<char>(PLAYER_TYPE::WARRIOR)].loadFromFile(fDevice, "models/Textures/Button/warrior.png", samplerDescriptorPool, samplerDescriptorSetLayout);
-	button[static_cast<char>(PLAYER_TYPE::ARCHER)].loadFromFile(fDevice, "models/Textures/Button/archer.png", samplerDescriptorPool, samplerDescriptorSetLayout);
-	button[static_cast<char>(PLAYER_TYPE::MAGE)].loadFromFile(fDevice, "models/Textures/Button/mage.png", samplerDescriptorPool, samplerDescriptorSetLayout);
-	button[static_cast<char>(PLAYER_TYPE::HEALER)].loadFromFile(fDevice, "models/Textures/Button/healer.png", samplerDescriptorPool, samplerDescriptorSetLayout);
-	startButton.loadFromFile(fDevice, "models/Textures/Button/gamestart.png", samplerDescriptorPool, samplerDescriptorSetLayout);
+	button[static_cast<char>(PLAYER_TYPE::WARRIOR)].loadFromFile(fDevice, "models/Textures/Button/warrior.png", samplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
+	button[static_cast<char>(PLAYER_TYPE::ARCHER)].loadFromFile(fDevice, "models/Textures/Button/archer.png", samplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
+	button[static_cast<char>(PLAYER_TYPE::MAGE)].loadFromFile(fDevice, "models/Textures/Button/mage.png", samplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
+	button[static_cast<char>(PLAYER_TYPE::HEALER)].loadFromFile(fDevice, "models/Textures/Button/healer.png", samplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
+	startButton.loadFromFile(fDevice, "models/Textures/Button/gamestart.png", samplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
 
-	podiumModel.loadModel(fDevice, samplerDescriptorSetLayout, "models/Character/Podium.glb");
+	podiumModel.loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Character/Podium.glb");
 	podiumObject.setModel(podiumModel);
 
 	// 고정된 조명
@@ -44,7 +43,7 @@ LobbyScene::LobbyScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples,
 	float xPosition = 1.125f;
 	podiumObject.setPosition(glm::vec3(xPosition, 0.f, 0.f));
 	for (int i = 0; i < 4; ++i) {
-		playerObjects[i].initModel(playerModel[i], ssboDescriptorSetLayout);
+		playerObjects[i].initModel(playerModel[i], ResourceManager::getInstance().getDescriptorSetLayout().ssbo);
 		playerObjects[i].setAnimationClip(23);
 		playerObjects[i].setPosition(glm::vec3(xPosition, 0.f, 0.f));
 	}
@@ -103,50 +102,50 @@ void LobbyScene::drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFr
 void LobbyScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
 	// shadow map bind
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowSet, 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 0, 1, &shadowSet, 0, nullptr);
 	// UBO 바인드, firstSet은 set의 시작인덱스
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 2, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 
 	// 단상 띄워주기
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, modelPipeline);
-	podiumObject.draw(commandBuffer, pipelineLayout, currentFrame);
+	podiumObject.draw(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
 
 	// 플레이어 띄워주기
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skinModelPipeline);
-	playerObjects[static_cast<char>(selPlayerType)].draw(commandBuffer, pipelineLayout, currentFrame);
+	playerObjects[static_cast<char>(selPlayerType)].draw(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
 
 	// UI 그려주기
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, buttonPipeline);
 	// 플레이어 버튼
 	for (int i = 0; i < 4; ++i) {
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &button[i].samplerDescriptorSet, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 1, 1, &button[i].samplerDescriptorSet, 0, nullptr);
 		glm::mat4 matrix = glm::translate(glm::mat4(1.f), glm::vec3(-0.425f, 0.675f - i * 0.3f, 0.f))
 			* glm::scale(glm::mat4(1.f), glm::vec3(0.325f / (float(framebufferExtent.width) / float(framebufferExtent.height)), 0.08125f, 1.f));
 		if (static_cast<int>(selPlayerType) != i)
 			matrix[3][3] = 0.1f;
-		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+		vkCmdPushConstants(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 		vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 	}
 	// 게임 시작 버튼
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &startButton.samplerDescriptorSet, 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 1, 1, &startButton.samplerDescriptorSet, 0, nullptr);
 	glm::mat4 matrix = glm::translate(glm::mat4(1.f), glm::vec3(0.f, -0.625f, 0.f))
 		* glm::scale(glm::mat4(1.f), glm::vec3(0.35f / (float(framebufferExtent.width) / float(framebufferExtent.height)), 0.0875f, 1.f));
-	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+	vkCmdPushConstants(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 	vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 }
 
 //void LobbyScene::offscreenDraw(VkCommandBuffer commandBuffer, uint32_t currentFrame, VkPipeline offscreenModelPipeline, VkPipeline offscreenSkinModelPipeline)
 //{
 //	// UBO 바인드, firstSet은 set의 시작인덱스
-//	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &offscreenUniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
+//	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 2, 1, &offscreenUniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 //
 //	// 단상 띄워주기 - offscreen
 //	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, offscreenModelPipeline);
-//	podiumObject.draw(commandBuffer, pipelineLayout, currentFrame);
+//	podiumObject.draw(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
 //
 //	// 플레이어 띄워주기 - offscreen
 //	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, offscreenSkinModelPipeline);
-//	playerObjects[static_cast<char>(selPlayerType)].draw(commandBuffer, pipelineLayout, currentFrame);
+//	playerObjects[static_cast<char>(selPlayerType)].draw(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
 //}
 
 void LobbyScene::processKeyboard(int key, int action, int mods)
@@ -329,7 +328,7 @@ void LobbyScene::createGraphicsPipeline()
 	pipelineInfo.pDepthStencilState = &depthStencil;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.layout = pipelineLayout;
+	pipelineInfo.layout = ResourceManager::getInstance().getPipelineLayout();
 	pipelineInfo.renderPass = renderPass.scene;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
