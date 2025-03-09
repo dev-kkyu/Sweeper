@@ -29,16 +29,7 @@ private:
 	vkf::Device& fDevice;
 	VkSampleCountFlagBits& msaaSamples;
 	vkf::RenderPass& renderPass;
-	VkDescriptorSetLayout& shadowSetLayout;
 	VkDescriptorSet& shadowSet;
-
-	struct {
-		VkDescriptorSetLayout ubo = VK_NULL_HANDLE;
-		VkDescriptorSetLayout sampler = VK_NULL_HANDLE;
-		VkDescriptorSetLayout ssbo = VK_NULL_HANDLE;
-	} descriptorSetLayout;
-
-	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;		// model 파이프라인은 0, 1, 2번 셋만 사용한다
 
 	struct ScenePipeline {
 		VkPipeline model;
@@ -125,7 +116,7 @@ private:
 	Camera camera;
 
 public:
-	GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent);
+	GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent);
 	virtual ~GameScene();
 
 	virtual void enter() override;
@@ -170,7 +161,6 @@ public:
 	VkPipeline getOffscreenSkinModelPipeline() const;
 
 private:
-	void createDescriptorSetLayout();
 	void createGraphicsPipeline();
 
 	void createSamplerDescriptorPool(uint32_t setCount);

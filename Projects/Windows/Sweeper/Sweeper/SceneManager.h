@@ -14,7 +14,6 @@ private:
 	vkf::Device& fDevice;
 	VkSampleCountFlagBits& msaaSamples;
 	vkf::RenderPass& renderPass;
-	VkDescriptorSetLayout& shadowSetLayout;
 	VkDescriptorSet& shadowSet;
 
 	VkExtent2D& framebufferExtent;
@@ -33,7 +32,7 @@ private:
 
 
 public:
-	SceneManager(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent);
+	SceneManager(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent);
 	~SceneManager();
 
 	void update(float elapsedTime, uint32_t currentFrame);

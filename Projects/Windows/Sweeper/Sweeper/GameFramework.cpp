@@ -13,6 +13,7 @@
 #include <set>
 #include <map>
 
+#include "ResourceManager.h"
 #include "NetworkManager.h"
 
 const std::vector<const char*> validationLayers = {
@@ -78,14 +79,17 @@ void GameFramework::initVulkan(GLFWwindow* window)
 	createFramebuffers();
 	createOffscreenRenderPass();
 	createOffscreenFramebuffer();
-	createOffscreenDescriptors();
 	createCommandBuffers();
 	createSyncObjects();
 
+	// 각종 리소스를 리소스 매니저를 통해 생성
+	ResourceManager::getInstance().init(fDevice.logicalDevice);
+
+	createOffscreenDescriptors();
+
 	// 씬매니저 생성
 	pSceneManager = std::make_unique<SceneManager>(fDevice, msaaSamples, renderPass,
-		offscreenPass.samplerDescriptorSetLayout, offscreenPass.samplerDescriptorSet,
-		framebufferExtent);
+		offscreenPass.samplerDescriptorSet, framebufferExtent);
 	gameTimer.SetWindow(window);
 	gameTimer.SetGpuName(fDevice.physicalDeviceProperties.deviceName);
 }
@@ -98,9 +102,11 @@ void GameFramework::cleanup()
 	// 씬 소멸
 	pSceneManager.reset(nullptr);
 
+	// 리소스 매니저 리소스 해제
+	ResourceManager::getInstance().destroy(fDevice.logicalDevice);
+
 	// 오프스크린 정보 Destroy
 	vkDestroyDescriptorPool(fDevice.logicalDevice, offscreenPass.samplerDescriptorPool, nullptr);
-	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, offscreenPass.samplerDescriptorSetLayout, nullptr);
 	vkDestroyFramebuffer(fDevice.logicalDevice, offscreenPass.frameBuffer, nullptr);
 	vkDestroySampler(fDevice.logicalDevice, offscreenPass.depthSampler, nullptr);
 	vkDestroyImageView(fDevice.logicalDevice, offscreenPass.depthImageView, nullptr);
@@ -770,30 +776,13 @@ void GameFramework::createOffscreenDescriptors()
 		throw std::runtime_error("failed to create offscreen descriptor pool!");
 	}
 
-	// Layout 생성
-	std::array<VkDescriptorSetLayoutBinding, 1> samplerLayoutBinding{};
-	samplerLayoutBinding[0].binding = 0;		// shader의 binding
-	samplerLayoutBinding[0].descriptorCount = 1;
-	samplerLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	samplerLayoutBinding[0].pImmutableSamplers = nullptr;
-	samplerLayoutBinding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	VkDescriptorSetLayoutCreateInfo layoutInfo{};
-	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layoutInfo.bindingCount = static_cast<uint32_t>(samplerLayoutBinding.size());
-	layoutInfo.pBindings = samplerLayoutBinding.data();
-
-	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &offscreenPass.samplerDescriptorSetLayout) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create offscreen descriptor set layout!");
-	}
-
 	// Set 생성 -> shadow map image의 view, image sampler를 연결한 set, 추후 set = 0 에 할당할 set이다.
 	// Set 할당 (Pool로부터, Layout을 참조하여)
 	VkDescriptorSetAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocInfo.descriptorPool = offscreenPass.samplerDescriptorPool;
 	allocInfo.descriptorSetCount = 1;
-	allocInfo.pSetLayouts = &offscreenPass.samplerDescriptorSetLayout;
+	allocInfo.pSetLayouts = &ResourceManager::getInstance().getDescriptorSetLayout().sampler;
 
 	if (vkAllocateDescriptorSets(fDevice.logicalDevice, &allocInfo, &offscreenPass.samplerDescriptorSet) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate offscreen descriptor set!");

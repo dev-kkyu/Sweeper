@@ -12,58 +12,58 @@
 #include "MonsterObject.h"
 #include "ArrowObject.h"
 
+#include "ResourceManager.h"
 #include "NetworkManager.h"
 #include "SoundManager.h"
 
-GameScene::GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent)
-	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }
+GameScene::GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent)
+	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSet{ shadowSet }
 	, camera{ framebufferExtent }
 {
-	createDescriptorSetLayout();
 	createGraphicsPipeline();
 	createSamplerDescriptorPool(11);		// 배경 구름, 게임종료 2개, 이펙트7개, 힐러 파티클
 	// 힐러 파티클 생성
 	createParticle(50);
 
-	uniformBufferObject.scene.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
-	uniformBufferObject.offscreen.createUniformBufferObjects(fDevice, descriptorSetLayout.ubo);
+	uniformBufferObject.scene.createUniformBufferObjects(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().ubo);
+	uniformBufferObject.offscreen.createUniformBufferObjects(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().ubo);
 
 	// pool 개수 조절 필수
 	// 배경 사각형 텍스처 생성
-	cloudTexture.loadFromFile(fDevice, "models/Textures/cloud.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
+	cloudTexture.loadFromFile(fDevice, "models/Textures/cloud.png", sceneSamplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
 
-	gameendTexture[0].loadFromFile(fDevice, "models/Textures/gameover.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
-	gameendTexture[1].loadFromFile(fDevice, "models/Textures/gameclear.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
+	gameendTexture[0].loadFromFile(fDevice, "models/Textures/gameover.png", sceneSamplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
+	gameendTexture[1].loadFromFile(fDevice, "models/Textures/gameclear.png", sceneSamplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
 
 	// 캐릭터 Effect 생성
-	effect.warrior.texture.loadFromFile(fDevice, "models/Textures/smoke.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
-	effect.archer.texture.loadFromFile(fDevice, "models/Textures/tornado.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
-	effect.healer.texture.loadFromFile(fDevice, "models/Textures/healcircle.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
-	effect.mage.attack.texture.loadFromFile(fDevice, "models/Textures/magic.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
-	effect.mage.skill.texture.loadFromFile(fDevice, "models/Textures/magiccircle.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
-	effect.arrow.texture.loadFromFile(fDevice, "models/Textures/arroweffect.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
-	effect.boss.texture.loadFromFile(fDevice, "models/Textures/bossmagic.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
+	effect.warrior.texture.loadFromFile(fDevice, "models/Textures/smoke.png", sceneSamplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
+	effect.archer.texture.loadFromFile(fDevice, "models/Textures/tornado.png", sceneSamplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
+	effect.healer.texture.loadFromFile(fDevice, "models/Textures/healcircle.png", sceneSamplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
+	effect.mage.attack.texture.loadFromFile(fDevice, "models/Textures/magic.png", sceneSamplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
+	effect.mage.skill.texture.loadFromFile(fDevice, "models/Textures/magiccircle.png", sceneSamplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
+	effect.arrow.texture.loadFromFile(fDevice, "models/Textures/arroweffect.png", sceneSamplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
+	effect.boss.texture.loadFromFile(fDevice, "models/Textures/bossmagic.png", sceneSamplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
 
 	// 힐러 파티클 이미지
-	particleTexture.loadFromFile(fDevice, "models/Textures/particle.png", sceneSamplerDescriptorPool, descriptorSetLayout.sampler);
+	particleTexture.loadFromFile(fDevice, "models/Textures/particle.png", sceneSamplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
 
 	// gltf 모델 로드
-	mapModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/map.glb");
+	mapModel.loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/map.glb");
 	// 화살 모델 로드
-	arrowModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Arrow.glb");
+	arrowModel.loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Character/Arrow.glb");
 
 	// gltf skin모델 로드
 	// 몬스터 모델 로드
-	monsterModel[static_cast<int>(MONSTER_TYPE::MUSHROOM)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/Mushroom.glb");
-	monsterModel[static_cast<int>(MONSTER_TYPE::BORNDOG)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/BornDog.glb");
-	monsterModel[static_cast<int>(MONSTER_TYPE::GOBLIN)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/Goblin.glb");
-	monsterModel[static_cast<int>(MONSTER_TYPE::BOOGIE)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/Boogie.glb");
-	bossModel.loadModel(fDevice, descriptorSetLayout.sampler, "models/Monster/Boss_Golem.glb");
+	monsterModel[static_cast<int>(MONSTER_TYPE::MUSHROOM)].loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Monster/Mushroom.glb");
+	monsterModel[static_cast<int>(MONSTER_TYPE::BORNDOG)].loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Monster/BornDog.glb");
+	monsterModel[static_cast<int>(MONSTER_TYPE::GOBLIN)].loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Monster/Goblin.glb");
+	monsterModel[static_cast<int>(MONSTER_TYPE::BOOGIE)].loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Monster/Boogie.glb");
+	bossModel.loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Monster/Boss_Golem.glb");
 	// 플레이어 모델 로드
-	playerModel[static_cast<int>(PLAYER_TYPE::WARRIOR)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Dragoon.glb");
-	playerModel[static_cast<int>(PLAYER_TYPE::ARCHER)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Archer.glb");
-	playerModel[static_cast<int>(PLAYER_TYPE::MAGE)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Mage.glb");
-	playerModel[static_cast<int>(PLAYER_TYPE::HEALER)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Priest.glb");
+	playerModel[static_cast<int>(PLAYER_TYPE::WARRIOR)].loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Character/Dragoon.glb");
+	playerModel[static_cast<int>(PLAYER_TYPE::ARCHER)].loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Character/Archer.glb");
+	playerModel[static_cast<int>(PLAYER_TYPE::MAGE)].loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Character/Mage.glb");
+	playerModel[static_cast<int>(PLAYER_TYPE::HEALER)].loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Character/Priest.glb");
 
 	// 맵 생성
 	mapObject.setModel(mapModel);
@@ -139,10 +139,6 @@ GameScene::~GameScene()
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.skinModel, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.offscreen.model, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.offscreen.skinModel, nullptr);
-	vkDestroyPipelineLayout(fDevice.logicalDevice, pipelineLayout, nullptr);
-	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.ssbo, nullptr);
-	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.sampler, nullptr);
-	vkDestroyDescriptorSetLayout(fDevice.logicalDevice, descriptorSetLayout.ubo, nullptr);
 }
 
 void GameScene::enter()
@@ -155,7 +151,7 @@ void GameScene::enter()
 
 	// 보스 오브젝트 초기화 및 생성
 	pBossObject = std::make_unique<BossObject>(effect.boss);
-	pBossObject->initModel(bossModel, descriptorSetLayout.ssbo);
+	pBossObject->initModel(bossModel, ResourceManager::getInstance().getDescriptorSetLayout().ssbo);
 	pBossObject->setPosition({ 12.25f, 0.f, 115.f });		// 서버와 동기화 해야함
 	pBossObject->setLook({ 0.f, 0.f, -1.f });
 	pBossObject->setScale(glm::vec3{ 2.25f });
@@ -179,7 +175,7 @@ void GameScene::enter()
 		throw std::runtime_error("ADD PLAYER ERROR : INVALID TYPE!\n");
 		break;
 	}
-	pMyPlayer->initModel(playerModel[static_cast<int>(playerType)], descriptorSetLayout.ssbo);
+	pMyPlayer->initModel(playerModel[static_cast<int>(playerType)], ResourceManager::getInstance().getDescriptorSetLayout().ssbo);
 	pMyPlayer->setScale(glm::vec3(1.3f));
 	camera.setPlayer(pMyPlayer);
 
@@ -281,32 +277,32 @@ void GameScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool 
 	int idx = !!static_cast<int>(isOffscreen);
 
 	// shadow map bind (offscreen draw시에는 사용하지 않는다)
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowSet, 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 0, 1, &shadowSet, 0, nullptr);
 
 	// UBO 바인드, firstSet은 set의 시작인덱스
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.uboOnOff[idx].descriptorSets[currentFrame], 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 2, 1, &uniformBufferObject.uboOnOff[idx].descriptorSets[currentFrame], 0, nullptr);
 
 	// Model Object들
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.sceneOnOff[idx].model);
 
-	mapObject.draw(commandBuffer, pipelineLayout, currentFrame);
+	mapObject.draw(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
 
 	for (auto& arr : pArrowObjects) {
-		arr.second->draw(commandBuffer, pipelineLayout, currentFrame);
+		arr.second->draw(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
 	}
 
 	// skinModel Object들
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.sceneOnOff[idx].skinModel);
 
-	pBossObject->draw(commandBuffer, pipelineLayout, currentFrame);
+	pBossObject->draw(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
 
 	for (auto& m : pMonsterObjects) {
-		m.second->draw(commandBuffer, pipelineLayout, currentFrame);
+		m.second->draw(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
 	}
 
 	for (auto& player : pPlayers) {
 		if (player)
-			player->draw(commandBuffer, pipelineLayout, currentFrame);
+			player->draw(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
 	}
 }
 
@@ -314,14 +310,14 @@ void GameScene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
 	{	// 체력 바 그려주기
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.hpBarPipeline);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
 
 		for (auto& m : pMonsterObjects) {
-			m.second->drawUI(commandBuffer, pipelineLayout);
+			m.second->drawUI(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
 		}
 		for (auto& player : pPlayers) {
 			if (player)
-				player->drawUI(commandBuffer, pipelineLayout);
+				player->drawUI(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
 		}
 
 		if (pMyPlayer) {
@@ -329,7 +325,7 @@ void GameScene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 			bossArea.setBound(1.f, 0.1f, 125.f, 107.f, 3.f, 21.f);
 			if (bossArea.isCollide(pMyPlayer->getBoundingBox())) {		// 보스 영역 안에 있을때만 그려준다
 				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.bossHpBarPipeline);
-				pBossObject->drawUI(commandBuffer, pipelineLayout);
+				pBossObject->drawUI(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
 			}
 		}
 	}
@@ -341,8 +337,8 @@ void GameScene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 		}
 		matrix[3][3] = sceneElapsedTime;
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.cloudPipeline);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &cloudTexture.samplerDescriptorSet, 0, nullptr);
-		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 1, 1, &cloudTexture.samplerDescriptorSet, 0, nullptr);
+		vkCmdPushConstants(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 		vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 	}
 
@@ -352,8 +348,8 @@ void GameScene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 			if (gameEndAfterTime > 4.5f) {
 				glm::mat4 matrix{ 1.f };
 				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.gameendPipeline);
-				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &gameendTexture[1].samplerDescriptorSet, 0, nullptr);
-				vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 1, 1, &gameendTexture[1].samplerDescriptorSet, 0, nullptr);
+				vkCmdPushConstants(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 				vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 			}
 		}
@@ -361,8 +357,8 @@ void GameScene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 			if (gameEndAfterTime > 3.f) {
 				glm::mat4 matrix{ 1.f };
 				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.gameendPipeline);
-				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &gameendTexture[0].samplerDescriptorSet, 0, nullptr);
-				vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 1, 1, &gameendTexture[0].samplerDescriptorSet, 0, nullptr);
+				vkCmdPushConstants(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 				vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 			}
 		}
@@ -371,24 +367,24 @@ void GameScene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 
 void GameScene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
 
 	for (auto& player : pPlayers) {
 		if (player)
-			player->drawEffect(commandBuffer, pipelineLayout);
+			player->drawEffect(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
 	}
 
 	// 화살의 이펙트도 같이 그려준다
 	for (const auto& arr : pArrowObjects) {
-		arr.second->drawEffect(commandBuffer, pipelineLayout);
+		arr.second->drawEffect(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
 	}
 
-	pBossObject->drawEffect(commandBuffer, pipelineLayout);
+	pBossObject->drawEffect(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
 
 	// 힐러 스킬의 대상 플레이어 주위에 그려주는 파티클
 	{
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.particlePipeline);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &particleTexture.samplerDescriptorSet, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 1, 1, &particleTexture.samplerDescriptorSet, 0, nullptr);
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &particleVertexBuffer, offsets);
 
@@ -410,7 +406,7 @@ void GameScene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 
 										glm::mat4 matrix = glm::translate(glm::mat4(1.f), pPlayers[i]->getPosition());
 										matrix[3][3] = sceneElapsedTime;	// 여기에 시간 포함에서 넘겨주기
-										vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &matrix);
+										vkCmdPushConstants(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &matrix);
 										// set = 1에 샘플러 바인드
 										vkCmdDraw(commandBuffer, particleVertexCount, 1, 0, 0);
 									}
@@ -427,14 +423,14 @@ void GameScene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 void GameScene::drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.boundingBoxPipeline);
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
-	mapObject.drawBoundingBox(commandBuffer, pipelineLayout);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
+	mapObject.drawBoundingBox(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
 	for (const auto& player : pPlayers) {
 		if (player)
-			player->drawBoundingBox(commandBuffer, pipelineLayout);
+			player->drawBoundingBox(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
 	}
 	for (const auto& arr : pArrowObjects) {
-		arr.second->drawBoundingBox(commandBuffer, pipelineLayout);
+		arr.second->drawBoundingBox(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
 	}
 }
 
@@ -684,7 +680,7 @@ void GameScene::processPacket(unsigned char* packet)
 			break;
 		}
 		pPlayers[p->player_id]->setHP(p->hp);
-		pPlayers[p->player_id]->initModel(playerModel[static_cast<int>(p->player_type)], descriptorSetLayout.ssbo);
+		pPlayers[p->player_id]->initModel(playerModel[static_cast<int>(p->player_type)], ResourceManager::getInstance().getDescriptorSetLayout().ssbo);
 		pPlayers[p->player_id]->setScale(glm::vec3(1.3f));
 		pPlayers[p->player_id]->setPosition(glm::vec3(p->pos_x, 0.f, p->pos_z));
 		pPlayers[p->player_id]->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
@@ -810,7 +806,7 @@ void GameScene::processPacket(unsigned char* packet)
 			break;
 		}
 		pMonsterObjects[p->monster_id]->setHP(p->hp);
-		pMonsterObjects[p->monster_id]->initModel(monsterModel[static_cast<int>(p->monster_type)], descriptorSetLayout.ssbo);
+		pMonsterObjects[p->monster_id]->initModel(monsterModel[static_cast<int>(p->monster_type)], ResourceManager::getInstance().getDescriptorSetLayout().ssbo);
 		pMonsterObjects[p->monster_id]->setPosition({ p->pos_x, 0.f, p->pos_z });
 		pMonsterObjects[p->monster_id]->setLook({ p->dir_x, 0.f, p->dir_z });
 		std::cout << "몬스터 [" << int(p->monster_id) << "], 타입 [" << static_cast<int>(p->monster_type) << "] 추가" << std::endl;
@@ -920,22 +916,22 @@ std::array<VulkanGLTFSkinModel, 4>& GameScene::getPlayerModel()
 
 VkDescriptorSetLayout GameScene::getUBODescriptorSetLayout() const
 {
-	return descriptorSetLayout.ubo;
+	return ResourceManager::getInstance().getDescriptorSetLayout().ubo;
 }
 
 VkDescriptorSetLayout GameScene::getSamplerDescriptorSetLayout() const
 {
-	return descriptorSetLayout.sampler;
+	return ResourceManager::getInstance().getDescriptorSetLayout().sampler;
 }
 
 VkDescriptorSetLayout GameScene::getSSBODescriptorSetLayout() const
 {
-	return descriptorSetLayout.ssbo;
+	return ResourceManager::getInstance().getDescriptorSetLayout().ssbo;
 }
 
 VkPipelineLayout GameScene::getPipelineLayout() const
 {
-	return pipelineLayout;
+	return ResourceManager::getInstance().getPipelineLayout();
 }
 
 VkPipeline GameScene::getModelPipeline() const
@@ -956,49 +952,6 @@ VkPipeline GameScene::getOffscreenModelPipeline() const
 VkPipeline GameScene::getOffscreenSkinModelPipeline() const
 {
 	return pipeline.offscreen.skinModel;
-}
-
-void GameScene::createDescriptorSetLayout()
-{
-	VkDescriptorSetLayoutBinding uboLayoutBinding{};
-	uboLayoutBinding.binding = 0;
-	uboLayoutBinding.descriptorCount = 1;
-	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	uboLayoutBinding.pImmutableSamplers = nullptr;
-	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-	VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-	samplerLayoutBinding.binding = 0;
-	samplerLayoutBinding.descriptorCount = 1;
-	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	samplerLayoutBinding.pImmutableSamplers = nullptr;
-	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	VkDescriptorSetLayoutBinding ssboLayoutBinding{};
-	ssboLayoutBinding.binding = 0;
-	ssboLayoutBinding.descriptorCount = 1;
-	ssboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	ssboLayoutBinding.pImmutableSamplers = nullptr;
-	ssboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-	VkDescriptorSetLayoutCreateInfo layoutInfo{};
-	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layoutInfo.bindingCount = 1;
-	layoutInfo.pBindings = &uboLayoutBinding;
-
-	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.ubo) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor set layout!");
-	}
-
-	layoutInfo.pBindings = &samplerLayoutBinding;
-	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.sampler) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor set layout!");
-	}
-
-	layoutInfo.pBindings = &ssboLayoutBinding;
-	if (vkCreateDescriptorSetLayout(fDevice.logicalDevice, &layoutInfo, nullptr, &descriptorSetLayout.ssbo) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor set layout!");
-	}
 }
 
 void GameScene::createGraphicsPipeline()
@@ -1082,30 +1035,6 @@ void GameScene::createGraphicsPipeline()
 	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 	dynamicState.pDynamicStates = dynamicStates.data();
 
-	// 여러 개의 디스크립터 셋을 사용할 때, set의 index를 pSetLayouts의 index와 맞춰줘야 한다.
-	std::vector<VkDescriptorSetLayout> setLayout{ 4 };
-	setLayout[0] = shadowSetLayout;
-	setLayout[1] = descriptorSetLayout.sampler;
-	setLayout[2] = descriptorSetLayout.ubo;
-	setLayout[3] = descriptorSetLayout.ssbo;										// skinModel에서만 사용
-
-	// push constant
-	VkPushConstantRange pushConstantRange{};
-	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	pushConstantRange.offset = 0;
-	pushConstantRange.size = sizeof(vkf::PushConstantData);
-
-	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayout.size());	// model에서는 (0, 1, 2) 사용, offscreen은 0번 X
-	pipelineLayoutInfo.pSetLayouts = setLayout.data();
-	pipelineLayoutInfo.pushConstantRangeCount = 1;
-	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-
-	if (vkCreatePipelineLayout(fDevice.logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create pipeline layout!");
-	}
-
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineInfo.stageCount = static_cast<uint32_t>(modelShader.shaderStages.size());
@@ -1118,7 +1047,7 @@ void GameScene::createGraphicsPipeline()
 	pipelineInfo.pDepthStencilState = &depthStencil;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.layout = pipelineLayout;
+	pipelineInfo.layout = ResourceManager::getInstance().getPipelineLayout();
 	pipelineInfo.renderPass = renderPass.scene;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;

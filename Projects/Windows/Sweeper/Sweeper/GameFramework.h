@@ -87,7 +87,6 @@ private:
 		VkImageView depthImageView;
 		//VkRenderPass renderPass;		// vkf::RenderPass ¿¡ Á¸Àç
 		VkSampler depthSampler;
-		VkDescriptorSetLayout samplerDescriptorSetLayout;
 		VkDescriptorPool samplerDescriptorPool;
 		VkDescriptorSet samplerDescriptorSet;
 	} offscreenPass{};

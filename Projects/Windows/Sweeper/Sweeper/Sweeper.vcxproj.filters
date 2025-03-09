@@ -64,6 +64,9 @@
     <Filter Include="SceneBase\Scene">
       <UniqueIdentifier>{31779786-1014-425b-b767-2b4a167cb48a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ResourceManager">
+      <UniqueIdentifier>{e05235eb-54b2-4503-8fc6-3840cefe2af7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -144,6 +147,9 @@
     <ClCompile Include="SceneBase.cpp">
       <Filter>SceneBase</Filter>
     </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>ResourceManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObjectBase.h">
@@ -220,6 +226,9 @@
     </ClInclude>
     <ClInclude Include="SceneBase.h">
       <Filter>SceneBase</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>ResourceManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

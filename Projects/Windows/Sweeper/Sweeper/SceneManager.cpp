@@ -6,8 +6,8 @@
 #include "LobbyScene.h"
 #include "GameScene.h"
 
-SceneManager::SceneManager(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSetLayout& shadowSetLayout, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent)
-	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSetLayout{ shadowSetLayout }, shadowSet{ shadowSet }, framebufferExtent{ framebufferExtent }
+SceneManager::SceneManager(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent)
+	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSet{ shadowSet }, framebufferExtent{ framebufferExtent }
 {
 	nowScene = SCENE_TYPE::START;
 
@@ -92,8 +92,7 @@ void SceneManager::processPacket(unsigned char* packet)
 
 void SceneManager::initScene()
 {
-	pGameScene = std::make_shared<GameScene>(fDevice, msaaSamples, renderPass,
-		shadowSetLayout, shadowSet, framebufferExtent);
+	pGameScene = std::make_shared<GameScene>(fDevice, msaaSamples, renderPass, shadowSet, framebufferExtent);
 
 	// GameScene 积己 饶 积己 啊瓷
 	pStartScene = std::make_shared<StartScene>(fDevice, msaaSamples, renderPass,
