@@ -37,8 +37,8 @@ public:
 
 	void update(float elapsedTime, uint32_t currentFrame);
 
-	void drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFrame);
-	void drawScene(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+	void drawOffscreen(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame);
+	void drawScene(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame);
 
 	void processKeyboard(int key, int action, int mods);
 	void processMouseButton(int button, int action, int mods, float xpos, float ypos);

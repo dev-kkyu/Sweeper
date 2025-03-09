@@ -124,15 +124,15 @@ public:
 
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
 
-	virtual void drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
-	virtual void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
+	virtual void drawOffscreen(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
+	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 
 private:
 	// draw에 offscreen을 분리하지 않기 위한 함수
-	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen);
-	void drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame);
-	void drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame);
-	void drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+	void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame, bool isOffscreen);
+	void drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame);
+	void drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame);
+	void drawBoundingBox(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame);
 
 public:
 	virtual void processKeyboard(int key, int action, int mods) override;

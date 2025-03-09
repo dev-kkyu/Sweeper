@@ -949,7 +949,7 @@ void GameFramework::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 		// 그림자 매핑 아티팩트를 방지하는 데 필요합니다.
 		vkCmdSetDepthBias(commandBuffer, depthBiasConstant, 0.0f, depthBiasSlope);
 
-		pSceneManager->drawOffscreen(commandBuffer, currentFrame);
+		pSceneManager->drawOffscreen(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
 
 		vkCmdEndRenderPass(commandBuffer);
 	}
@@ -987,7 +987,7 @@ void GameFramework::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
 		scissor.extent = swapChainExtent;
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-		pSceneManager->drawScene(commandBuffer, currentFrame);
+		pSceneManager->drawScene(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
 
 		vkCmdEndRenderPass(commandBuffer);
 	}

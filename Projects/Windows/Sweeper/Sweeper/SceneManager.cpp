@@ -53,15 +53,15 @@ void SceneManager::update(float elapsedTime, uint32_t currentFrame)
 	pScene->update(elapsedTime, currentFrame);
 }
 
-void SceneManager::drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+void SceneManager::drawOffscreen(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
-	pScene->drawOffscreen(commandBuffer, currentFrame);
+	pScene->drawOffscreen(commandBuffer, pipelineLayout, currentFrame);
 	// Todo : 로비에서 그림자 활성화 해주기
 }
 
-void SceneManager::drawScene(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+void SceneManager::drawScene(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
-	pScene->draw(commandBuffer, currentFrame);
+	pScene->draw(commandBuffer, pipelineLayout, currentFrame);
 	// Todo : 인게임 씬에서 바운딩박스 온오프 기능 활성화 해주기
 }
 

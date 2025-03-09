@@ -40,19 +40,19 @@ void StartScene::update(float elapsedTime, uint32_t currentFrame)
 	sceneElapsedTime += elapsedTime;
 }
 
-void StartScene::drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+void StartScene::drawOffscreen(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
 }
 
-void StartScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+void StartScene::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 	int texIndex = static_cast<int>(glm::fract(sceneElapsedTime) * 2.f);
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 1, 1, &texture[texIndex].samplerDescriptorSet, 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &texture[texIndex].samplerDescriptorSet, 0, nullptr);
 
 	glm::mat4 matrix{ 1.f };
-	vkCmdPushConstants(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 
 	vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 }

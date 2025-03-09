@@ -257,67 +257,67 @@ void GameScene::update(float elapsedTime, uint32_t currentFrame)
 	}
 }
 
-void GameScene::drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+void GameScene::drawOffscreen(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
-	draw(commandBuffer, currentFrame, true);
+	draw(commandBuffer, pipelineLayout, currentFrame, true);
 }
 
-void GameScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+void GameScene::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
-	draw(commandBuffer, currentFrame, false);
+	draw(commandBuffer, pipelineLayout, currentFrame, false);
 	if (isDrawingBoundingBox)
-		drawBoundingBox(commandBuffer, currentFrame);
-	drawEffect(commandBuffer, currentFrame);
-	drawUI(commandBuffer, currentFrame);
+		drawBoundingBox(commandBuffer, pipelineLayout, currentFrame);
+	drawEffect(commandBuffer, pipelineLayout, currentFrame);
+	drawUI(commandBuffer, pipelineLayout, currentFrame);
 }
 
-void GameScene::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, bool isOffscreen)
+void GameScene::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame, bool isOffscreen)
 {
 	// if문을 쓰지 않기 위한 코드..
 	int idx = !!static_cast<int>(isOffscreen);
 
 	// shadow map bind (offscreen draw시에는 사용하지 않는다)
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 0, 1, &shadowSet, 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowSet, 0, nullptr);
 
 	// UBO 바인드, firstSet은 set의 시작인덱스
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 2, 1, &uniformBufferObject.uboOnOff[idx].descriptorSets[currentFrame], 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.uboOnOff[idx].descriptorSets[currentFrame], 0, nullptr);
 
 	// Model Object들
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.sceneOnOff[idx].model);
 
-	mapObject.draw(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
+	mapObject.draw(commandBuffer, pipelineLayout, currentFrame);
 
 	for (auto& arr : pArrowObjects) {
-		arr.second->draw(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
+		arr.second->draw(commandBuffer, pipelineLayout, currentFrame);
 	}
 
 	// skinModel Object들
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.sceneOnOff[idx].skinModel);
 
-	pBossObject->draw(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
+	pBossObject->draw(commandBuffer, pipelineLayout, currentFrame);
 
 	for (auto& m : pMonsterObjects) {
-		m.second->draw(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
+		m.second->draw(commandBuffer, pipelineLayout, currentFrame);
 	}
 
 	for (auto& player : pPlayers) {
 		if (player)
-			player->draw(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), currentFrame);
+			player->draw(commandBuffer, pipelineLayout, currentFrame);
 	}
 }
 
-void GameScene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+void GameScene::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
 	{	// 체력 바 그려주기
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.hpBarPipeline);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
 
 		for (auto& m : pMonsterObjects) {
-			m.second->drawUI(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
+			m.second->drawUI(commandBuffer, pipelineLayout);
 		}
 		for (auto& player : pPlayers) {
 			if (player)
-				player->drawUI(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
+				player->drawUI(commandBuffer, pipelineLayout);
 		}
 
 		if (pMyPlayer) {
@@ -325,7 +325,7 @@ void GameScene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 			bossArea.setBound(1.f, 0.1f, 125.f, 107.f, 3.f, 21.f);
 			if (bossArea.isCollide(pMyPlayer->getBoundingBox())) {		// 보스 영역 안에 있을때만 그려준다
 				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.bossHpBarPipeline);
-				pBossObject->drawUI(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
+				pBossObject->drawUI(commandBuffer, pipelineLayout);
 			}
 		}
 	}
@@ -337,8 +337,8 @@ void GameScene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 		}
 		matrix[3][3] = sceneElapsedTime;
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.cloudPipeline);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 1, 1, &cloudTexture.samplerDescriptorSet, 0, nullptr);
-		vkCmdPushConstants(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &cloudTexture.samplerDescriptorSet, 0, nullptr);
+		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 		vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 	}
 
@@ -348,8 +348,8 @@ void GameScene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 			if (gameEndAfterTime > 4.5f) {
 				glm::mat4 matrix{ 1.f };
 				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.gameendPipeline);
-				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 1, 1, &gameendTexture[1].samplerDescriptorSet, 0, nullptr);
-				vkCmdPushConstants(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &gameendTexture[1].samplerDescriptorSet, 0, nullptr);
+				vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 				vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 			}
 		}
@@ -357,34 +357,34 @@ void GameScene::drawUI(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 			if (gameEndAfterTime > 3.f) {
 				glm::mat4 matrix{ 1.f };
 				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.gameendPipeline);
-				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 1, 1, &gameendTexture[0].samplerDescriptorSet, 0, nullptr);
-				vkCmdPushConstants(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &gameendTexture[0].samplerDescriptorSet, 0, nullptr);
+				vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 				vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 			}
 		}
 	}
 }
 
-void GameScene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+void GameScene::drawEffect(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
 
 	for (auto& player : pPlayers) {
 		if (player)
-			player->drawEffect(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
+			player->drawEffect(commandBuffer, pipelineLayout);
 	}
 
 	// 화살의 이펙트도 같이 그려준다
 	for (const auto& arr : pArrowObjects) {
-		arr.second->drawEffect(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
+		arr.second->drawEffect(commandBuffer, pipelineLayout);
 	}
 
-	pBossObject->drawEffect(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
+	pBossObject->drawEffect(commandBuffer, pipelineLayout);
 
 	// 힐러 스킬의 대상 플레이어 주위에 그려주는 파티클
 	{
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.particlePipeline);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 1, 1, &particleTexture.samplerDescriptorSet, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &particleTexture.samplerDescriptorSet, 0, nullptr);
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &particleVertexBuffer, offsets);
 
@@ -406,7 +406,7 @@ void GameScene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 
 										glm::mat4 matrix = glm::translate(glm::mat4(1.f), pPlayers[i]->getPosition());
 										matrix[3][3] = sceneElapsedTime;	// 여기에 시간 포함에서 넘겨주기
-										vkCmdPushConstants(commandBuffer, ResourceManager::getInstance().getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &matrix);
+										vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vkf::PushConstantData), &matrix);
 										// set = 1에 샘플러 바인드
 										vkCmdDraw(commandBuffer, particleVertexCount, 1, 0, 0);
 									}
@@ -420,17 +420,17 @@ void GameScene::drawEffect(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	}
 }
 
-void GameScene::drawBoundingBox(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+void GameScene::drawBoundingBox(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.boundingBoxPipeline);
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipelineLayout(), 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
-	mapObject.drawBoundingBox(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.scene.descriptorSets[currentFrame], 0, nullptr);
+	mapObject.drawBoundingBox(commandBuffer, pipelineLayout);
 	for (const auto& player : pPlayers) {
 		if (player)
-			player->drawBoundingBox(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
+			player->drawBoundingBox(commandBuffer, pipelineLayout);
 	}
 	for (const auto& arr : pArrowObjects) {
-		arr.second->drawBoundingBox(commandBuffer, ResourceManager::getInstance().getPipelineLayout());
+		arr.second->drawBoundingBox(commandBuffer, pipelineLayout);
 	}
 }
 

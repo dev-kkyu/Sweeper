@@ -24,8 +24,8 @@ public:
 
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
 
-	virtual void drawOffscreen(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
-	virtual void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
+	virtual void drawOffscreen(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
+	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 
 	virtual void processKeyboard(int key, int action, int mods) override;
 	virtual void processMouseButton(int button, int action, int mods, float xpos, float ypos) override;
