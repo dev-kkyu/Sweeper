@@ -130,6 +130,7 @@ GameScene::~GameScene()
 	vkDestroyPipeline(fDevice.logicalDevice, effect.healer.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.archer.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.warrior.pipeline, nullptr);
+	vkDestroyPipeline(fDevice.logicalDevice, pipeline.gameendPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.cloudPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.bossHpBarPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.hpBarPipeline, nullptr);
