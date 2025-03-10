@@ -6,8 +6,6 @@ class StartScene : public SceneBase
 {
 private:
 	vkf::Device& fDevice;
-	VkSampleCountFlagBits& msaaSamples;
-	vkf::RenderPass& renderPass;
 
 	VkPipeline pipeline;
 
@@ -16,7 +14,7 @@ private:
 	float sceneElapsedTime = 0.f;	// 텍스처 깜빡임을 위하여 사용
 
 public:
-	StartScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass);
+	StartScene(vkf::Device& fDevice);
 	virtual ~StartScene();
 
 	virtual void enter() override;

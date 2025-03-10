@@ -6,8 +6,8 @@
 
 #include "ResourceManager.h"
 
-StartScene::StartScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass)
-	: msaaSamples{ msaaSamples }, renderPass{ renderPass }, fDevice{ fDevice }
+StartScene::StartScene(vkf::Device& fDevice)
+	: fDevice{ fDevice }
 {
 	createGraphicsPipeline();
 	createSamplerDescriptorPool(2);		// 텍스처 두개
@@ -126,7 +126,7 @@ void StartScene::createGraphicsPipeline()
 	VkPipelineMultisampleStateCreateInfo multisampling{};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
-	multisampling.rasterizationSamples = msaaSamples;
+	multisampling.rasterizationSamples = ResourceManager::getInstance().getMsaaSamples();
 
 	// 깊이검사 해제
 	VkPipelineDepthStencilStateCreateInfo depthStencil{};
@@ -183,7 +183,7 @@ void StartScene::createGraphicsPipeline()
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
 	pipelineInfo.layout = ResourceManager::getInstance().getPipelineLayout();
-	pipelineInfo.renderPass = renderPass.scene;
+	pipelineInfo.renderPass = ResourceManager::getInstance().getRenderPass().scene;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 

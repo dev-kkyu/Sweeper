@@ -12,11 +12,8 @@ class SceneManager
 {
 private:
 	vkf::Device& fDevice;
-	VkSampleCountFlagBits& msaaSamples;
-	vkf::RenderPass& renderPass;
-	VkDescriptorSet& shadowSet;
 
-	VkExtent2D& framebufferExtent;
+	const VkExtent2D& framebufferExtent;
 
 private:
 	enum class SCENE_TYPE {
@@ -32,7 +29,7 @@ private:
 
 
 public:
-	SceneManager(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent);
+	SceneManager(vkf::Device& fDevice, const VkExtent2D& framebufferExtent);
 	~SceneManager();
 
 	void update(float elapsedTime, uint32_t currentFrame);

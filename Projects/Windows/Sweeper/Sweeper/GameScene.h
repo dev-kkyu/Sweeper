@@ -27,9 +27,6 @@ private:	// 사용자 입력에 따른 변수
 
 private:
 	vkf::Device& fDevice;
-	VkSampleCountFlagBits& msaaSamples;
-	vkf::RenderPass& renderPass;
-	VkDescriptorSet& shadowSet;
 
 	struct {
 		// 바운딩 박스 파이프라인
@@ -105,7 +102,7 @@ private:
 	Camera camera;
 
 public:
-	GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent);
+	GameScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent);
 	virtual ~GameScene();
 
 	virtual void enter() override;

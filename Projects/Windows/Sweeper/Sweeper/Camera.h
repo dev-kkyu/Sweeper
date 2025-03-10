@@ -12,7 +12,7 @@ class PlayerObject;
 class Camera
 {
 private:
-	VkExtent2D& framebufferExtent;
+	const VkExtent2D& framebufferExtent;
 
 	float distanceFromPlayer;	// 생성자 호출 시 값 정해주기
 
@@ -29,7 +29,7 @@ private:
 	float pitchAngle;			// 생성자 호출 시 값 정해주기
 
 public:
-	Camera(VkExtent2D& framebufferExtent);
+	Camera(const VkExtent2D& framebufferExtent);
 	~Camera();
 
 	void update(float elapsedTime);

@@ -7,9 +7,8 @@
 #include "ResourceManager.h"
 #include "SoundManager.h"
 
-LobbyScene::LobbyScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkExtent2D& framebufferExtent,
-	std::array<VulkanGLTFSkinModel, 4>& playerModel, VkDescriptorSet shadowSet)
-	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, framebufferExtent{ framebufferExtent }, shadowSet{ shadowSet }
+LobbyScene::LobbyScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent, std::array<VulkanGLTFSkinModel, 4>& playerModel)
+	: fDevice{ fDevice }, framebufferExtent{ framebufferExtent }
 {
 	createGraphicsPipeline();
 	createSamplerDescriptorPool(5);		// 텍스처 5개
@@ -111,7 +110,7 @@ void LobbyScene::drawOffscreen(VkCommandBuffer commandBuffer, VkPipelineLayout p
 void LobbyScene::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
 	// shadow map bind
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowSet, 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &ResourceManager::getInstance().getShadowDescriptorSet(), 0, nullptr);
 	// UBO 바인드, firstSet은 set의 시작인덱스
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 
@@ -267,7 +266,7 @@ void LobbyScene::createGraphicsPipeline()
 	VkPipelineMultisampleStateCreateInfo multisampling{};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
-	multisampling.rasterizationSamples = msaaSamples;
+	multisampling.rasterizationSamples = ResourceManager::getInstance().getMsaaSamples();
 
 	// 깊이검사 해제
 	VkPipelineDepthStencilStateCreateInfo depthStencil{};
@@ -324,7 +323,7 @@ void LobbyScene::createGraphicsPipeline()
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
 	pipelineInfo.layout = ResourceManager::getInstance().getPipelineLayout();
-	pipelineInfo.renderPass = renderPass.scene;
+	pipelineInfo.renderPass = ResourceManager::getInstance().getRenderPass().scene;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 

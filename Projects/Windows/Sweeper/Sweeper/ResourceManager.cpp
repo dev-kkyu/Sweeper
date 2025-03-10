@@ -54,7 +54,7 @@ VkSampleCountFlagBits ResourceManager::getMsaaSamples() const
 	return *pMsaaSamples;
 }
 
-VkDescriptorSet ResourceManager::getShadowDescriptorSet() const
+const VkDescriptorSet& ResourceManager::getShadowDescriptorSet() const
 {
 	return *pShadowDescriptorSet;
 }

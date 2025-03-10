@@ -16,9 +16,8 @@
 #include "NetworkManager.h"
 #include "SoundManager.h"
 
-GameScene::GameScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent)
-	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSet{ shadowSet }
-	, camera{ framebufferExtent }
+GameScene::GameScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent)
+	: fDevice{ fDevice }, camera{ framebufferExtent }
 {
 	createGraphicsPipeline();
 	createSamplerDescriptorPool(11);		// 배경 구름, 게임종료 2개, 이펙트7개, 힐러 파티클
@@ -273,7 +272,7 @@ void GameScene::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLay
 	int idx = !!static_cast<int>(isOffscreen);
 
 	// shadow map bind (offscreen draw시에는 사용하지 않는다)
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &shadowSet, 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &ResourceManager::getInstance().getShadowDescriptorSet(), 0, nullptr);
 
 	// UBO 바인드, firstSet은 set의 시작인덱스
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.uboOnOff[idx].descriptorSets[currentFrame], 0, nullptr);
@@ -943,7 +942,7 @@ void GameScene::createGraphicsPipeline()
 	VkPipelineMultisampleStateCreateInfo multisampling{};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
-	multisampling.rasterizationSamples = msaaSamples;
+	multisampling.rasterizationSamples = ResourceManager::getInstance().getMsaaSamples();
 
 	VkPipelineDepthStencilStateCreateInfo depthStencil{};
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -999,7 +998,7 @@ void GameScene::createGraphicsPipeline()
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
 	pipelineInfo.layout = ResourceManager::getInstance().getPipelineLayout();
-	pipelineInfo.renderPass = renderPass.scene;
+	pipelineInfo.renderPass = ResourceManager::getInstance().getRenderPass().scene;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 

@@ -52,7 +52,7 @@ public:
 
 	const vkf::RenderPass& getRenderPass() const;
 	VkSampleCountFlagBits getMsaaSamples() const;
-	VkDescriptorSet getShadowDescriptorSet() const;
+	const VkDescriptorSet& getShadowDescriptorSet() const;
 
 	const DescriptorSetLayout& getDescriptorSetLayout() const;
 	VkPipelineLayout getPipelineLayout() const;

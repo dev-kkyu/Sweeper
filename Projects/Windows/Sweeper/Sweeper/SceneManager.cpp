@@ -6,8 +6,8 @@
 #include "LobbyScene.h"
 #include "GameScene.h"
 
-SceneManager::SceneManager(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkDescriptorSet& shadowSet, VkExtent2D& framebufferExtent)
-	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, shadowSet{ shadowSet }, framebufferExtent{ framebufferExtent }
+SceneManager::SceneManager(vkf::Device& fDevice, const VkExtent2D& framebufferExtent)
+	: fDevice{ fDevice }, framebufferExtent{ framebufferExtent }
 {
 	nowScene = SCENE_TYPE::START;
 
@@ -90,12 +90,12 @@ void SceneManager::processPacket(unsigned char* packet)
 
 void SceneManager::initScene()
 {
-	pGameScene = std::make_shared<GameScene>(fDevice, msaaSamples, renderPass, shadowSet, framebufferExtent);
+	pGameScene = std::make_shared<GameScene>(fDevice, framebufferExtent);
 
 	// GameScene 积己 饶 积己 啊瓷
-	pStartScene = std::make_shared<StartScene>(fDevice, msaaSamples, renderPass);
+	pStartScene = std::make_shared<StartScene>(fDevice);
 	// GameScene 积己 饶 积己 啊瓷
-	pLobbyScene = std::make_shared<LobbyScene>(fDevice, msaaSamples, renderPass, framebufferExtent, pGameScene->getPlayerModel(), shadowSet);
+	pLobbyScene = std::make_shared<LobbyScene>(fDevice, framebufferExtent, pGameScene->getPlayerModel());
 
 	pScene = pStartScene;
 }

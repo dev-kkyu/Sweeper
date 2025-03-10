@@ -88,8 +88,7 @@ void GameFramework::initVulkan(GLFWwindow* window)
 	createOffscreenDescriptors();
 
 	// 씬매니저 생성
-	pSceneManager = std::make_unique<SceneManager>(fDevice, msaaSamples, renderPass,
-		offscreenPass.samplerDescriptorSet, framebufferExtent);
+	pSceneManager = std::make_unique<SceneManager>(fDevice, framebufferExtent);
 	gameTimer.SetWindow(window);
 	gameTimer.SetGpuName(fDevice.physicalDeviceProperties.deviceName);
 }

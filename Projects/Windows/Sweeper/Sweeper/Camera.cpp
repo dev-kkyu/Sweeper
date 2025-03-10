@@ -4,7 +4,7 @@
 
 #include <glm/gtx/vector_angle.hpp>
 
-Camera::Camera(VkExtent2D& framebufferExtent)
+Camera::Camera(const VkExtent2D& framebufferExtent)
 	: framebufferExtent{ framebufferExtent }
 	, distanceFromPlayer{ 12.f }		// 카메라 거리
 	, pitchAngle{ 45.f }					// 카메라 각도
