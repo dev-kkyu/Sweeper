@@ -7,7 +7,7 @@
 #include "ResourceManager.h"
 #include "SoundManager.h"
 
-LobbyScene::LobbyScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent, std::array<VulkanGLTFSkinModel, 4>& playerModel)
+LobbyScene::LobbyScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent)
 	: fDevice{ fDevice }, framebufferExtent{ framebufferExtent }
 {
 	createSamplerDescriptorPool(5);		// 텍스처 5개
@@ -40,7 +40,7 @@ LobbyScene::LobbyScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent
 	float xPosition = 1.125f;
 	podiumObject.setPosition(glm::vec3(xPosition, 0.f, 0.f));
 	for (int i = 0; i < 4; ++i) {
-		playerObjects[i].initModel(playerModel[i], ResourceManager::getInstance().getDescriptorSetLayout().ssbo);
+		playerObjects[i].initModel(ResourceManager::getInstance().getPlayerModel()[i], ResourceManager::getInstance().getDescriptorSetLayout().ssbo);
 		playerObjects[i].setAnimationClip(23);
 		playerObjects[i].setPosition(glm::vec3(xPosition, 0.f, 0.f));
 	}

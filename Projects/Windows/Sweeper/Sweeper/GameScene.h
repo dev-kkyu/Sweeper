@@ -89,11 +89,10 @@ private:
 	VulkanGLTFSkinModel bossModel;
 	std::unique_ptr<BossObject> pBossObject;
 
-	// gltf skin 캐릭터 에셋
-	std::array<VulkanGLTFSkinModel, 4> playerModel;		// 캐릭터 종류는 총 4개이다.
-	PLAYER_TYPE playerType;								// 플레이어 타입 (4가지 종류, 서버의 protocol에 정의)
-	std::shared_ptr<PlayerObject> pMyPlayer;			// pPlayers[my_id] 와 같은 객체를 가리키도록 한다.
-	std::array<std::shared_ptr<PlayerObject>, 4> pPlayers;
+	// 로드한 캐릭터 모델은 ResourceManager에서 관리 (로비 Scene과 함께 사용하기 위함)
+	PLAYER_TYPE playerType;									// 플레이어 타입 (4가지 종류, 서버의 protocol에 정의)
+	std::shared_ptr<PlayerObject> pMyPlayer;				// pPlayers[my_id] 와 같은 객체를 가리키도록 한다.
+	std::array<std::shared_ptr<PlayerObject>, 4> pPlayers;	// 게임에 플레이어는 최대 4인이 존재한다
 	int my_id = -1;
 	int observer_id = -1;
 
@@ -132,9 +131,6 @@ public:
 
 	void setPlayerType(PLAYER_TYPE player_type);
 	PLAYER_TYPE getPlayerType() const;
-
-	// Lobby Scene에서 가져다 쓸 내용들
-	std::array<VulkanGLTFSkinModel, 4>& getPlayerModel();
 
 private:
 	void createGraphicsPipeline();

@@ -1,7 +1,8 @@
 #include "ResourceManager.h"
 
 #include <stdexcept>
-#include <array>
+
+#include "NetworkManager.h"		// Player Type에 필요
 
 ResourceManager::ResourceManager()
 {
@@ -20,19 +21,29 @@ ResourceManager& ResourceManager::getInstance()
 	return instance;
 }
 
-void ResourceManager::init(VkDevice logicalDevice, const vkf::RenderPass& renderPass, const VkSampleCountFlagBits& msaaSamples, const VkDescriptorSet& shadowDescriptorSet)
+void ResourceManager::init(vkf::Device& fDevice, const vkf::RenderPass& renderPass, const VkSampleCountFlagBits& msaaSamples, const VkDescriptorSet& shadowDescriptorSet)
 {
 	pRenderPass = &renderPass;
 	pMsaaSamples = &msaaSamples;
 	pShadowDescriptorSet = &shadowDescriptorSet;
 
-	createDescriptorSetLayout(logicalDevice);
-	createPipelineLayout(logicalDevice);
-	createGraphicsPipeline(logicalDevice);
+	createDescriptorSetLayout(fDevice.logicalDevice);
+	createPipelineLayout(fDevice.logicalDevice);
+	createGraphicsPipeline(fDevice.logicalDevice);
+
+	// 플레이어 모델 로드
+	playerModel[static_cast<int>(PLAYER_TYPE::WARRIOR)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Dragoon.glb");
+	playerModel[static_cast<int>(PLAYER_TYPE::ARCHER)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Archer.glb");
+	playerModel[static_cast<int>(PLAYER_TYPE::MAGE)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Mage.glb");
+	playerModel[static_cast<int>(PLAYER_TYPE::HEALER)].loadModel(fDevice, descriptorSetLayout.sampler, "models/Character/Priest.glb");
 }
 
 void ResourceManager::destroy(VkDevice logicalDevice)
 {
+	for (auto& model : playerModel) {		// 플레이어 모델들
+		model.destroy();
+	}
+
 	vkDestroyPipeline(logicalDevice, pipeline.quad, nullptr);
 	vkDestroyPipeline(logicalDevice, pipeline.scene.model, nullptr);
 	vkDestroyPipeline(logicalDevice, pipeline.scene.skinModel, nullptr);
@@ -72,6 +83,11 @@ VkPipelineLayout ResourceManager::getPipelineLayout() const
 const ResourceManager::Pipeline& ResourceManager::getPipeline() const
 {
 	return pipeline;
+}
+
+std::array<VulkanGLTFSkinModel, 4>& ResourceManager::getPlayerModel()
+{
+	return playerModel;
 }
 
 void ResourceManager::createDescriptorSetLayout(VkDevice logicalDevice)

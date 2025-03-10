@@ -58,11 +58,6 @@ GameScene::GameScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent)
 	monsterModel[static_cast<int>(MONSTER_TYPE::GOBLIN)].loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Monster/Goblin.glb");
 	monsterModel[static_cast<int>(MONSTER_TYPE::BOOGIE)].loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Monster/Boogie.glb");
 	bossModel.loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Monster/Boss_Golem.glb");
-	// 플레이어 모델 로드
-	playerModel[static_cast<int>(PLAYER_TYPE::WARRIOR)].loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Character/Dragoon.glb");
-	playerModel[static_cast<int>(PLAYER_TYPE::ARCHER)].loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Character/Archer.glb");
-	playerModel[static_cast<int>(PLAYER_TYPE::MAGE)].loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Character/Mage.glb");
-	playerModel[static_cast<int>(PLAYER_TYPE::HEALER)].loadModel(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().sampler, "models/Character/Priest.glb");
 
 	// 맵 생성
 	mapObject.setModel(mapModel);
@@ -80,11 +75,6 @@ GameScene::GameScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent)
 
 GameScene::~GameScene()
 {
-	// 플레이어 객체들은 shared_ptr이므로, 따로 삭제 X
-	for (auto& model : playerModel) {		// 플레이어 모델들
-		model.destroy();
-	}
-
 	bossModel.destroy();
 
 	pMonsterObjects.clear();				// 몬스터 객체들
@@ -96,7 +86,7 @@ GameScene::~GameScene()
 
 	mapModel.destroy();						// 맵 모델
 
-	// 플레이어와 맵 오브젝트는 알아서 삭제
+	// 플레이어와 맵 오브젝트는 shared_ptr이므로 알아서 삭제
 
 	uniformBufferObject.scene.destroy();
 	uniformBufferObject.offscreen.destroy();
@@ -169,7 +159,7 @@ void GameScene::enter()
 		throw std::runtime_error("ADD PLAYER ERROR : INVALID TYPE!\n");
 		break;
 	}
-	pMyPlayer->initModel(playerModel[static_cast<int>(playerType)], ResourceManager::getInstance().getDescriptorSetLayout().ssbo);
+	pMyPlayer->initModel(ResourceManager::getInstance().getPlayerModel()[static_cast<int>(playerType)], ResourceManager::getInstance().getDescriptorSetLayout().ssbo);
 	pMyPlayer->setScale(glm::vec3(1.3f));
 	camera.setPlayer(pMyPlayer);
 
@@ -674,7 +664,7 @@ void GameScene::processPacket(unsigned char* packet)
 			break;
 		}
 		pPlayers[p->player_id]->setHP(p->hp);
-		pPlayers[p->player_id]->initModel(playerModel[static_cast<int>(p->player_type)], ResourceManager::getInstance().getDescriptorSetLayout().ssbo);
+		pPlayers[p->player_id]->initModel(ResourceManager::getInstance().getPlayerModel()[static_cast<int>(p->player_type)], ResourceManager::getInstance().getDescriptorSetLayout().ssbo);
 		pPlayers[p->player_id]->setScale(glm::vec3(1.3f));
 		pPlayers[p->player_id]->setPosition(glm::vec3(p->pos_x, 0.f, p->pos_z));
 		pPlayers[p->player_id]->setLook(glm::vec3(p->dir_x, 0.f, p->dir_z));
@@ -901,11 +891,6 @@ void GameScene::setPlayerType(PLAYER_TYPE player_type)
 PLAYER_TYPE GameScene::getPlayerType() const
 {
 	return playerType;
-}
-
-std::array<VulkanGLTFSkinModel, 4>& GameScene::getPlayerModel()
-{
-	return playerModel;
 }
 
 void GameScene::createGraphicsPipeline()

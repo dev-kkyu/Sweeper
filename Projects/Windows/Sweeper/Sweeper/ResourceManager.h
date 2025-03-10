@@ -1,15 +1,20 @@
 #pragma once
 
 #include "VulkanFramework.h"
+#include "VulkanGLTFSkinModel.h"
+
+#include <array>
 
 // 싱클톤 클래스
 class ResourceManager
 {
 private:
+	// 여러 Scene에서 같이 사용되는 GameFramework 리소스들
 	const vkf::RenderPass* pRenderPass;
 	const VkSampleCountFlagBits* pMsaaSamples;
 	const VkDescriptorSet* pShadowDescriptorSet;
 
+	// 이후부터는 해당 클래스가 직접 생성하는 공용 리소스들
 	struct DescriptorSetLayout {
 		VkDescriptorSetLayout ubo;
 		VkDescriptorSetLayout sampler;
@@ -32,9 +37,12 @@ private:
 				ModelPipeline offscreen;
 			};
 		};
-		// 사각형 텍스처 draw에 사용하는 pipeline, // Todo : 아직 사용안함
+		// 사각형 텍스처 draw에 사용하는 pipeline
 		VkPipeline quad;
 	} pipeline;
+
+	// GLTF Skin 모델 - 캐릭터
+	std::array<VulkanGLTFSkinModel, 4> playerModel;		// 캐릭터 종류는 총 4개이다.
 
 private:	// 싱글톤
 	ResourceManager();
@@ -47,7 +55,7 @@ public:
 	static ResourceManager& getInstance();
 
 public:
-	void init(VkDevice logicalDevice, const vkf::RenderPass& renderPass, const VkSampleCountFlagBits& msaaSamples, const VkDescriptorSet& shadowDescriptorSet);
+	void init(vkf::Device& fDevice, const vkf::RenderPass& renderPass, const VkSampleCountFlagBits& msaaSamples, const VkDescriptorSet& shadowDescriptorSet);
 	void destroy(VkDevice logicalDevice);
 
 	const vkf::RenderPass& getRenderPass() const;
@@ -57,6 +65,8 @@ public:
 	const DescriptorSetLayout& getDescriptorSetLayout() const;
 	VkPipelineLayout getPipelineLayout() const;
 	const Pipeline& getPipeline() const;
+
+	std::array<VulkanGLTFSkinModel, 4>& getPlayerModel();
 
 private:
 	void createDescriptorSetLayout(VkDevice logicalDevice);

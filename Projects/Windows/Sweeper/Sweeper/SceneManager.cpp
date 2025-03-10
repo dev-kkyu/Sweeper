@@ -90,12 +90,9 @@ void SceneManager::processPacket(unsigned char* packet)
 
 void SceneManager::initScene()
 {
-	pGameScene = std::make_shared<GameScene>(fDevice, framebufferExtent);
-
-	// GameScene 积己 饶 积己 啊瓷
 	pStartScene = std::make_shared<StartScene>(fDevice);
-	// GameScene 积己 饶 积己 啊瓷
-	pLobbyScene = std::make_shared<LobbyScene>(fDevice, framebufferExtent, pGameScene->getPlayerModel());
+	pLobbyScene = std::make_shared<LobbyScene>(fDevice, framebufferExtent);
+	pGameScene = std::make_shared<GameScene>(fDevice, framebufferExtent);
 
 	pScene = pStartScene;
 }

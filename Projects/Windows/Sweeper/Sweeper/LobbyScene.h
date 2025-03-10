@@ -32,7 +32,7 @@ private:
 	std::array<GLTFSkinModelObject, 4> playerObjects;
 
 public:
-	LobbyScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent, std::array<VulkanGLTFSkinModel, 4>& playerModel);
+	LobbyScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent);
 	virtual ~LobbyScene();
 
 	virtual void enter() override;

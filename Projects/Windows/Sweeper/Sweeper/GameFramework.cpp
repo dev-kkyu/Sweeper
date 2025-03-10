@@ -83,7 +83,7 @@ void GameFramework::initVulkan(GLFWwindow* window)
 	createSyncObjects();
 
 	// 각종 리소스를 리소스 매니저를 통해 생성
-	ResourceManager::getInstance().init(fDevice.logicalDevice, renderPass, msaaSamples, offscreenPass.samplerDescriptorSet);
+	ResourceManager::getInstance().init(fDevice, renderPass, msaaSamples, offscreenPass.samplerDescriptorSet);
 
 	createOffscreenDescriptors();
 
