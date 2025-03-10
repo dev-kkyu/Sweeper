@@ -129,7 +129,6 @@ GameScene::~GameScene()
 	vkDestroyPipeline(fDevice.logicalDevice, effect.healer.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.archer.pipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, effect.warrior.pipeline, nullptr);
-	vkDestroyPipeline(fDevice.logicalDevice, pipeline.gameendPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.cloudPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.bossHpBarPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.hpBarPipeline, nullptr);
@@ -342,7 +341,7 @@ void GameScene::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineL
 		if (isWin) {
 			if (gameEndAfterTime > 4.5f) {
 				glm::mat4 matrix{ 1.f };
-				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.gameendPipeline);
+				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipeline().quad);
 				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &gameendTexture[1].samplerDescriptorSet, 0, nullptr);
 				vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 				vkCmdDraw(commandBuffer, 6, 1, 0, 0);
@@ -351,7 +350,7 @@ void GameScene::drawUI(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineL
 		else {
 			if (gameEndAfterTime > 3.f) {
 				glm::mat4 matrix{ 1.f };
-				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.gameendPipeline);
+				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipeline().quad);
 				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &gameendTexture[0].samplerDescriptorSet, 0, nullptr);
 				vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 				vkCmdDraw(commandBuffer, 6, 1, 0, 0);
@@ -1046,18 +1045,6 @@ void GameScene::createGraphicsPipeline()
 	depthStencil.depthWriteEnable = VK_FALSE;
 
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.cloudPipeline) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create graphics pipeline!");
-	}
-
-	// 게임 승리/패배 파이프라인 생성
-	vkf::Shader gameendShader{ fDevice.logicalDevice, "shaders/startscene.vert.spv", "shaders/startscene.frag.spv" };
-	pipelineInfo.stageCount = static_cast<uint32_t>(gameendShader.shaderStages.size());
-	pipelineInfo.pStages = gameendShader.shaderStages.data();
-
-	depthStencil.depthTestEnable = VK_FALSE;
-	depthStencil.depthWriteEnable = VK_FALSE;
-
-	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.gameendPipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 

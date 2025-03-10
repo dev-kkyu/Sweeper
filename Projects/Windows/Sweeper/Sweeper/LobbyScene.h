@@ -21,8 +21,6 @@ private:
 	vkf::BufferObject uniformBufferObject;
 	vkf::BufferObject offscreenUniformBufferObject;
 
-	VkPipeline buttonPipeline;
-
 	VkDescriptorPool samplerDescriptorPool;
 
 	vkf::Texture button[4];		// 전사, 궁수, 법사, 사제
@@ -59,7 +57,6 @@ public:
 	PLAYER_TYPE getPlayerType() const;
 
 private:
-	void createGraphicsPipeline();
 	void createSamplerDescriptorPool(uint32_t setCount);
 
 };

@@ -33,7 +33,7 @@ void ResourceManager::init(VkDevice logicalDevice, const vkf::RenderPass& render
 
 void ResourceManager::destroy(VkDevice logicalDevice)
 {
-	//vkDestroyPipeline(logicalDevice, pipeline.quad, nullptr);
+	vkDestroyPipeline(logicalDevice, pipeline.quad, nullptr);
 	vkDestroyPipeline(logicalDevice, pipeline.scene.model, nullptr);
 	vkDestroyPipeline(logicalDevice, pipeline.scene.skinModel, nullptr);
 	vkDestroyPipeline(logicalDevice, pipeline.offscreen.model, nullptr);
@@ -147,18 +147,13 @@ void ResourceManager::createPipelineLayout(VkDevice logicalDevice)
 
 void ResourceManager::createGraphicsPipeline(VkDevice logicalDevice)
 {
-	vkf::Shader modelShader{ logicalDevice, "shaders/model.vert.spv", "shaders/fragment.frag.spv" };
-
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
-	auto bindingDescription = vkf::Vertex::getBindingDescription();
-	auto attributeDescriptions = vkf::Vertex::getAttributeDescriptions();
-
-	vertexInputInfo.vertexBindingDescriptionCount = 1;
-	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+	// input이 없는 셰이더 생성 예정.
+	vertexInputInfo.vertexBindingDescriptionCount = 0;
+	vertexInputInfo.pVertexBindingDescriptions = nullptr;
+	vertexInputInfo.vertexAttributeDescriptionCount = 0;
+	vertexInputInfo.pVertexAttributeDescriptions = nullptr;
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -183,7 +178,7 @@ void ResourceManager::createGraphicsPipeline(VkDevice logicalDevice)
 	VkPipelineMultisampleStateCreateInfo multisampling{};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
-	multisampling.rasterizationSamples = *pMsaaSamples;
+	multisampling.rasterizationSamples = getMsaaSamples();
 
 	VkPipelineDepthStencilStateCreateInfo depthStencil{};
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -228,8 +223,8 @@ void ResourceManager::createGraphicsPipeline(VkDevice logicalDevice)
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipelineInfo.stageCount = static_cast<uint32_t>(modelShader.shaderStages.size());
-	pipelineInfo.pStages = modelShader.shaderStages.data();
+	pipelineInfo.stageCount = 0;											// pipeline 생성 전 꼭 설정해주기
+	pipelineInfo.pStages = nullptr;											// pipeline 생성 전 꼭 설정해주기
 	pipelineInfo.pVertexInputState = &vertexInputInfo;
 	pipelineInfo.pInputAssemblyState = &inputAssembly;
 	pipelineInfo.pViewportState = &viewportState;
@@ -238,10 +233,39 @@ void ResourceManager::createGraphicsPipeline(VkDevice logicalDevice)
 	pipelineInfo.pDepthStencilState = &depthStencil;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.layout = ResourceManager::getInstance().getPipelineLayout();
-	pipelineInfo.renderPass = pRenderPass->scene;
+	pipelineInfo.layout = getPipelineLayout();
+	pipelineInfo.renderPass = getRenderPass().scene;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+
+	// quad pipeline --> 시작화면, 로비 버튼, 게임승리/패배 화면
+	vkf::Shader quadShader{ logicalDevice, "shaders/quad.vert.spv", "shaders/quad.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(quadShader.shaderStages.size());
+	pipelineInfo.pStages = quadShader.shaderStages.data();
+
+	// quad는 UI대용이므로 깊이검사 해제
+	depthStencil.depthTestEnable = VK_FALSE;
+	depthStencil.depthWriteEnable = VK_FALSE;
+
+	if (vkCreateGraphicsPipelines(logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.quad) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+	// 다시 깊이검사 활성화
+	depthStencil.depthTestEnable = VK_TRUE;
+	depthStencil.depthWriteEnable = VK_TRUE;
+
+	// model용 pipeline 생성
+	vkf::Shader modelShader{ logicalDevice, "shaders/model.vert.spv", "shaders/fragment.frag.spv" };
+	pipelineInfo.stageCount = static_cast<uint32_t>(modelShader.shaderStages.size());
+	pipelineInfo.pStages = modelShader.shaderStages.data();
+
+	auto bindingDescription = vkf::Vertex::getBindingDescription();
+	auto attributeDescriptions = vkf::Vertex::getAttributeDescriptions();
+	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 	if (vkCreateGraphicsPipelines(logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.scene.model) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");

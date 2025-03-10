@@ -36,8 +36,6 @@ private:
 		VkPipeline bossHpBarPipeline;
 		// 백그라운드 구름 파이프라인
 		VkPipeline cloudPipeline;
-		// 백그라운드 게임승리, 패배 파이프라인
-		VkPipeline gameendPipeline;
 		// 힐러 파티클 파이프라인
 		VkPipeline particlePipeline;
 	} pipeline;

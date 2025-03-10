@@ -7,8 +7,6 @@ class StartScene : public SceneBase
 private:
 	vkf::Device& fDevice;
 
-	VkPipeline pipeline;
-
 	VkDescriptorPool samplerDescriptorPool;
 	vkf::Texture texture[2];
 	float sceneElapsedTime = 0.f;	// 텍스처 깜빡임을 위하여 사용
@@ -37,7 +35,6 @@ public:
 	virtual bool getIsEnd() const override;
 
 private:
-	void createGraphicsPipeline();
 	void createSamplerDescriptorPool(uint32_t setCount);
 
 };

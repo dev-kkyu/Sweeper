@@ -304,16 +304,10 @@
     <None Include="shaders\bossskill.vert">
       <Filter>소스 파일\Shader</Filter>
     </None>
-    <None Include="shaders\startscene.frag">
+    <None Include="shaders\quad.vert">
       <Filter>소스 파일\Shader</Filter>
     </None>
-    <None Include="shaders\startscene.vert">
-      <Filter>소스 파일\Shader</Filter>
-    </None>
-    <None Include="shaders\lobbybutton.vert">
-      <Filter>소스 파일\Shader</Filter>
-    </None>
-    <None Include="shaders\lobbybutton.frag">
+    <None Include="shaders\quad.frag">
       <Filter>소스 파일\Shader</Filter>
     </None>
     <None Include="shaders\particle.vert">
