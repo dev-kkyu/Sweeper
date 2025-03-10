@@ -96,6 +96,16 @@ void LobbyScene::update(float elapsedTime, uint32_t currentFrame)
 
 void LobbyScene::drawOffscreen(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
 {
+	// UBO 바인드, firstSet은 set의 시작인덱스
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &offscreenUniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
+
+	// 단상 띄워주기 - offscreen
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipeline().offscreen.model);
+	podiumObject.draw(commandBuffer, pipelineLayout, currentFrame);
+
+	// 플레이어 띄워주기 - offscreen
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipeline().offscreen.skinModel);
+	playerObjects[static_cast<char>(selPlayerType)].draw(commandBuffer, pipelineLayout, currentFrame);
 }
 
 void LobbyScene::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame)
@@ -132,20 +142,6 @@ void LobbyScene::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLa
 	vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &matrix);
 	vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 }
-
-//void LobbyScene::offscreenDraw(VkCommandBuffer commandBuffer, uint32_t currentFrame, VkPipeline offscreenModelPipeline, VkPipeline offscreenSkinModelPipeline)
-//{
-//	// UBO 바인드, firstSet은 set의 시작인덱스
-//	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &offscreenUniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
-//
-//	// 단상 띄워주기 - offscreen
-//	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, offscreenModelPipeline);
-//	podiumObject.draw(commandBuffer, pipelineLayout, currentFrame);
-//
-//	// 플레이어 띄워주기 - offscreen
-//	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, offscreenSkinModelPipeline);
-//	playerObjects[static_cast<char>(selPlayerType)].draw(commandBuffer, pipelineLayout, currentFrame);
-//}
 
 void LobbyScene::processKeyboard(int key, int action, int mods)
 {

@@ -61,9 +61,6 @@ public:
 	// 씬 종료 조건
 	virtual bool getIsEnd() const override;
 
-	// Todo : 로비 그림자 처리하기. 일단 비활성화, cpp에 코드 주석
-	//void offscreenDraw(VkCommandBuffer commandBuffer, uint32_t currentFrame, VkPipeline offscreenModelPipeline, VkPipeline offscreenSkinModelPipeline);
-
 	PLAYER_TYPE getPlayerType() const;
 
 private:
