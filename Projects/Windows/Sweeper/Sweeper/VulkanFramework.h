@@ -70,7 +70,7 @@ namespace vkf
 	class Shader
 	{
 	private:
-		vkf::Device* fDevice = nullptr;
+		VkDevice logicalDevice = VK_NULL_HANDLE;
 
 		VkShaderModule vertShaderModule = VK_NULL_HANDLE;
 		VkShaderModule fragShaderModule = VK_NULL_HANDLE;
@@ -79,7 +79,7 @@ namespace vkf
 		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages{};
 
 	public:
-		Shader(vkf::Device& fDevice, std::string vertFilename, std::string fragFilename);
+		Shader(VkDevice logicalDevice, std::string vertFilename, std::string fragFilename);
 		~Shader();
 
 	private:

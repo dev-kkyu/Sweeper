@@ -95,9 +95,9 @@ namespace vkf
 		return attributeDescriptions;
 	}
 
-	Shader::Shader(vkf::Device& fDevice, std::string vertFilename, std::string fragFilename)
+	Shader::Shader(VkDevice logicalDevice, std::string vertFilename, std::string fragFilename)
 	{
-		this->fDevice = &fDevice;
+		this->logicalDevice = logicalDevice;
 		createShader(vertFilename, fragFilename);
 	}
 
@@ -133,9 +133,9 @@ namespace vkf
 
 	void Shader::destroy()
 	{
-		if (fDevice) {
-			vkDestroyShaderModule(fDevice->logicalDevice, fragShaderModule, nullptr);
-			vkDestroyShaderModule(fDevice->logicalDevice, vertShaderModule, nullptr);
+		if (logicalDevice) {
+			vkDestroyShaderModule(logicalDevice, fragShaderModule, nullptr);
+			vkDestroyShaderModule(logicalDevice, vertShaderModule, nullptr);
 		}
 	}
 
@@ -147,7 +147,7 @@ namespace vkf
 		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
 		VkShaderModule shaderModule;
-		if (vkCreateShaderModule(fDevice->logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+		if (vkCreateShaderModule(logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create shader module!");
 		}
 

@@ -8,9 +8,8 @@
 #include "SoundManager.h"
 
 LobbyScene::LobbyScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkExtent2D& framebufferExtent,
-	std::array<VulkanGLTFSkinModel, 4>& playerModel, VkDescriptorSet shadowSet, VkPipeline modelPipeline, VkPipeline skinModelPipeline)
-	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, framebufferExtent{ framebufferExtent }, shadowSet{ shadowSet },
-	modelPipeline{ modelPipeline }, skinModelPipeline{ skinModelPipeline }
+	std::array<VulkanGLTFSkinModel, 4>& playerModel, VkDescriptorSet shadowSet)
+	: fDevice{ fDevice }, msaaSamples{ msaaSamples }, renderPass{ renderPass }, framebufferExtent{ framebufferExtent }, shadowSet{ shadowSet }
 {
 	createGraphicsPipeline();
 	createSamplerDescriptorPool(5);		// 텍스처 5개
@@ -107,11 +106,11 @@ void LobbyScene::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLa
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.descriptorSets[currentFrame], 0, nullptr);
 
 	// 단상 띄워주기
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, modelPipeline);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipeline().scene.model);
 	podiumObject.draw(commandBuffer, pipelineLayout, currentFrame);
 
 	// 플레이어 띄워주기
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skinModelPipeline);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipeline().scene.skinModel);
 	playerObjects[static_cast<char>(selPlayerType)].draw(commandBuffer, pipelineLayout, currentFrame);
 
 	// UI 그려주기
@@ -239,7 +238,7 @@ PLAYER_TYPE LobbyScene::getPlayerType() const
 
 void LobbyScene::createGraphicsPipeline()
 {
-	vkf::Shader buttonShader{ fDevice, "shaders/lobbybutton.vert.spv", "shaders/lobbybutton.frag.spv" };
+	vkf::Shader buttonShader{ fDevice.logicalDevice, "shaders/lobbybutton.vert.spv", "shaders/lobbybutton.frag.spv" };
 
 	// input이 없는 shader
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};

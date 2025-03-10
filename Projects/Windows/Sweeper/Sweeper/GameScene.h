@@ -31,18 +31,7 @@ private:
 	vkf::RenderPass& renderPass;
 	VkDescriptorSet& shadowSet;
 
-	struct ScenePipeline {
-		VkPipeline model;
-		VkPipeline skinModel;
-	};
 	struct {
-		union {
-			ScenePipeline sceneOnOff[2];
-			struct {
-				ScenePipeline scene;
-				ScenePipeline offscreen;
-			};
-		};
 		// 바운딩 박스 파이프라인
 		VkPipeline boundingBoxPipeline;
 		// 체력 바 UI 파이프라인
@@ -151,10 +140,6 @@ public:
 
 	// Lobby Scene에서 가져다 쓸 내용들
 	std::array<VulkanGLTFSkinModel, 4>& getPlayerModel();
-	VkPipeline getModelPipeline() const;
-	VkPipeline getSkinModelPipeline() const;
-	VkPipeline getOffscreenModelPipeline() const;
-	VkPipeline getOffscreenSkinModelPipeline() const;
 
 private:
 	void createGraphicsPipeline();

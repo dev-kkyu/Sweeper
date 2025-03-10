@@ -93,7 +93,7 @@ bool StartScene::getIsEnd() const
 
 void StartScene::createGraphicsPipeline()
 {
-	vkf::Shader startShader{ fDevice, "shaders/startscene.vert.spv", "shaders/startscene.frag.spv" };
+	vkf::Shader startShader{ fDevice.logicalDevice, "shaders/startscene.vert.spv", "shaders/startscene.frag.spv" };
 
 	// inputÀÌ ¾ø´Â shader
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};

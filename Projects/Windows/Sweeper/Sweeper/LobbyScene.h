@@ -20,8 +20,6 @@ private:
 	VkExtent2D& framebufferExtent;
 
 	VkDescriptorSet shadowSet;
-	VkPipeline modelPipeline;
-	VkPipeline skinModelPipeline;
 
 	// 만드는 것
 	vkf::BufferObject uniformBufferObject;
@@ -41,7 +39,7 @@ private:
 
 public:
 	LobbyScene(vkf::Device& fDevice, VkSampleCountFlagBits& msaaSamples, vkf::RenderPass& renderPass, VkExtent2D& framebufferExtent,
-		std::array<VulkanGLTFSkinModel, 4>& playerModel, VkDescriptorSet shadowSet, VkPipeline modelPipeline, VkPipeline skinModelPipeline);
+		std::array<VulkanGLTFSkinModel, 4>& playerModel, VkDescriptorSet shadowSet);
 	virtual ~LobbyScene();
 
 	virtual void enter() override;

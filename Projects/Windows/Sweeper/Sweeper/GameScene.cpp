@@ -135,10 +135,6 @@ GameScene::~GameScene()
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.bossHpBarPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.hpBarPipeline, nullptr);
 	vkDestroyPipeline(fDevice.logicalDevice, pipeline.boundingBoxPipeline, nullptr);
-	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.model, nullptr);
-	vkDestroyPipeline(fDevice.logicalDevice, pipeline.scene.skinModel, nullptr);
-	vkDestroyPipeline(fDevice.logicalDevice, pipeline.offscreen.model, nullptr);
-	vkDestroyPipeline(fDevice.logicalDevice, pipeline.offscreen.skinModel, nullptr);
 }
 
 void GameScene::enter()
@@ -283,7 +279,7 @@ void GameScene::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLay
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 2, 1, &uniformBufferObject.uboOnOff[idx].descriptorSets[currentFrame], 0, nullptr);
 
 	// Model Object들
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.sceneOnOff[idx].model);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipeline().sceneOnOff[idx].model);
 
 	mapObject.draw(commandBuffer, pipelineLayout, currentFrame);
 
@@ -292,7 +288,7 @@ void GameScene::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLay
 	}
 
 	// skinModel Object들
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.sceneOnOff[idx].skinModel);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipeline().sceneOnOff[idx].skinModel);
 
 	pBossObject->draw(commandBuffer, pipelineLayout, currentFrame);
 
@@ -914,40 +910,15 @@ std::array<VulkanGLTFSkinModel, 4>& GameScene::getPlayerModel()
 	return playerModel;
 }
 
-VkPipeline GameScene::getModelPipeline() const
-{
-	return pipeline.scene.model;
-}
-
-VkPipeline GameScene::getSkinModelPipeline() const
-{
-	return pipeline.scene.skinModel;
-}
-
-VkPipeline GameScene::getOffscreenModelPipeline() const
-{
-	return pipeline.offscreen.model;
-}
-
-VkPipeline GameScene::getOffscreenSkinModelPipeline() const
-{
-	return pipeline.offscreen.skinModel;
-}
-
 void GameScene::createGraphicsPipeline()
 {
-	vkf::Shader modelShader{ fDevice, "shaders/model.vert.spv", "shaders/fragment.frag.spv" };
-
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
-	auto bindingDescription = vkf::Vertex::getBindingDescription();
-	auto attributeDescriptions = vkf::Vertex::getAttributeDescriptions();
-
-	vertexInputInfo.vertexBindingDescriptionCount = 1;
-	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+	// input이 없는 셰이더 생성 예정.
+	vertexInputInfo.vertexBindingDescriptionCount = 0;
+	vertexInputInfo.pVertexBindingDescriptions = nullptr;
+	vertexInputInfo.vertexAttributeDescriptionCount = 0;
+	vertexInputInfo.pVertexAttributeDescriptions = nullptr;
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -1017,8 +988,8 @@ void GameScene::createGraphicsPipeline()
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipelineInfo.stageCount = static_cast<uint32_t>(modelShader.shaderStages.size());
-	pipelineInfo.pStages = modelShader.shaderStages.data();
+	pipelineInfo.stageCount = 0;											// pipeline 생성 전 꼭 설정해주기
+	pipelineInfo.pStages = nullptr;											// pipeline 생성 전 꼭 설정해주기
 	pipelineInfo.pVertexInputState = &vertexInputInfo;
 	pipelineInfo.pInputAssemblyState = &inputAssembly;
 	pipelineInfo.pViewportState = &viewportState;
@@ -1032,84 +1003,12 @@ void GameScene::createGraphicsPipeline()
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.scene.model) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create graphics pipeline!");
-	}
-
-	// skinModel용 pipeline 생성
-	vkf::Shader skinModelShader{ fDevice, "shaders/skinnedmodel.vert.spv", "shaders/fragment.frag.spv" };
-	pipelineInfo.stageCount = static_cast<uint32_t>(skinModelShader.shaderStages.size());
-	pipelineInfo.pStages = skinModelShader.shaderStages.data();
-
-	auto skinBindingDescription = vkf::SkinVertex::getBindingDescription();
-	auto skinAttributeDescriptions = vkf::SkinVertex::getAttributeDescriptions();
-	vertexInputInfo.vertexBindingDescriptionCount = 1;
-	vertexInputInfo.pVertexBindingDescriptions = &skinBindingDescription;
-	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(skinAttributeDescriptions.size());
-	vertexInputInfo.pVertexAttributeDescriptions = skinAttributeDescriptions.data();
-
-	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.scene.skinModel) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create graphics pipeline!");
-	}
-
-	// offscreen 파이프라인 생성
-	{
-		// 그림자 생성시에는 멀티샘플링 Off
-		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-		// No blend attachment states (no color attachments used)
-		colorBlending.attachmentCount = 0;
-		// Disable culling, so all faces contribute to shadows
-		rasterizer.cullMode = VK_CULL_MODE_NONE;
-		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;			// 그림자 샘플에서는 기본 OP도 이걸로 되어있다
-		// Enable depth bias
-		rasterizer.depthBiasEnable = VK_TRUE;
-		// Add depth bias to dynamic state, so we can change it at runtime
-		dynamicStates.push_back(VK_DYNAMIC_STATE_DEPTH_BIAS);
-		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
-		dynamicState.pDynamicStates = dynamicStates.data();
-
-		pipelineInfo.renderPass = renderPass.offscreen;
-	}
-	// skinModel, 위에서 pStages는 skinModel Shader로 연결되어 있다
-	pipelineInfo.stageCount = 1;		// vertex shader만 사용
-
-	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.offscreen.skinModel) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create graphics pipeline!");
-	}
-
-	// Model
-	pipelineInfo.pStages = modelShader.shaderStages.data();
-
-	vertexInputInfo.vertexBindingDescriptionCount = 1;
-	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-
-	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.offscreen.model) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create graphics pipeline!");
-	}
-
 	// BoundingBox
-	vkf::Shader boundingBoxShader{ fDevice, "shaders/boundingbox.vert.spv", "shaders/boundingbox.frag.spv" };
+	vkf::Shader boundingBoxShader{ fDevice.logicalDevice, "shaders/boundingbox.vert.spv", "shaders/boundingbox.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(boundingBoxShader.shaderStages.size());
 	pipelineInfo.pStages = boundingBoxShader.shaderStages.data();
 
-	// input이 없는 쉐이더
-	vertexInputInfo.vertexBindingDescriptionCount = 0;
-	vertexInputInfo.pVertexBindingDescriptions = nullptr;
-	vertexInputInfo.vertexAttributeDescriptionCount = 0;
-	vertexInputInfo.pVertexAttributeDescriptions = nullptr;
-
-	// offscreen에서 바뀐부분 원복
-	multisampling.rasterizationSamples = msaaSamples;
-	colorBlending.attachmentCount = 1;
-	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
-	rasterizer.depthBiasEnable = VK_FALSE;
-	dynamicState.dynamicStateCount = 2;		// offscreen에서 추가한거 다시 제거
-	pipelineInfo.renderPass = renderPass.scene;
-
+	// 바운딩 박스는 Line List이다.
 	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
 
 	if (vkCreateGraphicsPipelines(fDevice.logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline.boundingBoxPipeline) != VK_SUCCESS) {
@@ -1120,7 +1019,7 @@ void GameScene::createGraphicsPipeline()
 	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
 	// 체력 바 파이프라인 생성
-	vkf::Shader hpBarShader{ fDevice, "shaders/hpbar.vert.spv", "shaders/hpbar.frag.spv" };
+	vkf::Shader hpBarShader{ fDevice.logicalDevice, "shaders/hpbar.vert.spv", "shaders/hpbar.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(hpBarShader.shaderStages.size());
 	pipelineInfo.pStages = hpBarShader.shaderStages.data();
 
@@ -1131,7 +1030,7 @@ void GameScene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkf::Shader bossHpBarShader{ fDevice, "shaders/bosshpbar.vert.spv", "shaders/hpbar.frag.spv" };
+	vkf::Shader bossHpBarShader{ fDevice.logicalDevice, "shaders/bosshpbar.vert.spv", "shaders/hpbar.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(bossHpBarShader.shaderStages.size());
 	pipelineInfo.pStages = bossHpBarShader.shaderStages.data();
 
@@ -1140,7 +1039,7 @@ void GameScene::createGraphicsPipeline()
 	}
 
 	// 배경 구름 파이프라인 생성
-	vkf::Shader cloudShader{ fDevice, "shaders/cloud.vert.spv", "shaders/cloud.frag.spv" };
+	vkf::Shader cloudShader{ fDevice.logicalDevice, "shaders/cloud.vert.spv", "shaders/cloud.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(cloudShader.shaderStages.size());
 	pipelineInfo.pStages = cloudShader.shaderStages.data();
 
@@ -1152,7 +1051,7 @@ void GameScene::createGraphicsPipeline()
 	}
 
 	// 게임 승리/패배 파이프라인 생성
-	vkf::Shader gameendShader{ fDevice, "shaders/startscene.vert.spv", "shaders/startscene.frag.spv" };
+	vkf::Shader gameendShader{ fDevice.logicalDevice, "shaders/startscene.vert.spv", "shaders/startscene.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(gameendShader.shaderStages.size());
 	pipelineInfo.pStages = gameendShader.shaderStages.data();
 
@@ -1163,7 +1062,7 @@ void GameScene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkf::Shader warriorShader{ fDevice, "shaders/warriorskill.vert.spv", "shaders/warriorskill.frag.spv" };
+	vkf::Shader warriorShader{ fDevice.logicalDevice, "shaders/warriorskill.vert.spv", "shaders/warriorskill.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(warriorShader.shaderStages.size());
 	pipelineInfo.pStages = warriorShader.shaderStages.data();
 
@@ -1175,7 +1074,7 @@ void GameScene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkf::Shader archerShader{ fDevice, "shaders/archerskill.vert.spv", "shaders/archerskill.frag.spv" };
+	vkf::Shader archerShader{ fDevice.logicalDevice, "shaders/archerskill.vert.spv", "shaders/archerskill.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(archerShader.shaderStages.size());
 	pipelineInfo.pStages = archerShader.shaderStages.data();
 
@@ -1183,7 +1082,7 @@ void GameScene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkf::Shader healerShader{ fDevice, "shaders/healerskill.vert.spv", "shaders/healerskill.frag.spv" };
+	vkf::Shader healerShader{ fDevice.logicalDevice, "shaders/healerskill.vert.spv", "shaders/healerskill.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(healerShader.shaderStages.size());
 	pipelineInfo.pStages = healerShader.shaderStages.data();
 
@@ -1191,7 +1090,7 @@ void GameScene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkf::Shader mageAttackShader{ fDevice, "shaders/mageattack.vert.spv", "shaders/mageattack.frag.spv" };
+	vkf::Shader mageAttackShader{ fDevice.logicalDevice, "shaders/mageattack.vert.spv", "shaders/mageattack.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(mageAttackShader.shaderStages.size());
 	pipelineInfo.pStages = mageAttackShader.shaderStages.data();
 
@@ -1199,7 +1098,7 @@ void GameScene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkf::Shader mageSkillShader{ fDevice, "shaders/mageskill.vert.spv", "shaders/mageskill.frag.spv" };
+	vkf::Shader mageSkillShader{ fDevice.logicalDevice, "shaders/mageskill.vert.spv", "shaders/mageskill.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(mageSkillShader.shaderStages.size());
 	pipelineInfo.pStages = mageSkillShader.shaderStages.data();
 
@@ -1207,7 +1106,7 @@ void GameScene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkf::Shader arrowShader{ fDevice, "shaders/arroweffect.vert.spv", "shaders/arroweffect.frag.spv" };
+	vkf::Shader arrowShader{ fDevice.logicalDevice, "shaders/arroweffect.vert.spv", "shaders/arroweffect.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(arrowShader.shaderStages.size());
 	pipelineInfo.pStages = arrowShader.shaderStages.data();
 
@@ -1215,7 +1114,7 @@ void GameScene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkf::Shader bossShader{ fDevice, "shaders/bossskill.vert.spv", "shaders/bossskill.frag.spv" };
+	vkf::Shader bossShader{ fDevice.logicalDevice, "shaders/bossskill.vert.spv", "shaders/bossskill.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(bossShader.shaderStages.size());
 	pipelineInfo.pStages = bossShader.shaderStages.data();
 
@@ -1223,7 +1122,7 @@ void GameScene::createGraphicsPipeline()
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkf::Shader particleShader{ fDevice, "shaders/particle.vert.spv", "shaders/particle.frag.spv" };
+	vkf::Shader particleShader{ fDevice.logicalDevice, "shaders/particle.vert.spv", "shaders/particle.frag.spv" };
 	pipelineInfo.stageCount = static_cast<uint32_t>(particleShader.shaderStages.size());
 	pipelineInfo.pStages = particleShader.shaderStages.data();
 
