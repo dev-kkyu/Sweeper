@@ -16,12 +16,7 @@ private:
 	const VkExtent2D& framebufferExtent;
 
 private:
-	enum class SCENE_TYPE {
-		START = 0, LOBBY = 1, INGAME = 2
-	};
-	SCENE_TYPE nowScene;
-
-	std::shared_ptr<SceneBase> pScene;
+	std::shared_ptr<SceneBase> pNowScene;
 
 	std::shared_ptr<StartScene> pStartScene;
 	std::shared_ptr<LobbyScene> pLobbyScene;

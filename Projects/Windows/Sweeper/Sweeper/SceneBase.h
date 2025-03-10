@@ -4,10 +4,17 @@
 
 class SceneBase
 {
+public:
+	enum class SCENE_TYPE : char {
+		ERROR = 0, START = 1, LOBBY = 2, INGAME = 3
+	};
+
 protected:
+	SCENE_TYPE sceneType;
 	bool isEnd;
 
 public:
+	SceneBase();
 	virtual ~SceneBase();
 
 	virtual void enter() = 0;
@@ -28,6 +35,8 @@ public:
 
 	// æ¿ ¡æ∑· ¡∂∞«
 	virtual bool getIsEnd() const = 0;
+	// æ¿ ≈∏¿‘
+	virtual SCENE_TYPE getSceneType() const final;
 
 };
 

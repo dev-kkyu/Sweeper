@@ -19,6 +19,8 @@
 GameScene::GameScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent)
 	: fDevice{ fDevice }, camera{ framebufferExtent }
 {
+	sceneType = SCENE_TYPE::INGAME;
+
 	createGraphicsPipeline();
 	createSamplerDescriptorPool(11);		// 배경 구름, 게임종료 2개, 이펙트7개, 힐러 파티클
 	// 힐러 파티클 생성
@@ -67,7 +69,6 @@ GameScene::GameScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent)
 	isDrawingBoundingBox = false;
 
 	// 게임 리셋 데이터
-	isEnd = false;
 	isEndPacketReceived = false;
 	isWin = false;
 	gameEndAfterTime = 0.f;

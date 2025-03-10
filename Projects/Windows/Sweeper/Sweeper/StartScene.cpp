@@ -9,12 +9,12 @@
 StartScene::StartScene(vkf::Device& fDevice)
 	: fDevice{ fDevice }
 {
+	sceneType = SCENE_TYPE::START;
+
 	createSamplerDescriptorPool(2);		// 텍스처 두개
 
 	texture[0].loadFromFile(fDevice, "models/Textures/startscene1.png", samplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
 	texture[1].loadFromFile(fDevice, "models/Textures/startscene2.png", samplerDescriptorPool, ResourceManager::getInstance().getDescriptorSetLayout().sampler);
-
-	isEnd = false;
 }
 
 StartScene::~StartScene()

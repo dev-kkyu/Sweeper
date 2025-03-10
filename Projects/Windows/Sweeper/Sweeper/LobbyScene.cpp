@@ -10,6 +10,9 @@
 LobbyScene::LobbyScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent)
 	: fDevice{ fDevice }, framebufferExtent{ framebufferExtent }
 {
+	sceneType = SCENE_TYPE::LOBBY;
+	selPlayerType = PLAYER_TYPE::WARRIOR;
+
 	createSamplerDescriptorPool(5);		// 텍스처 5개
 
 	uniformBufferObject.createUniformBufferObjects(fDevice, ResourceManager::getInstance().getDescriptorSetLayout().ubo);
@@ -44,9 +47,6 @@ LobbyScene::LobbyScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent
 		playerObjects[i].setAnimationClip(23);
 		playerObjects[i].setPosition(glm::vec3(xPosition, 0.f, 0.f));
 	}
-
-	isEnd = false;
-	selPlayerType = PLAYER_TYPE::WARRIOR;
 }
 
 LobbyScene::~LobbyScene()
