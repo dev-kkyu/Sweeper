@@ -7,6 +7,7 @@ ResourceManager::ResourceManager()
 {
 	pRenderPass = nullptr;
 	pMsaaSamples = nullptr;
+	pShadowDescriptorSet = nullptr;
 }
 
 ResourceManager::~ResourceManager()
@@ -19,10 +20,11 @@ ResourceManager& ResourceManager::getInstance()
 	return instance;
 }
 
-void ResourceManager::init(VkDevice logicalDevice, const vkf::RenderPass& renderPass, const VkSampleCountFlagBits& msaaSamples)
+void ResourceManager::init(VkDevice logicalDevice, const vkf::RenderPass& renderPass, const VkSampleCountFlagBits& msaaSamples, const VkDescriptorSet& shadowDescriptorSet)
 {
 	pRenderPass = &renderPass;
 	pMsaaSamples = &msaaSamples;
+	pShadowDescriptorSet = &shadowDescriptorSet;
 
 	createDescriptorSetLayout(logicalDevice);
 	createPipelineLayout(logicalDevice);
@@ -40,6 +42,21 @@ void ResourceManager::destroy(VkDevice logicalDevice)
 	vkDestroyDescriptorSetLayout(logicalDevice, descriptorSetLayout.ssbo, nullptr);
 	vkDestroyDescriptorSetLayout(logicalDevice, descriptorSetLayout.sampler, nullptr);
 	vkDestroyDescriptorSetLayout(logicalDevice, descriptorSetLayout.ubo, nullptr);
+}
+
+const vkf::RenderPass& ResourceManager::getRenderPass() const
+{
+	return *pRenderPass;
+}
+
+VkSampleCountFlagBits ResourceManager::getMsaaSamples() const
+{
+	return *pMsaaSamples;
+}
+
+VkDescriptorSet ResourceManager::getShadowDescriptorSet() const
+{
+	return *pShadowDescriptorSet;
 }
 
 const ResourceManager::DescriptorSetLayout& ResourceManager::getDescriptorSetLayout() const

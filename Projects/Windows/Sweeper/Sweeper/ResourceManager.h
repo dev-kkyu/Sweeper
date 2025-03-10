@@ -8,6 +8,7 @@ class ResourceManager
 private:
 	const vkf::RenderPass* pRenderPass;
 	const VkSampleCountFlagBits* pMsaaSamples;
+	const VkDescriptorSet* pShadowDescriptorSet;
 
 	struct DescriptorSetLayout {
 		VkDescriptorSetLayout ubo;
@@ -46,8 +47,12 @@ public:
 	static ResourceManager& getInstance();
 
 public:
-	void init(VkDevice logicalDevice, const vkf::RenderPass& renderPass, const VkSampleCountFlagBits& msaaSamples);
+	void init(VkDevice logicalDevice, const vkf::RenderPass& renderPass, const VkSampleCountFlagBits& msaaSamples, const VkDescriptorSet& shadowDescriptorSet);
 	void destroy(VkDevice logicalDevice);
+
+	const vkf::RenderPass& getRenderPass() const;
+	VkSampleCountFlagBits getMsaaSamples() const;
+	VkDescriptorSet getShadowDescriptorSet() const;
 
 	const DescriptorSetLayout& getDescriptorSetLayout() const;
 	VkPipelineLayout getPipelineLayout() const;
