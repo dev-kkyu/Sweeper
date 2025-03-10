@@ -11,17 +11,11 @@ class GameScene;
 class SceneManager
 {
 private:
-	vkf::Device& fDevice;
-
-	const VkExtent2D& framebufferExtent;
-
-private:
 	std::shared_ptr<SceneBase> pNowScene;
 
 	std::shared_ptr<StartScene> pStartScene;
 	std::shared_ptr<LobbyScene> pLobbyScene;
 	std::shared_ptr<GameScene> pGameScene;
-
 
 public:
 	SceneManager(vkf::Device& fDevice, const VkExtent2D& framebufferExtent);
@@ -39,10 +33,6 @@ public:
 
 	// 匙飘况农 菩哦 贸府
 	void processPacket(unsigned char* packet);
-
-private:
-	void initScene();
-
 
 };
 

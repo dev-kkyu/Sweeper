@@ -9,9 +9,12 @@
 #include <stdexcept>
 
 SceneManager::SceneManager(vkf::Device& fDevice, const VkExtent2D& framebufferExtent)
-	: fDevice{ fDevice }, framebufferExtent{ framebufferExtent }
 {
-	initScene();
+	pStartScene = std::make_shared<StartScene>(fDevice);
+	pLobbyScene = std::make_shared<LobbyScene>(fDevice, framebufferExtent);
+	pGameScene = std::make_shared<GameScene>(fDevice, framebufferExtent);
+
+	pNowScene = pStartScene;
 }
 
 SceneManager::~SceneManager()
@@ -85,13 +88,4 @@ void SceneManager::processMouseCursor(float xpos, float ypos)
 void SceneManager::processPacket(unsigned char* packet)
 {
 	pNowScene->processPacket(packet);
-}
-
-void SceneManager::initScene()
-{
-	pStartScene = std::make_shared<StartScene>(fDevice);
-	pLobbyScene = std::make_shared<LobbyScene>(fDevice, framebufferExtent);
-	pGameScene = std::make_shared<GameScene>(fDevice, framebufferExtent);
-
-	pNowScene = pStartScene;
 }
