@@ -14,8 +14,9 @@ class Camera
 private:
 	float distanceFromPlayer;	// 생성자 호출 시 값 정해주기
 
-	glm::mat4 viewTransform{ 1.f };
-	glm::mat4 projectionTransform{ 1.f };
+	glm::mat4 viewTransform;
+	glm::mat4 projectionTransform;
+	glm::mat4 invProjectionTransform;
 
 	std::shared_ptr<PlayerObject> pPlayer;
 
@@ -39,6 +40,9 @@ public:
 
 	const glm::mat4& getView() const;
 	const glm::mat4& getProjection() const;
+
+	glm::mat4 getInvView() const;
+	const glm::mat4& getInvProjection() const;
 
 	void setDistance(float distance);
 	float getDistance() const;

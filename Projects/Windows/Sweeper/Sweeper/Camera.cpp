@@ -31,6 +31,7 @@ void Camera::update(float elapsedTime)
 void Camera::onFramebufferResize(VkExtent2D framebufferExtent)
 {
 	projectionTransform = glm::perspective(glm::radians(45.0f), float(framebufferExtent.width) / float(framebufferExtent.height), 1.f, 100.0f);
+	invProjectionTransform = glm::inverse(projectionTransform);
 }
 
 void Camera::setPlayer(std::shared_ptr<PlayerObject> pPlayer)
@@ -51,6 +52,22 @@ const glm::mat4& Camera::getView() const
 const glm::mat4& Camera::getProjection() const
 {
 	return projectionTransform;
+}
+
+glm::mat4 Camera::getInvView() const
+{
+	glm::mat3 invRotation = glm::transpose(glm::mat3(viewTransform));
+	glm::vec3 invTranslation = -invRotation * glm::vec3(viewTransform[3]);
+
+	glm::mat4 invView{ invRotation };
+	invView[3] = glm::vec4(invTranslation, 1.f);
+
+	return invView;
+}
+
+const glm::mat4& Camera::getInvProjection() const
+{
+	return invProjectionTransform;
 }
 
 void Camera::setDistance(float distance)
