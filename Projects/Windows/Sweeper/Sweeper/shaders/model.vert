@@ -41,7 +41,7 @@ void main()
 	outNormal = normalize(transpose(inverse(mat3(push.model))) * inNormal);
 
 	outLightVec = ubo.lightPos - FragPos.xyz;
-	vec3 vPos = vec3(inverse(ubo.view)[3]);
+	vec3 vPos = -transpose(mat3(ubo.view)) * ubo.view[3].xyz;	// 카메라 위치 구하기 최적화 (역행렬 사용 X)
 	outViewVec = vPos - FragPos.xyz;
 
 	outShadowCoord = biasMat * ubo.lightSpace * FragPos;
