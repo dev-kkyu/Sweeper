@@ -340,7 +340,7 @@ void VulkanGLTFModel::createBoundingBoxNode(const std::shared_ptr<VulkanGLTFMode
 			currentParent = currentParent->parent.lock();
 		}
 
-		for (const VulkanGLTFModel::Primitive& primitive : node->mesh.primitives) {
+		for (VulkanGLTFModel::Primitive& primitive : node->mesh.primitives) {
 			if (primitive.indexCount > 0) {
 				glm::vec4 minVertex = nodeMatrix * glm::vec4(vertexBuffer[indexBuffer[primitive.firstIndex]].pos, 1.f);
 				glm::vec4 maxVertex = minVertex;
@@ -362,10 +362,7 @@ void VulkanGLTFModel::createBoundingBoxNode(const std::shared_ptr<VulkanGLTFMode
 						maxVertex.z = nowPos.z;
 				}
 
-				BoundingBox boundingBox;
-				boundingBox.setBound(maxVertex.y, minVertex.y, maxVertex.z, minVertex.z, minVertex.x, maxVertex.x);
-
-				node->mesh.boundingBox.push_back(boundingBox);
+				primitive.boundingBox.setBound(maxVertex.y, minVertex.y, maxVertex.z, minVertex.z, minVertex.x, maxVertex.x);
 			}
 		}
 	}

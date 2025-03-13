@@ -35,12 +35,12 @@ public:
 		uint32_t firstIndex;
 		uint32_t indexCount;
 		int32_t materialIndex;
+		BoundingBox boundingBox;	// 추가
 	};
 
 	// Contains the node's (optional) geometry and can be made up of an arbitrary number of primitives
 	struct Mesh {
 		std::vector<Primitive> primitives;
-		std::vector<BoundingBox> boundingBox;	// 추가
 	};
 
 	// A node represents an object in the glTF scene graph
@@ -86,7 +86,7 @@ public:
 
 	void loadModel(vkf::Device& fDevice, VkDescriptorSetLayout samplerDescriptorSetLayout, std::string filename);
 
-	void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const glm::mat4& worldMatrix = glm::mat4{ 1.f });
+	void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const glm::mat4& worldMatrix);
 
 private:
 	void drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const std::shared_ptr<VulkanGLTFModel::Node>& node, const glm::mat4& worldMatrix);
