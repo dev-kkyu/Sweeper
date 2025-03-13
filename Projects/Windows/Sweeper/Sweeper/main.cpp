@@ -139,7 +139,7 @@ void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 	g_FramebufferExtent.height = static_cast<uint32_t>(height);
 
 	// 스왑체인에 알려주기
-	g_GameFramework.setFramebufferResized();
+	g_GameFramework.onFramebufferResize();
 }
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)

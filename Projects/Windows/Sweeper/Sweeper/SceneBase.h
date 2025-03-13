@@ -20,6 +20,8 @@ public:
 	virtual void enter() = 0;
 	virtual void exit() = 0;
 
+	virtual void onFramebufferResize(VkExtent2D framebufferExtent) = 0;
+
 	virtual void update(float elapsedTime, uint32_t currentFrame) = 0;
 
 	virtual void drawOffscreen(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) = 0;

@@ -99,11 +99,13 @@ private:
 	Camera camera;
 
 public:
-	GameScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent);
+	GameScene(vkf::Device& fDevice, VkExtent2D framebufferExtent);
 	virtual ~GameScene();
 
 	virtual void enter() override;
 	virtual void exit() override;
+
+	virtual void onFramebufferResize(VkExtent2D framebufferExtent) override;
 
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
 

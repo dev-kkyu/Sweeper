@@ -15,7 +15,7 @@ private:
 	// 받아오는 것
 	vkf::Device& fDevice;
 
-	const VkExtent2D& framebufferExtent;
+	VkExtent2D framebufferExtent;
 
 	// 만드는 것
 	vkf::BufferObject uniformBufferObject;
@@ -32,11 +32,13 @@ private:
 	std::array<GLTFSkinModelObject, 4> playerObjects;
 
 public:
-	LobbyScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent);
+	LobbyScene(vkf::Device& fDevice, VkExtent2D framebufferExtent);
 	virtual ~LobbyScene();
 
 	virtual void enter() override;
 	virtual void exit() override;
+
+	virtual void onFramebufferResize(VkExtent2D framebufferExtent) override;
 
 	virtual void update(float elapsedTime, uint32_t currentFrame) override;
 

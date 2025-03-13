@@ -33,6 +33,10 @@ void StartScene::exit()
 {
 }
 
+void StartScene::onFramebufferResize(VkExtent2D framebufferExtent)
+{
+}
+
 void StartScene::update(float elapsedTime, uint32_t currentFrame)
 {
 	sceneElapsedTime += elapsedTime;

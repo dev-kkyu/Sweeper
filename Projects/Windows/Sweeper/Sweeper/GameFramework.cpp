@@ -58,7 +58,7 @@ GameFramework::GameFramework(std::string title, int& winWidth, int& winHeight, V
 {
 }
 
-void GameFramework::setFramebufferResized()
+void GameFramework::onFramebufferResize()
 {
 	framebufferResized = true;
 }
@@ -194,6 +194,9 @@ void GameFramework::drawFrame()
 	result = vkQueuePresentKHR(fDevice.presentQueue, &presentInfo);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+		if (pSceneManager)
+			pSceneManager->onFramebufferResize(framebufferExtent);
+
 		framebufferResized = false;
 		recreateSwapChain();
 	}

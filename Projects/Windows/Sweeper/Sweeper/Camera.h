@@ -12,8 +12,6 @@ class PlayerObject;
 class Camera
 {
 private:
-	const VkExtent2D& framebufferExtent;
-
 	float distanceFromPlayer;	// 생성자 호출 시 값 정해주기
 
 	glm::mat4 viewTransform{ 1.f };
@@ -29,16 +27,18 @@ private:
 	float pitchAngle;			// 생성자 호출 시 값 정해주기
 
 public:
-	Camera(const VkExtent2D& framebufferExtent);
+	Camera(VkExtent2D framebufferExtent);
 	~Camera();
 
 	void update(float elapsedTime);
 
+	void onFramebufferResize(VkExtent2D framebufferExtent);
+
 	void setPlayer(std::shared_ptr<PlayerObject> pPlayer);
 	const std::shared_ptr<PlayerObject>& getPlayer() const;
 
-	glm::mat4 getView() const;
-	glm::mat4 getProjection() const;
+	const glm::mat4& getView() const;
+	const glm::mat4& getProjection() const;
 
 	void setDistance(float distance);
 	float getDistance() const;

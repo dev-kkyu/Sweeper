@@ -21,6 +21,8 @@ public:
 	SceneManager(vkf::Device& fDevice, const VkExtent2D& framebufferExtent);
 	~SceneManager();
 
+	void onFramebufferResize(VkExtent2D framebufferExtent);
+
 	void update(float elapsedTime, uint32_t currentFrame);
 
 	void drawOffscreen(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame);

@@ -21,6 +21,13 @@ SceneManager::~SceneManager()
 {
 }
 
+void SceneManager::onFramebufferResize(VkExtent2D framebufferExtent)
+{
+	pStartScene->onFramebufferResize(framebufferExtent);
+	pLobbyScene->onFramebufferResize(framebufferExtent);
+	pGameScene->onFramebufferResize(framebufferExtent);
+}
+
 void SceneManager::update(float elapsedTime, uint32_t currentFrame)
 {
 	if (pNowScene->getIsEnd()) {

@@ -7,7 +7,7 @@
 #include "ResourceManager.h"
 #include "SoundManager.h"
 
-LobbyScene::LobbyScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent)
+LobbyScene::LobbyScene(vkf::Device& fDevice, VkExtent2D framebufferExtent)
 	: fDevice{ fDevice }, framebufferExtent{ framebufferExtent }
 {
 	sceneType = SCENE_TYPE::LOBBY;
@@ -72,6 +72,11 @@ void LobbyScene::enter()
 
 void LobbyScene::exit()
 {
+}
+
+void LobbyScene::onFramebufferResize(VkExtent2D framebufferExtent)
+{
+	this->framebufferExtent = framebufferExtent;
 }
 
 void LobbyScene::update(float elapsedTime, uint32_t currentFrame)

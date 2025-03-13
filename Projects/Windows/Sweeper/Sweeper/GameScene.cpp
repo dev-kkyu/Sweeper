@@ -16,7 +16,7 @@
 #include "NetworkManager.h"
 #include "SoundManager.h"
 
-GameScene::GameScene(vkf::Device& fDevice, const VkExtent2D& framebufferExtent)
+GameScene::GameScene(vkf::Device& fDevice, VkExtent2D framebufferExtent)
 	: fDevice{ fDevice }, camera{ framebufferExtent }
 {
 	sceneType = SCENE_TYPE::INGAME;
@@ -173,6 +173,11 @@ void GameScene::enter()
 
 void GameScene::exit()
 {
+}
+
+void GameScene::onFramebufferResize(VkExtent2D framebufferExtent)
+{
+	camera.onFramebufferResize(framebufferExtent);
 }
 
 void GameScene::update(float elapsedTime, uint32_t currentFrame)

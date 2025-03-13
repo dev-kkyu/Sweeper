@@ -35,7 +35,7 @@ class GameFramework
 public:
 	GameFramework(std::string title, int& winWidth, int& winHeight, VkExtent2D& framebufferExtent);
 
-	void setFramebufferResized();
+	void onFramebufferResize();
 
 	void initVulkan(GLFWwindow* window);
 
