@@ -135,6 +135,9 @@ public:
 	PLAYER_TYPE getPlayerType() const;
 
 private:
+	BoundingBox getFrustumAABB() const;
+
+private:
 	void createGraphicsPipeline();
 
 	void createSamplerDescriptorPool(uint32_t setCount);

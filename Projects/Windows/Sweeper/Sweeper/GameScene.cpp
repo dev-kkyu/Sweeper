@@ -275,7 +275,9 @@ void GameScene::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLay
 	// Model Object들
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ResourceManager::getInstance().getPipeline().sceneOnOff[idx].model);
 
-	mapObject.draw(commandBuffer, pipelineLayout, currentFrame);
+	// 맵 draw시 Frustum Culling 적용
+	mapObject.drawWithCulling(commandBuffer, pipelineLayout, getFrustumAABB());
+	//mapObject.draw(commandBuffer, pipelineLayout, currentFrame);
 
 	for (auto& arr : pArrowObjects) {
 		arr.second->draw(commandBuffer, pipelineLayout, currentFrame);
@@ -897,6 +899,40 @@ void GameScene::setPlayerType(PLAYER_TYPE player_type)
 PLAYER_TYPE GameScene::getPlayerType() const
 {
 	return playerType;
+}
+
+BoundingBox GameScene::getFrustumAABB() const
+{
+	// NDC 공간의 절두체 8개 꼭짓점
+	std::array<glm::vec4, 8> ndcCorners = {
+		glm::vec4(-1, -1, 0, 1), glm::vec4(1, -1, 0, 1),
+		glm::vec4(-1,  1, 0, 1), glm::vec4(1,  1, 0, 1),
+		glm::vec4(-1, -1, 1, 1), glm::vec4(1, -1, 1, 1),
+		glm::vec4(-1,  1, 1, 1), glm::vec4(1,  1, 1, 1)
+	};
+
+	// 역변환행렬 구하기
+	glm::mat4 inverseMatrix = camera.getInvView() * camera.getInvProjection();
+
+	// 절두체의 꼭짓점 좌표 구하기
+	for (int i = 0; i < 8; ++i) {
+		ndcCorners[i] = inverseMatrix * ndcCorners[i];
+		ndcCorners[i] /= ndcCorners[i].w;
+	}
+
+	// 절두체를 감싸는 AABB 점 구하기
+	glm::vec3 minVertex = ndcCorners[0];
+	glm::vec3 maxVertex = ndcCorners[0];
+
+	for (int i = 1; i < 8; ++i) {
+		minVertex = glm::min(minVertex, glm::vec3(ndcCorners[i]));
+		maxVertex = glm::max(maxVertex, glm::vec3(ndcCorners[i]));
+	}
+
+	BoundingBox boundingBox;
+	boundingBox.setBound(maxVertex.y, minVertex.y, maxVertex.z, minVertex.z, minVertex.x, maxVertex.x);
+
+	return boundingBox;
 }
 
 void GameScene::createGraphicsPipeline()
