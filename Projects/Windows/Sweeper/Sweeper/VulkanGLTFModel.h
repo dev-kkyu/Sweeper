@@ -87,9 +87,11 @@ public:
 	void loadModel(vkf::Device& fDevice, VkDescriptorSetLayout samplerDescriptorSetLayout, std::string filename);
 
 	void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const glm::mat4& worldMatrix);
+	void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const BoundingBox& cullingBox);	// 월드 변환 없는 객체 대상으로 절두체 컬링
 
 private:
 	void drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const std::shared_ptr<VulkanGLTFModel::Node>& node, const glm::mat4& worldMatrix);
+	void drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const std::shared_ptr<VulkanGLTFModel::Node>& node, const BoundingBox& cullingBox);
 
 	void loadglTFFile(std::string filename);
 

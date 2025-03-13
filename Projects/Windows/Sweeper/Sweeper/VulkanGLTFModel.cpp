@@ -41,6 +41,18 @@ void VulkanGLTFModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipel
 	}
 }
 
+void VulkanGLTFModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const BoundingBox& cullingBox)
+{
+	// All vertices and indices are stored in single buffers, so we only need to bind once
+	VkDeviceSize offsets[1] = { 0 };
+	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &buffer.vertexBuffer, offsets);
+	vkCmdBindIndexBuffer(commandBuffer, buffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+	// Render all nodes at top-level
+	for (auto& node : nodes) {
+		drawNode(commandBuffer, pipelineLayout, node, cullingBox);
+	}
+}
+
 void VulkanGLTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const std::shared_ptr<VulkanGLTFModel::Node>& node, const glm::mat4& worldMatrix)
 {
 	if (node->mesh.primitives.size() > 0) {
@@ -68,6 +80,36 @@ void VulkanGLTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout p
 	}
 	for (const auto& child : node->children) {
 		drawNode(commandBuffer, pipelineLayout, child, worldMatrix);
+	}
+}
+
+void VulkanGLTFModel::drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const std::shared_ptr<VulkanGLTFModel::Node>& node, const BoundingBox& cullingBox)
+{
+	if (node->mesh.primitives.size() > 0) {
+		// Pass the node's matrix via push constants
+		// Traverse the node hierarchy to the top-most parent to get the final matrix of the current node
+		glm::mat4 nodeMatrix = node->matrix;
+		std::shared_ptr<VulkanGLTFModel::Node> currentParent = node->parent.lock();
+		while (currentParent) {
+			nodeMatrix = currentParent->matrix * nodeMatrix;
+			currentParent = currentParent->parent.lock();
+		}
+		// Pass the final matrix to the vertex shader using push constants
+		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &nodeMatrix);
+		for (const VulkanGLTFModel::Primitive& primitive : node->mesh.primitives) {
+			if (primitive.indexCount > 0) {
+				if (primitive.boundingBox.isCollide(cullingBox)) {		// 절두체 내부에 있는 객체만 draw
+					// Get the texture index for this primitive
+					VulkanGLTFModel::TextureID texture = textures[materials[primitive.materialIndex].baseColorTextureIndex];
+					// Bind the descriptor for the current primitive's texture
+					vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &images[texture.imageIndex].texture.samplerDescriptorSet, 0, nullptr);
+					vkCmdDrawIndexed(commandBuffer, primitive.indexCount, 1, primitive.firstIndex, 0, 0);
+				}
+			}
+		}
+	}
+	for (const auto& child : node->children) {
+		drawNode(commandBuffer, pipelineLayout, child, cullingBox);
 	}
 }
 

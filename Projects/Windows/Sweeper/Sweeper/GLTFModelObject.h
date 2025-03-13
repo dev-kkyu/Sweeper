@@ -20,6 +20,8 @@ public:
 	virtual void draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, uint32_t currentFrame) override;
 	virtual void release() override;
 
+	void drawWithCulling(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const BoundingBox& cullingBox);
+
 	void setModel(VulkanGLTFModel& model);
 
 	void updateBoundingBox();

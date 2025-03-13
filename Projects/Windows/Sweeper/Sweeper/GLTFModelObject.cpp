@@ -26,6 +26,12 @@ void GLTFModelObject::release()
 {
 }
 
+void GLTFModelObject::drawWithCulling(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, const BoundingBox& cullingBox)
+{
+	if (model)
+		model->draw(commandBuffer, pipelineLayout, cullingBox);
+}
+
 void GLTFModelObject::setModel(VulkanGLTFModel& model)
 {
 	this->model = &model;
